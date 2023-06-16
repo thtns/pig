@@ -568,3 +568,5 @@ INSERT INTO `sys_user_role` VALUES (1, 1);
 COMMIT;
 
 SET FOREIGN_KEY_CHECKS = 1;
+
+INSERT INTO `pig`.`sys_oauth_client_details`(`client_id`, `resource_ids`, `client_secret`, `scope`, `authorized_grant_types`, `web_server_redirect_uri`, `authorities`, `access_token_validity`, `refresh_token_validity`, `additional_information`, `autoapprove`, `create_time`, `update_time`, `create_by`, `update_by`) VALUES ('open', NULL, 'open', 'server', 'password,app,refresh_token,authorization_code,client_credentials', 'https://pig4cloud.com', NULL, NULL, NULL, NULL, 'false', NULL, NULL, NULL, NULL);

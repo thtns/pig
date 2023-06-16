@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~
+  ~      Copyright (c) 2018-2025, lengleng All rights reserved.
+  ~
+  ~  Redistribution and use in source and binary forms, with or without
+  ~  modification, are permitted provided that the following conditions are met:
+  ~
+  ~ Redistributions of source code must retain the above copyright notice,
+  ~  this list of conditions and the following disclaimer.
+  ~  Redistributions in binary form must reproduce the above copyright
+  ~  notice, this list of conditions and the following disclaimer in the
+  ~  documentation and/or other materials provided with the distribution.
+  ~  Neither the name of the pig4cloud.com developer nor the names of its
+  ~  contributors may be used to endorse or promote products derived from
+  ~  this software without specific prior written permission.
+  ~  Author: lengleng (wangiegie@gmail.com)
+  ~
+  -->
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.pig4cloud.pig.admin.mapper.BizBuyerOrderMapper">
+
+  <resultMap id="bizBuyerOrderMap" type="com.pig4cloud.pig.admin.api.entity.BizBuyerOrder">
+    <id property="id" column="id"/>
+    <result property="buyerId" column="buyer_id"/>
+    <result property="buyerName" column="buyer_name"/>
+    <result property="supplierId" column="supplier_id"/>
+    <result property="supplierName" column="supplier_name"/>
+    <result property="carBrandId" column="car_brand_id"/>
+    <result property="carBrandName" column="car_brand_name"/>
+    <result property="robotId" column="robot_id"/>
+    <result property="requestIpAddress" column="request_ip_address"/>
+    <result property="requestTime" column="request_time"/>
+    <result property="requestParams" column="request_params"/>
+    <result property="requestHeader" column="request_header"/>
+    <result property="vin" column="vin"/>
+    <result property="engineCode" column="engine_code"/>
+    <result property="callbackUrl" column="callback_url"/>
+    <result property="requestStatus" column="request_status"/>
+    <result property="failureReason" column="failure_reason"/>
+    <result property="result" column="result"/>
+    <result property="callbackTime" column="callback_time"/>
+    <result property="spendTime" column="spend_time"/>
+    <result property="retryCount" column="retry_count"/>
+    <result property="createBy" column="create_by"/>
+    <result property="createTime" column="create_time"/>
+    <result property="updateTime" column="update_time"/>
+    <result property="updateBy" column="update_by"/>
+  </resultMap>
+</mapper>
