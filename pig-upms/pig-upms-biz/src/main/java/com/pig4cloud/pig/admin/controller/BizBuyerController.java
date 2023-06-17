@@ -56,7 +56,7 @@ public class BizBuyerController {
      */
     @Operation(summary = "分页查询", description = "分页查询")
     @GetMapping("/page" )
-    @PreAuthorize("@pms.hasPermission('demo_bizbuyer_get')" )
+    @PreAuthorize("@pms.hasPermission('admin_bizbuyer_get')" )
     public R getBizBuyerPage(Page page, BizBuyer bizBuyer) {
         return R.ok(bizBuyerService.page(page, Wrappers.query(bizBuyer)));
     }
@@ -69,7 +69,7 @@ public class BizBuyerController {
      */
     @Operation(summary = "通过id查询", description = "通过id查询")
     @GetMapping("/{id}" )
-    @PreAuthorize("@pms.hasPermission('demo_bizbuyer_get')" )
+    @PreAuthorize("@pms.hasPermission('admin_bizbuyer_get')" )
     public R getById(@PathVariable("id" ) Long id) {
         return R.ok(bizBuyerService.getById(id));
     }
@@ -82,7 +82,7 @@ public class BizBuyerController {
     @Operation(summary = "新增采购商表", description = "新增采购商表")
     @SysLog("新增采购商表" )
     @PostMapping
-    @PreAuthorize("@pms.hasPermission('demo_bizbuyer_add')" )
+    @PreAuthorize("@pms.hasPermission('admin_bizbuyer_add')" )
     public R save(@RequestBody BizBuyer bizBuyer) {
         return R.ok(bizBuyerService.save(bizBuyer));
     }
@@ -95,7 +95,7 @@ public class BizBuyerController {
     @Operation(summary = "修改采购商表", description = "修改采购商表")
     @SysLog("修改采购商表" )
     @PutMapping
-    @PreAuthorize("@pms.hasPermission('demo_bizbuyer_edit')" )
+    @PreAuthorize("@pms.hasPermission('admin_bizbuyer_edit')" )
     public R updateById(@RequestBody BizBuyer bizBuyer) {
         return R.ok(bizBuyerService.updateById(bizBuyer));
     }
@@ -108,7 +108,7 @@ public class BizBuyerController {
     @Operation(summary = "通过id删除采购商表", description = "通过id删除采购商表")
     @SysLog("通过id删除采购商表" )
     @DeleteMapping("/{id}" )
-    @PreAuthorize("@pms.hasPermission('demo_bizbuyer_del')" )
+    @PreAuthorize("@pms.hasPermission('admin_bizbuyer_del')" )
     public R removeById(@PathVariable Long id) {
         return R.ok(bizBuyerService.removeById(id));
     }

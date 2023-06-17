@@ -56,7 +56,7 @@ public class BizRobotQueryRecordController {
      */
     @Operation(summary = "分页查询", description = "分页查询")
     @GetMapping("/page" )
-    @PreAuthorize("@pms.hasPermission('demo_bizrobotqueryrecord_get')" )
+    @PreAuthorize("@pms.hasPermission('admin_bizrobotqueryrecord_get')" )
     public R getBizRobotQueryRecordPage(Page page, BizRobotQueryRecord bizRobotQueryRecord) {
         return R.ok(bizRobotQueryRecordService.page(page, Wrappers.query(bizRobotQueryRecord)));
     }
@@ -69,7 +69,7 @@ public class BizRobotQueryRecordController {
      */
     @Operation(summary = "通过id查询", description = "通过id查询")
     @GetMapping("/{id}" )
-    @PreAuthorize("@pms.hasPermission('demo_bizrobotqueryrecord_get')" )
+    @PreAuthorize("@pms.hasPermission('admin_bizrobotqueryrecord_get')" )
     public R getById(@PathVariable("id" ) Long id) {
         return R.ok(bizRobotQueryRecordService.getById(id));
     }
@@ -82,7 +82,7 @@ public class BizRobotQueryRecordController {
     @Operation(summary = "新增机器人查询记录表", description = "新增机器人查询记录表")
     @SysLog("新增机器人查询记录表" )
     @PostMapping
-    @PreAuthorize("@pms.hasPermission('demo_bizrobotqueryrecord_add')" )
+    @PreAuthorize("@pms.hasPermission('admin_bizrobotqueryrecord_add')" )
     public R save(@RequestBody BizRobotQueryRecord bizRobotQueryRecord) {
         return R.ok(bizRobotQueryRecordService.save(bizRobotQueryRecord));
     }
@@ -95,7 +95,7 @@ public class BizRobotQueryRecordController {
     @Operation(summary = "修改机器人查询记录表", description = "修改机器人查询记录表")
     @SysLog("修改机器人查询记录表" )
     @PutMapping
-    @PreAuthorize("@pms.hasPermission('demo_bizrobotqueryrecord_edit')" )
+    @PreAuthorize("@pms.hasPermission('admin_bizrobotqueryrecord_edit')" )
     public R updateById(@RequestBody BizRobotQueryRecord bizRobotQueryRecord) {
         return R.ok(bizRobotQueryRecordService.updateById(bizRobotQueryRecord));
     }
@@ -108,7 +108,7 @@ public class BizRobotQueryRecordController {
     @Operation(summary = "通过id删除机器人查询记录表", description = "通过id删除机器人查询记录表")
     @SysLog("通过id删除机器人查询记录表" )
     @DeleteMapping("/{id}" )
-    @PreAuthorize("@pms.hasPermission('demo_bizrobotqueryrecord_del')" )
+    @PreAuthorize("@pms.hasPermission('admin_bizrobotqueryrecord_del')" )
     public R removeById(@PathVariable Long id) {
         return R.ok(bizRobotQueryRecordService.removeById(id));
     }

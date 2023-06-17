@@ -20,6 +20,7 @@ package com.pig4cloud.pig.admin.controller;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.pig4cloud.pig.admin.api.entity.BizSupplier;
+import com.pig4cloud.pig.admin.api.request.AddSupplierRequest;
 import com.pig4cloud.pig.admin.service.BizSupplierService;
 import com.pig4cloud.pig.common.core.util.R;
 import com.pig4cloud.pig.common.log.annotation.SysLog;
@@ -56,7 +57,7 @@ public class BizSupplierController {
      */
     @Operation(summary = "分页查询", description = "分页查询")
     @GetMapping("/page" )
-    @PreAuthorize("@pms.hasPermission('demo_bizsupplier_get')" )
+    @PreAuthorize("@pms.hasPermission('admin_bizsupplier_get')" )
     public R getBizSupplierPage(Page page, BizSupplier bizSupplier) {
         return R.ok(bizSupplierService.page(page, Wrappers.query(bizSupplier)));
     }
@@ -69,22 +70,23 @@ public class BizSupplierController {
      */
     @Operation(summary = "通过id查询", description = "通过id查询")
     @GetMapping("/{id}" )
-    @PreAuthorize("@pms.hasPermission('demo_bizsupplier_get')" )
+    @PreAuthorize("@pms.hasPermission('admin_bizsupplier_get')" )
     public R getById(@PathVariable("id" ) Long id) {
         return R.ok(bizSupplierService.getById(id));
     }
 
     /**
      * 新增供应商表
-     * @param bizSupplier 供应商表
+     * @param request 供应商表
      * @return R
      */
     @Operation(summary = "新增供应商表", description = "新增供应商表")
     @SysLog("新增供应商表" )
     @PostMapping
-    @PreAuthorize("@pms.hasPermission('demo_bizsupplier_add')" )
-    public R save(@RequestBody BizSupplier bizSupplier) {
-        return R.ok(bizSupplierService.save(bizSupplier));
+    @PreAuthorize("@pms.hasPermission('admin_bizsupplier_add')" )
+    public R<Void> save(@RequestBody AddSupplierRequest request) {
+		bizSupplierService.add(request);
+        return R.ok();
     }
 
     /**
@@ -95,7 +97,7 @@ public class BizSupplierController {
     @Operation(summary = "修改供应商表", description = "修改供应商表")
     @SysLog("修改供应商表" )
     @PutMapping
-    @PreAuthorize("@pms.hasPermission('demo_bizsupplier_edit')" )
+    @PreAuthorize("@pms.hasPermission('admin_bizsupplier_edit')" )
     public R updateById(@RequestBody BizSupplier bizSupplier) {
         return R.ok(bizSupplierService.updateById(bizSupplier));
     }
@@ -108,7 +110,7 @@ public class BizSupplierController {
     @Operation(summary = "通过id删除供应商表", description = "通过id删除供应商表")
     @SysLog("通过id删除供应商表" )
     @DeleteMapping("/{id}" )
-    @PreAuthorize("@pms.hasPermission('demo_bizsupplier_del')" )
+    @PreAuthorize("@pms.hasPermission('admin_bizsupplier_del')" )
     public R removeById(@PathVariable Long id) {
         return R.ok(bizSupplierService.removeById(id));
     }

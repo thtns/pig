@@ -20,6 +20,7 @@ package com.pig4cloud.pig.admin.controller;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.pig4cloud.pig.admin.api.entity.BizRobot;
+import com.pig4cloud.pig.admin.api.request.AddRobotRequest;
 import com.pig4cloud.pig.admin.service.BizRobotService;
 import com.pig4cloud.pig.common.core.util.R;
 import com.pig4cloud.pig.common.log.annotation.SysLog;
@@ -56,7 +57,7 @@ public class BizRobotController {
      */
     @Operation(summary = "分页查询", description = "分页查询")
     @GetMapping("/page" )
-    @PreAuthorize("@pms.hasPermission('demo_bizrobot_get')" )
+    @PreAuthorize("@pms.hasPermission('admin_bizrobot_get')" )
     public R getBizRobotPage(Page page, BizRobot bizRobot) {
         return R.ok(bizRobotService.page(page, Wrappers.query(bizRobot)));
     }
@@ -69,22 +70,23 @@ public class BizRobotController {
      */
     @Operation(summary = "通过id查询", description = "通过id查询")
     @GetMapping("/{id}" )
-    @PreAuthorize("@pms.hasPermission('demo_bizrobot_get')" )
+    @PreAuthorize("@pms.hasPermission('_bizrobot_get')" )
     public R getById(@PathVariable("id" ) Long id) {
         return R.ok(bizRobotService.getById(id));
     }
 
     /**
      * 新增机器人
-     * @param bizRobot 机器人
+     * @param request 机器人
      * @return R
      */
     @Operation(summary = "新增机器人", description = "新增机器人")
     @SysLog("新增机器人" )
     @PostMapping
-    @PreAuthorize("@pms.hasPermission('demo_bizrobot_add')" )
-    public R save(@RequestBody BizRobot bizRobot) {
-        return R.ok(bizRobotService.save(bizRobot));
+    @PreAuthorize("@pms.hasPermission('admin_bizrobot_add')" )
+    public R<Void> save(@RequestBody AddRobotRequest request) {
+		bizRobotService.add(request);
+        return R.ok();
     }
 
     /**
@@ -95,7 +97,7 @@ public class BizRobotController {
     @Operation(summary = "修改机器人", description = "修改机器人")
     @SysLog("修改机器人" )
     @PutMapping
-    @PreAuthorize("@pms.hasPermission('demo_bizrobot_edit')" )
+    @PreAuthorize("@pms.hasPermission('admin_bizrobot_edit')" )
     public R updateById(@RequestBody BizRobot bizRobot) {
         return R.ok(bizRobotService.updateById(bizRobot));
     }
@@ -108,7 +110,7 @@ public class BizRobotController {
     @Operation(summary = "通过id删除机器人", description = "通过id删除机器人")
     @SysLog("通过id删除机器人" )
     @DeleteMapping("/{id}" )
-    @PreAuthorize("@pms.hasPermission('demo_bizrobot_del')" )
+    @PreAuthorize("@pms.hasPermission('admin_bizrobot_del')" )
     public R removeById(@PathVariable Long id) {
         return R.ok(bizRobotService.removeById(id));
     }

@@ -19,9 +19,13 @@ package com.pig4cloud.pig.admin.service.impl;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 
 import com.pig4cloud.pig.admin.api.entity.BizRobot;
+import com.pig4cloud.pig.admin.api.request.AddRobotRequest;
 import com.pig4cloud.pig.admin.mapper.BizRobotMapper;
 import com.pig4cloud.pig.admin.service.BizRobotService;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
+
+import java.awt.*;
 
 /**
  * 机器人
@@ -32,4 +36,10 @@ import org.springframework.stereotype.Service;
 @Service
 public class BizRobotServiceImpl extends ServiceImpl<BizRobotMapper, BizRobot> implements BizRobotService {
 
+	@Override
+	public void add(AddRobotRequest request) {
+		BizRobot robot = new BizRobot();
+		BeanUtils.copyProperties(request, robot);
+		save(robot);
+	}
 }

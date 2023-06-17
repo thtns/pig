@@ -20,8 +20,12 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 
 
 import com.pig4cloud.pig.admin.api.entity.BizSupplier;
+import com.pig4cloud.pig.admin.api.request.AddSupplierRequest;
 import com.pig4cloud.pig.admin.mapper.BizSupplierMapper;
 import com.pig4cloud.pig.admin.service.BizSupplierService;
+import com.pig4cloud.pig.admin.service.SysOauthClientDetailsService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 /**
@@ -31,6 +35,13 @@ import org.springframework.stereotype.Service;
  * @date 2023-06-16 20:59:27
  */
 @Service
+@RequiredArgsConstructor
 public class BizSupplierServiceImpl extends ServiceImpl<BizSupplierMapper, BizSupplier> implements BizSupplierService {
 
+	@Override
+	public void add(AddSupplierRequest request) {
+		BizSupplier bizSupplier = new BizSupplier();
+		BeanUtils.copyProperties(request, bizSupplier);
+		save(bizSupplier);
+	}
 }

@@ -56,7 +56,7 @@ public class BizBuyerOrderController {
      */
     @Operation(summary = "分页查询", description = "分页查询")
     @GetMapping("/page" )
-    @PreAuthorize("@pms.hasPermission('demo_bizbuyerorder_get')" )
+    @PreAuthorize("@pms.hasPermission('admin_bizbuyerorder_get')" )
     public R getBizBuyerOrderPage(Page page, BizBuyerOrder bizBuyerOrder) {
         return R.ok(bizBuyerOrderService.page(page, Wrappers.query(bizBuyerOrder)));
     }
@@ -69,7 +69,7 @@ public class BizBuyerOrderController {
      */
     @Operation(summary = "通过id查询", description = "通过id查询")
     @GetMapping("/{id}" )
-    @PreAuthorize("@pms.hasPermission('demo_bizbuyerorder_get')" )
+    @PreAuthorize("@pms.hasPermission('admin_bizbuyerorder_get')" )
     public R getById(@PathVariable("id" ) Long id) {
         return R.ok(bizBuyerOrderService.getById(id));
     }
@@ -82,7 +82,7 @@ public class BizBuyerOrderController {
     @Operation(summary = "新增采购商订单表", description = "新增采购商订单表")
     @SysLog("新增采购商订单表" )
     @PostMapping
-    @PreAuthorize("@pms.hasPermission('demo_bizbuyerorder_add')" )
+    @PreAuthorize("@pms.hasPermission('admin_bizbuyerorder_add')" )
     public R save(@RequestBody BizBuyerOrder bizBuyerOrder) {
         return R.ok(bizBuyerOrderService.save(bizBuyerOrder));
     }
@@ -95,7 +95,7 @@ public class BizBuyerOrderController {
     @Operation(summary = "修改采购商订单表", description = "修改采购商订单表")
     @SysLog("修改采购商订单表" )
     @PutMapping
-    @PreAuthorize("@pms.hasPermission('demo_bizbuyerorder_edit')" )
+    @PreAuthorize("@pms.hasPermission('admin_bizbuyerorder_edit')" )
     public R updateById(@RequestBody BizBuyerOrder bizBuyerOrder) {
         return R.ok(bizBuyerOrderService.updateById(bizBuyerOrder));
     }
@@ -108,7 +108,7 @@ public class BizBuyerOrderController {
     @Operation(summary = "通过id删除采购商订单表", description = "通过id删除采购商订单表")
     @SysLog("通过id删除采购商订单表" )
     @DeleteMapping("/{id}" )
-    @PreAuthorize("@pms.hasPermission('demo_bizbuyerorder_del')" )
+    @PreAuthorize("@pms.hasPermission('admin_bizbuyerorder_del')" )
     public R removeById(@PathVariable Long id) {
         return R.ok(bizBuyerOrderService.removeById(id));
     }

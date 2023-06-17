@@ -20,6 +20,7 @@ package com.pig4cloud.pig.admin.controller;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.pig4cloud.pig.admin.api.entity.BizCarBrand;
+import com.pig4cloud.pig.admin.api.request.AddCarBrandRequest;
 import com.pig4cloud.pig.admin.service.BizCarBrandService;
 import com.pig4cloud.pig.common.core.util.R;
 import com.pig4cloud.pig.common.log.annotation.SysLog;
@@ -56,7 +57,7 @@ public class BizCarBrandController {
      */
     @Operation(summary = "分页查询", description = "分页查询")
     @GetMapping("/page" )
-    @PreAuthorize("@pms.hasPermission('demo_bizcarbrand_get')" )
+    @PreAuthorize("@pms.hasPermission('admin_bizcarbrand_get')" )
     public R getBizCarBrandPage(Page page, BizCarBrand bizCarBrand) {
         return R.ok(bizCarBrandService.page(page, Wrappers.query(bizCarBrand)));
     }
@@ -69,22 +70,23 @@ public class BizCarBrandController {
      */
     @Operation(summary = "通过id查询", description = "通过id查询")
     @GetMapping("/{id}" )
-    @PreAuthorize("@pms.hasPermission('demo_bizcarbrand_get')" )
+    @PreAuthorize("@pms.hasPermission('admin_bizcarbrand_get')" )
     public R getById(@PathVariable("id" ) Long id) {
         return R.ok(bizCarBrandService.getById(id));
     }
 
     /**
      * 新增汽车品牌
-     * @param bizCarBrand 汽车品牌
+     * @param request 汽车品牌
      * @return R
      */
     @Operation(summary = "新增汽车品牌", description = "新增汽车品牌")
     @SysLog("新增汽车品牌" )
     @PostMapping
-    @PreAuthorize("@pms.hasPermission('demo_bizcarbrand_add')" )
-    public R save(@RequestBody BizCarBrand bizCarBrand) {
-        return R.ok(bizCarBrandService.save(bizCarBrand));
+    @PreAuthorize("@pms.hasPermission('admin_bizcarbrand_add')" )
+    public R<Void> save(@RequestBody AddCarBrandRequest request) {
+		bizCarBrandService.add(request);
+        return R.ok();
     }
 
     /**
@@ -95,7 +97,7 @@ public class BizCarBrandController {
     @Operation(summary = "修改汽车品牌", description = "修改汽车品牌")
     @SysLog("修改汽车品牌" )
     @PutMapping
-    @PreAuthorize("@pms.hasPermission('demo_bizcarbrand_edit')" )
+    @PreAuthorize("@pms.hasPermission('admin_bizcarbrand_edit')" )
     public R updateById(@RequestBody BizCarBrand bizCarBrand) {
         return R.ok(bizCarBrandService.updateById(bizCarBrand));
     }
@@ -108,7 +110,7 @@ public class BizCarBrandController {
     @Operation(summary = "通过id删除汽车品牌", description = "通过id删除汽车品牌")
     @SysLog("通过id删除汽车品牌" )
     @DeleteMapping("/{id}" )
-    @PreAuthorize("@pms.hasPermission('demo_bizcarbrand_del')" )
+    @PreAuthorize("@pms.hasPermission('admin_bizcarbrand_del')" )
     public R removeById(@PathVariable Long id) {
         return R.ok(bizCarBrandService.removeById(id));
     }
