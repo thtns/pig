@@ -35,6 +35,11 @@ public interface CacheConstants {
 	String PROJECT_OAUTH_TOKEN = "pig_oauth:token:";
 
 	/**
+	 * oauth client
+	 */
+	String PROJECT_OAUTH_CLIENT = "pig_oauth:clients:";
+
+	/**
 	 * 验证码前缀
 	 */
 	String DEFAULT_CODE_KEY = "DEFAULT_CODE_KEY:";

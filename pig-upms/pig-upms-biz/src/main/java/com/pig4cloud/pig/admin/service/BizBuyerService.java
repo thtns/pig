@@ -17,8 +17,11 @@
 
 package com.pig4cloud.pig.admin.service;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.pig4cloud.pig.admin.api.entity.BizBuyer;
+import com.pig4cloud.pig.admin.api.request.AddBuyerRequest;
+import com.pig4cloud.pig.admin.api.request.ListBuyerRequest;
 
 
 /**
@@ -28,5 +31,12 @@ import com.pig4cloud.pig.admin.api.entity.BizBuyer;
  * @date 2023-06-16 20:59:27
  */
 public interface BizBuyerService extends IService<BizBuyer> {
+
+
+	IPage<BizBuyer> list(ListBuyerRequest request);
+
+
+	void add(AddBuyerRequest request);
+
 
 }

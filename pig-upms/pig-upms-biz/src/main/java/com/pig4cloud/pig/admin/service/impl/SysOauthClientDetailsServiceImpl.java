@@ -16,13 +16,24 @@
 
 package com.pig4cloud.pig.admin.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.pig4cloud.pig.admin.api.entity.SysOauthClientDetails;
 import com.pig4cloud.pig.admin.mapper.SysOauthClientDetailsMapper;
 import com.pig4cloud.pig.admin.service.SysOauthClientDetailsService;
 import com.pig4cloud.pig.common.core.constant.CacheConstants;
+import com.pig4cloud.pig.common.core.util.RedisUtils;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.context.annotation.Bean;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
+
+import javax.annotation.PostConstruct;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * <p>
@@ -33,8 +44,13 @@ import org.springframework.stereotype.Service;
  * @since 2019/2/1
  */
 @Service
+@RequiredArgsConstructor
 public class SysOauthClientDetailsServiceImpl extends ServiceImpl<SysOauthClientDetailsMapper, SysOauthClientDetails>
 		implements SysOauthClientDetailsService {
+
+
+	private final RedisTemplate redisTemplate;
+
 
 	/**
 	 * 通过ID删除客户端
@@ -66,5 +82,25 @@ public class SysOauthClientDetailsServiceImpl extends ServiceImpl<SysOauthClient
 	public void clearClientCache() {
 
 	}
+
+
+	@Override
+	public void initClientCache() {
+
+		redisTemplate.delete(CacheConstants.PROJECT_OAUTH_CLIENT);
+
+
+		QueryWrapper<SysOauthClientDetails> wrapper = new QueryWrapper<>();
+		wrapper.select("client_id");
+
+		List<SysOauthClientDetails> list = list(wrapper);
+
+		List<String> collect = list.stream().map(sysOauthClientDetails -> sysOauthClientDetails.getClientId()).distinct().collect(Collectors.toList());
+
+		redisTemplate.opsForList().rightPush(CacheConstants.PROJECT_OAUTH_CLIENT, collect);
+
+	}
+
+
 
 }

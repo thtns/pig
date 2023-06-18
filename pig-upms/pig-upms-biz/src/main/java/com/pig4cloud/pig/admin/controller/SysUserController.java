@@ -23,10 +23,12 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.pig4cloud.pig.admin.api.dto.UserDTO;
 import com.pig4cloud.pig.admin.api.dto.UserInfo;
+import com.pig4cloud.pig.admin.api.entity.BizBuyer;
 import com.pig4cloud.pig.admin.api.entity.SysUser;
 import com.pig4cloud.pig.admin.api.vo.UserExcelVO;
 import com.pig4cloud.pig.admin.api.vo.UserInfoVO;
 import com.pig4cloud.pig.admin.api.vo.UserVO;
+import com.pig4cloud.pig.admin.service.BizBuyerService;
 import com.pig4cloud.pig.admin.service.SysUserService;
 import com.pig4cloud.pig.common.core.exception.ErrorCodes;
 import com.pig4cloud.pig.common.core.util.MsgUtils;
@@ -42,6 +44,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
@@ -61,6 +65,10 @@ import java.util.Set;
 public class SysUserController {
 
 	private final SysUserService userService;
+
+	private final BizBuyerService bizBuyerService;
+
+	private static final PasswordEncoder ENCODER = new BCryptPasswordEncoder();
 
 	/**
 	 * 获取当前用户全部信息
@@ -225,6 +233,16 @@ public class SysUserController {
 	@PreAuthorize("@pms.hasPermission('sys_user_import_export')")
 	public R importUser(@RequestExcel List<UserExcelVO> excelVOList, BindingResult bindingResult) {
 		return userService.importUser(excelVOList, bindingResult);
+	}
+
+
+	@Inner
+	@GetMapping("/custom/{username}")
+	public R<BizBuyer> customInfo(@PathVariable String username) {
+		BizBuyer custom = bizBuyerService.getOne(Wrappers.<BizBuyer>lambdaQuery()
+				.eq(BizBuyer::getClientKey, username));
+		custom.setClientSecret(ENCODER.encode(custom.getClientSecret()));
+		return R.ok(custom);
 	}
 
 }

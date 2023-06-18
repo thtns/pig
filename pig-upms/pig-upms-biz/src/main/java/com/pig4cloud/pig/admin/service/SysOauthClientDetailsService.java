@@ -48,4 +48,6 @@ public interface SysOauthClientDetailsService extends IService<SysOauthClientDet
 	 */
 	void clearClientCache();
 
+	void initClientCache();
+
 }

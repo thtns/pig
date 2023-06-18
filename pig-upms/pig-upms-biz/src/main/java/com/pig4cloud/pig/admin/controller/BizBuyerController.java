@@ -20,6 +20,8 @@ package com.pig4cloud.pig.admin.controller;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.pig4cloud.pig.admin.api.entity.BizBuyer;
+import com.pig4cloud.pig.admin.api.request.AddBuyerRequest;
+import com.pig4cloud.pig.admin.api.request.ListBuyerRequest;
 import com.pig4cloud.pig.admin.service.BizBuyerService;
 import com.pig4cloud.pig.common.core.util.R;
 import com.pig4cloud.pig.common.log.annotation.SysLog;
@@ -57,8 +59,9 @@ public class BizBuyerController {
     @Operation(summary = "分页查询", description = "分页查询")
     @GetMapping("/page" )
     @PreAuthorize("@pms.hasPermission('admin_bizbuyer_get')" )
-    public R getBizBuyerPage(Page page, BizBuyer bizBuyer) {
-        return R.ok(bizBuyerService.page(page, Wrappers.query(bizBuyer)));
+    public R getBizBuyerPage(ListBuyerRequest request) {
+
+		return R.ok(bizBuyerService.list(request));
     }
 
 
@@ -69,7 +72,6 @@ public class BizBuyerController {
      */
     @Operation(summary = "通过id查询", description = "通过id查询")
     @GetMapping("/{id}" )
-    @PreAuthorize("@pms.hasPermission('admin_bizbuyer_get')" )
     public R getById(@PathVariable("id" ) Long id) {
         return R.ok(bizBuyerService.getById(id));
     }
@@ -82,9 +84,10 @@ public class BizBuyerController {
     @Operation(summary = "新增采购商表", description = "新增采购商表")
     @SysLog("新增采购商表" )
     @PostMapping
-    @PreAuthorize("@pms.hasPermission('admin_bizbuyer_add')" )
-    public R save(@RequestBody BizBuyer bizBuyer) {
-        return R.ok(bizBuyerService.save(bizBuyer));
+	@PreAuthorize("@pms.hasPermission('admin_bizbuyer_add')" )
+    public R save(@RequestBody AddBuyerRequest bizBuyer) {
+		bizBuyerService.add(bizBuyer);
+        return R.ok();
     }
 
     /**

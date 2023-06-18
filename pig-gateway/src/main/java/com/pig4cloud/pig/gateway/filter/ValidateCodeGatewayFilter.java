@@ -16,9 +16,13 @@
 
 package com.pig4cloud.pig.gateway.filter;
 
+import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.text.CharSequenceUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+import com.alibaba.nacos.shaded.com.google.common.collect.Lists;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pig4cloud.pig.common.core.constant.CacheConstants;
@@ -30,6 +34,7 @@ import com.pig4cloud.pig.gateway.config.GatewayConfigProperties;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
 import org.springframework.core.io.buffer.DataBuffer;
@@ -39,6 +44,10 @@ import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import reactor.core.publisher.Mono;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * The type Validate code gateway filter.
@@ -73,6 +82,14 @@ public class ValidateCodeGatewayFilter extends AbstractGatewayFilterFactory<Obje
 			if (StrUtil.equals(SecurityConstants.REFRESH_TOKEN, grantType)) {
 				return chain.filter(exchange);
 			}
+
+//			List<Object> range = redisTemplate.opsForList().range(CacheConstants.PROJECT_OAUTH_CLIENT, 0, -1);
+//
+//
+//			Object o = range.get(0);
+//
+//
+//			boolean isIgnoreClient = o.toString().contains(WebUtils.getClientId(request));
 
 			boolean isIgnoreClient = configProperties.getIgnoreClients().contains(WebUtils.getClientId(request));
 			try {

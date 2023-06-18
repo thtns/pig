@@ -17,6 +17,7 @@
 package com.pig4cloud.pig.admin.api.feign;
 
 import com.pig4cloud.pig.admin.api.dto.UserInfo;
+import com.pig4cloud.pig.admin.api.entity.BizBuyer;
 import com.pig4cloud.pig.common.core.constant.SecurityConstants;
 import com.pig4cloud.pig.common.core.constant.ServiceNameConstants;
 import com.pig4cloud.pig.common.core.util.R;
@@ -58,5 +59,9 @@ public interface RemoteUserService {
 	 */
 	@GetMapping(value = "/user/ids", headers = SecurityConstants.HEADER_FROM_IN)
 	R<List<Long>> listUserIdByDeptIds(@RequestParam("deptIds") Set<Long> deptIds);
+
+
+	@GetMapping(value = "/user/custom/{username}",headers = SecurityConstants.HEADER_FROM_IN)
+	R<BizBuyer> custom(@PathVariable("username") String username);
 
 }
