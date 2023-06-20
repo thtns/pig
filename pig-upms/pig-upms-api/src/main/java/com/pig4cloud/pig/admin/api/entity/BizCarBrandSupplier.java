@@ -47,13 +47,13 @@ public class BizCarBrandSupplier extends BaseEntity {
      * 品牌id
      */
     @Schema(description ="品牌id")
-    private String carBrandId;
+    private Long carBrandId;
 
     /**
      * 供应商id
      */
     @Schema(description ="供应商id")
-    private String supplierId;
+    private Long supplierId;
 
 
 }

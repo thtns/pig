@@ -53,7 +53,7 @@ public class BizRobotSupplier extends BaseEntity {
      * 供应商id
      */
     @Schema(description ="供应商id")
-    private String supplierId;
+    private Long supplierId;
 
     /**
      * 排序(权重)

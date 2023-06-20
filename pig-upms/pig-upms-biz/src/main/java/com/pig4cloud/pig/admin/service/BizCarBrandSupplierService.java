@@ -19,6 +19,7 @@ package com.pig4cloud.pig.admin.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.pig4cloud.pig.admin.api.entity.BizCarBrandSupplier;
+import com.pig4cloud.pig.admin.api.request.AddBizCarBrandSupplierRequest;
 
 
 /**
@@ -28,5 +29,7 @@ import com.pig4cloud.pig.admin.api.entity.BizCarBrandSupplier;
  * @date 2023-06-16 20:59:27
  */
 public interface BizCarBrandSupplierService extends IService<BizCarBrandSupplier> {
+
+	void add(AddBizCarBrandSupplierRequest request);
 
 }

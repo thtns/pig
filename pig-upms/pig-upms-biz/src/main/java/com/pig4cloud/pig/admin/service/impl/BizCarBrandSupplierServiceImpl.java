@@ -16,12 +16,19 @@
  */
 package com.pig4cloud.pig.admin.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 
 import com.pig4cloud.pig.admin.api.entity.BizCarBrandSupplier;
+import com.pig4cloud.pig.admin.api.request.AddBizCarBrandSupplierRequest;
 import com.pig4cloud.pig.admin.mapper.BizCarBrandSupplierMapper;
 import com.pig4cloud.pig.admin.service.BizCarBrandSupplierService;
+import org.apache.commons.compress.utils.Lists;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
 
 /**
  * 品牌供应商关系表
@@ -32,4 +39,27 @@ import org.springframework.stereotype.Service;
 @Service
 public class BizCarBrandSupplierServiceImpl extends ServiceImpl<BizCarBrandSupplierMapper, BizCarBrandSupplier> implements BizCarBrandSupplierService {
 
+	@Override
+	@Transactional(rollbackFor = Exception.class)
+	public void add(AddBizCarBrandSupplierRequest request) {
+
+
+		LambdaQueryWrapper<BizCarBrandSupplier> wrapper = Wrappers.<BizCarBrandSupplier>query().lambda().eq(BizCarBrandSupplier::getCarBrandId, request.getCarBrandId());
+
+		remove(wrapper);
+
+		ArrayList<BizCarBrandSupplier> objects = Lists.newArrayList();
+
+		request.getSupplierIds().forEach(supplier -> {
+
+			BizCarBrandSupplier brandSupplier = new BizCarBrandSupplier();
+
+			brandSupplier.setCarBrandId(request.getCarBrandId());
+			brandSupplier.setSupplierId(supplier);
+			objects.add(brandSupplier);
+		});
+
+		saveBatch(objects);
+
+	}
 }

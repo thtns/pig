@@ -20,8 +20,10 @@ package com.pig4cloud.pig.admin.controller;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.pig4cloud.pig.admin.api.entity.BizCarBrand;
+import com.pig4cloud.pig.admin.api.request.AddBizCarBrandSupplierRequest;
 import com.pig4cloud.pig.admin.api.request.AddCarBrandRequest;
 import com.pig4cloud.pig.admin.service.BizCarBrandService;
+import com.pig4cloud.pig.admin.service.BizCarBrandSupplierService;
 import com.pig4cloud.pig.common.core.util.R;
 import com.pig4cloud.pig.common.log.annotation.SysLog;
 
@@ -48,6 +50,8 @@ import org.springframework.web.bind.annotation.*;
 public class BizCarBrandController {
 
     private final BizCarBrandService bizCarBrandService;
+
+	private final BizCarBrandSupplierService bizCarBrandSupplierService;
 
     /**
      * 分页查询
@@ -88,6 +92,22 @@ public class BizCarBrandController {
 		bizCarBrandService.add(request);
         return R.ok();
     }
+
+	/**
+	 * 新增汽车与品牌与供应商关系
+	 * @param request 汽车品牌
+	 * @return R
+	 */
+	@Operation(summary = "新增汽车与品牌与供应商关系", description = "新增汽车与品牌与供应商关系")
+	@SysLog("新增汽车与品牌与供应商关系" )
+	@PostMapping
+	@PreAuthorize("@pms.hasPermission('admin_bizcarbrand_supplier_add')" )
+	public R<Void> addSupplier(@RequestBody AddBizCarBrandSupplierRequest request) {
+		bizCarBrandSupplierService.add(request);
+		return R.ok();
+	}
+
+
 
     /**
      * 修改汽车品牌
