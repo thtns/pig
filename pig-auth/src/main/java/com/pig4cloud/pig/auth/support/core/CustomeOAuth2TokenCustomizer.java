@@ -21,7 +21,7 @@ public class CustomeOAuth2TokenCustomizer implements OAuth2TokenCustomizer<OAuth
 	@Override
 	public void customize(OAuth2TokenClaimsContext context) {
 		OAuth2TokenClaimsSet.Builder claims = context.getClaims();
-		claims.claim(SecurityConstants.DETAILS_LICENSE, SecurityConstants.PROJECT_LICENSE);
+//		claims.claim(SecurityConstants.DETAILS_LICENSE, SecurityConstants.PROJECT_LICENSE);
 		String clientId = context.getAuthorizationGrant().getName();
 		claims.claim(SecurityConstants.CLIENT_ID, clientId);
 		// 客户端模式不返回具体用户信息

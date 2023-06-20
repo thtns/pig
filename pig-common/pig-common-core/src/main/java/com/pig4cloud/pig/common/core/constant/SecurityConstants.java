@@ -35,7 +35,7 @@ public interface SecurityConstants {
 	/**
 	 * 项目的license
 	 */
-	String PROJECT_LICENSE = "https://pig4cloud.com";
+	String PROJECT_LICENSE = "https://thtns.cn";
 
 	/**
 	 * 内部
