@@ -1,0 +1,62 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>com.pig4cloud</groupId>
+		<artifactId>pig-upms</artifactId>
+		<version>3.6.7</version>
+	</parent>
+
+	<artifactId>pig-upms-capi</artifactId>
+	<packaging>jar</packaging>
+	<description>pig 用户api接口服务</description>
+
+
+	<dependencies>
+		<!--upms api、model 模块-->
+		<dependency>
+			<groupId>com.pig4cloud</groupId>
+			<artifactId>pig-upms-api</artifactId>
+		</dependency>
+
+		<!--upms api、service 模块-->
+		<dependency>
+			<groupId>com.pig4cloud</groupId>
+			<artifactId>pig-upms-biz</artifactId>
+			<version>3.6.7</version>
+		</dependency>
+		<!--接口文档-->
+		<dependency>
+			<groupId>com.pig4cloud</groupId>
+			<artifactId>pig-common-swagger</artifactId>
+		</dependency>
+		<!--注册中心客户端-->
+		<dependency>
+			<groupId>com.alibaba.cloud</groupId>
+			<artifactId>spring-cloud-starter-alibaba-nacos-discovery</artifactId>
+		</dependency>
+		<!--配置中心客户端-->
+		<dependency>
+			<groupId>com.alibaba.cloud</groupId>
+			<artifactId>spring-cloud-starter-alibaba-nacos-config</artifactId>
+		</dependency>
+		<!-- 阿里云短信下发 -->
+		<dependency>
+			<groupId>io.springboot.sms</groupId>
+			<artifactId>aliyun-sms-spring-boot-starter</artifactId>
+		</dependency>
+		<!--xss 过滤-->
+		<dependency>
+			<groupId>com.pig4cloud</groupId>
+			<artifactId>pig-common-xss</artifactId>
+		</dependency>
+		<!--undertow容器-->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-undertow</artifactId>
+		</dependency>
+	</dependencies>
+	<build>
+		<finalName>pig-upms-capi</finalName>
+	</build>
+</project>

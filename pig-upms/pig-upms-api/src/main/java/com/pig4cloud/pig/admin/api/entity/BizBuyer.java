@@ -57,6 +57,12 @@ public class BizBuyer extends BaseEntity {
     @Schema(description ="商家API对接secret")
     private String clientSecret;
 
+	/**
+	 * 商家API加密后secret
+	 */
+	@Schema(description ="商家API加密后aecSecret")
+	private String aecSecret;
+
     /**
      * 采购商名称
      */
