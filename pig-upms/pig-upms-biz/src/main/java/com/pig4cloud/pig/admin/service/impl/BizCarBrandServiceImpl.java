@@ -19,9 +19,12 @@ package com.pig4cloud.pig.admin.service.impl;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 
 import com.pig4cloud.pig.admin.api.entity.BizCarBrand;
+import com.pig4cloud.pig.admin.api.request.AddBizCarBrandSupplierRequest;
 import com.pig4cloud.pig.admin.api.request.AddCarBrandRequest;
 import com.pig4cloud.pig.admin.mapper.BizCarBrandMapper;
 import com.pig4cloud.pig.admin.service.BizCarBrandService;
+import com.pig4cloud.pig.admin.service.BizCarBrandSupplierService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
@@ -32,7 +35,11 @@ import org.springframework.stereotype.Service;
  * @date 2023-06-16 20:59:27
  */
 @Service
+@RequiredArgsConstructor
 public class BizCarBrandServiceImpl extends ServiceImpl<BizCarBrandMapper, BizCarBrand> implements BizCarBrandService {
+
+
+	private final BizCarBrandSupplierService bizCarBrandSupplierService;
 
 	@Override
 	public void add(AddCarBrandRequest request) {
@@ -40,4 +47,5 @@ public class BizCarBrandServiceImpl extends ServiceImpl<BizCarBrandMapper, BizCa
 		BeanUtils.copyProperties(request, bizCarBrand);
 		save(bizCarBrand);
 	}
+
 }
