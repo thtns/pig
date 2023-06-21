@@ -373,6 +373,9 @@ INSERT INTO `sys_oauth_client_details` VALUES ('gen', NULL, 'gen', 'server', 'pa
 INSERT INTO `sys_oauth_client_details` VALUES ('pig', NULL, 'pig', 'server', 'password,app,refresh_token,authorization_code,client_credentials', 'https://pigx.vip', NULL, NULL, NULL, NULL, 'true', NULL, NULL, NULL, NULL);
 INSERT INTO `sys_oauth_client_details` VALUES ('test', NULL, 'test', 'server', 'password,app,refresh_token', NULL, NULL, NULL, NULL, NULL, 'true', NULL, NULL, NULL, NULL);
 INSERT INTO `sys_oauth_client_details` VALUES ('client', NULL, 'client', 'server', 'client_credentials', NULL, NULL, NULL, NULL, NULL, 'true', NULL, NULL, NULL, NULL);
+INSERT INTO `sys_oauth_client_details` VALUES ('open', NULL, 'open', 'server', 'password,app,refresh_token,authorization_code,client_credentials', 'https://pig4cloud.com', NULL, NULL, NULL, NULL, 'false', NULL, NULL, NULL, NULL);
+INSERT INTO `sys_oauth_client_details`  VALUES ('custom', NULL, 'custom', 'server', 'password,refresh_token', NULL, NULL, 10000, 6000, '', 'true', NULL, '2023-06-20 15:15:02', NULL, 'admin');
+
 COMMIT;
 
 -- ----------------------------
@@ -569,4 +572,3 @@ COMMIT;
 
 SET FOREIGN_KEY_CHECKS = 1;
 
-INSERT INTO `pig`.`sys_oauth_client_details`(`client_id`, `resource_ids`, `client_secret`, `scope`, `authorized_grant_types`, `web_server_redirect_uri`, `authorities`, `access_token_validity`, `refresh_token_validity`, `additional_information`, `autoapprove`, `create_time`, `update_time`, `create_by`, `update_by`) VALUES ('open', NULL, 'open', 'server', 'password,app,refresh_token,authorization_code,client_credentials', 'https://pig4cloud.com', NULL, NULL, NULL, NULL, 'false', NULL, NULL, NULL, NULL);
