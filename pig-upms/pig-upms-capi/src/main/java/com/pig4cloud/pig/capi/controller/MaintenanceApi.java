@@ -2,7 +2,6 @@ package com.pig4cloud.pig.capi.controller;
 
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.pig4cloud.pig.admin.api.entity.BizBuyer;
-import com.pig4cloud.pig.admin.config.GatewayConfigProperties;
 import com.pig4cloud.pig.capi.service.BizBuyerService;
 import com.pig4cloud.pig.common.core.exception.ErrorCodes;
 import com.pig4cloud.pig.common.core.util.MsgUtils;
@@ -24,7 +23,6 @@ import org.springframework.web.bind.annotation.RestController;
 @SecurityRequirement(name = HttpHeaders.AUTHORIZATION)
 public class MaintenanceApi {
 
-	private final GatewayConfigProperties gatewayConfig;
 	/**
 	 * 编码格式
 	 */
