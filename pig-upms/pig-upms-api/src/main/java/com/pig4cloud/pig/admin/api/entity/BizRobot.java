@@ -24,6 +24,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+import java.sql.Time;
 import java.time.LocalDateTime;
 
 /**
@@ -91,13 +92,13 @@ public class BizRobot extends BaseEntity {
      * 机器人服务开始时间
      */
     @Schema(description ="机器人服务开始时间")
-    private LocalDateTime serviceStartTime;
+    private Time serviceStartTime;
 
     /**
      * 机器人服务结束时间
      */
     @Schema(description ="机器人服务结束时间")
-    private LocalDateTime serviceEndTime;
+    private Time serviceEndTime;
 
 
 }
