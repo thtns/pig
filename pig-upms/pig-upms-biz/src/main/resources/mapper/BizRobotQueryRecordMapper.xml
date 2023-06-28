@@ -25,6 +25,7 @@
 
   <resultMap id="bizRobotQueryRecordMap" type="com.pig4cloud.pig.admin.api.entity.BizRobotQueryRecord">
     <id property="id" column="id"/>
+    <result property="vin" column="vin"/>
     <result property="supplierId" column="supplier_id"/>
     <result property="supplierName" column="supplier_name"/>
     <result property="robotId" column="robot_id"/>

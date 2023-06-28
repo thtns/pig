@@ -45,6 +45,12 @@ public class BizRobotQueryRecord extends BaseEntity {
     @Schema(description ="主键id")
     private Long id;
 
+	/**
+	 * vin码
+	 */
+	@Schema(description ="vin")
+	private String vin;
+
     /**
      * 供应商ID
      */
