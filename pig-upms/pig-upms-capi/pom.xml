@@ -18,13 +18,7 @@
 			<groupId>com.pig4cloud</groupId>
 			<artifactId>pig-upms-api</artifactId>
 		</dependency>
-
-		<!--upms api、service 模块-->
-		<dependency>
-			<groupId>com.pig4cloud</groupId>
-			<artifactId>pig-upms-biz</artifactId>
-			<version>3.6.7</version>
-		</dependency>
+		
 		<!--接口文档-->
 		<dependency>
 			<groupId>com.pig4cloud</groupId>
