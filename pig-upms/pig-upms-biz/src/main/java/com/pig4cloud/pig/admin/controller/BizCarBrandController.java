@@ -51,8 +51,6 @@ public class BizCarBrandController {
 
     private final BizCarBrandService bizCarBrandService;
 
-	private final BizCarBrandSupplierService bizCarBrandSupplierService;
-
     /**
      * 分页查询
      * @param page 分页对象
@@ -92,21 +90,6 @@ public class BizCarBrandController {
 		bizCarBrandService.add(request);
         return R.ok();
     }
-
-	/**
-	 * 新增汽车与品牌与供应商关系
-	 * @param request 汽车品牌
-	 * @return R
-	 */
-	@Operation(summary = "新增汽车与品牌与供应商关系", description = "新增汽车与品牌与供应商关系")
-	@SysLog("新增汽车与品牌与供应商关系" )
-	@PostMapping
-	@PreAuthorize("@pms.hasPermission('admin_bizcarbrand_supplier_add')" )
-	public R<Void> addSupplier(@RequestBody AddBizCarBrandSupplierRequest request) {
-		bizCarBrandSupplierService.add(request);
-		return R.ok();
-	}
-
 
 
     /**

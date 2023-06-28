@@ -22,11 +22,9 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.pig4cloud.pig.admin.api.entity.BizSupplier;
 import com.pig4cloud.pig.admin.api.request.AddSupplierRequest;
 import com.pig4cloud.pig.admin.api.request.AddSupplierRobotRequest;
-import com.pig4cloud.pig.admin.service.BizRobotSupplierService;
 import com.pig4cloud.pig.admin.service.BizSupplierService;
 import com.pig4cloud.pig.common.core.util.R;
 import com.pig4cloud.pig.common.log.annotation.SysLog;
-
 import org.springframework.security.access.prepost.PreAuthorize;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -50,8 +48,6 @@ import org.springframework.web.bind.annotation.*;
 public class BizSupplierController {
 
 	private final BizSupplierService bizSupplierService;
-
-	private final BizRobotSupplierService bizRobotSupplierService;
 
 	/**
 	 * 分页查询
@@ -93,21 +89,6 @@ public class BizSupplierController {
 	@PreAuthorize("@pms.hasPermission('admin_bizsupplier_add')")
 	public R<Void> save(@RequestBody AddSupplierRequest request) {
 		bizSupplierService.add(request);
-		return R.ok();
-	}
-
-	/**
-	 * 新增供应商_机器人表
-	 *
-	 * @param request 供应商表
-	 * @return R
-	 */
-	@Operation(summary = "新增供应商_机器人表", description = "新增供应商_机器人表")
-	@SysLog("新增供应商_机器人表")
-	@PostMapping
-	@PreAuthorize("@pms.hasPermission('admin_bizsupplier_root_add')")
-	public R<Void> save(@RequestBody AddSupplierRobotRequest request) {
-		bizRobotSupplierService.add(request);
 		return R.ok();
 	}
 
