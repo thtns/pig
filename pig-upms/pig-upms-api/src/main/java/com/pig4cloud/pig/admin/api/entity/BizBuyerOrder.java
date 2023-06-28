@@ -21,8 +21,7 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.pig4cloud.pig.common.mybatis.base.BaseEntity;
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
@@ -34,6 +33,9 @@ import java.time.LocalDateTime;
  */
 @Data
 @TableName("biz_buyer_order")
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 @Schema(description = "采购商订单表")
 public class BizBuyerOrder extends BaseEntity {
@@ -91,7 +93,7 @@ public class BizBuyerOrder extends BaseEntity {
      * 请求IP地址信息
      */
     @Schema(description ="请求IP地址信息")
-    private Integer requestIpAddress;
+    private String requestIpAddress;
 
     /**
      * 请求时间
