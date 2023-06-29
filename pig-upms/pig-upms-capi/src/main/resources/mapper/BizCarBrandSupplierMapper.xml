@@ -21,24 +21,14 @@
 
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.pig4cloud.pig.admin.mapper.BizBuyerMapper">
+<mapper namespace="com.pig4cloud.pig.admin.mapper.BizCarBrandSupplierMapper">
 
-  <resultMap id="bizBuyerMap" type="com.pig4cloud.pig.admin.api.entity.BizBuyer">
+  <resultMap id="bizCarBrandSupplierMap" type="com.pig4cloud.pig.admin.api.entity.BizCarBrandSupplier">
     <id property="id" column="id"/>
-    <result property="clientKey" column="client_key"/>
-    <result property="clientSecret" column="client_secret"/>
-    <result property="aecSecret" column="aec_secret"/>
-    <result property="name" column="name"/>
-    <result property="mobile" column="mobile"/>
-    <result property="directorName" column="director_name"/>
-    <result property="directorMobile" column="director_mobile"/>
-    <result property="dailylimitCount" column="dailyLimit_count"/>
-    <result property="status" column="status"/>
-    <result property="validityStart" column="validity_start"/>
-    <result property="validityEnd" column="validity_end"/>
-    <result property="remark" column="remark"/>
-    <result property="createTime" column="create_time"/>
+    <result property="carBrandId" column="car_brand_id"/>
+    <result property="supplierId" column="supplier_id"/>
     <result property="createBy" column="create_by"/>
+    <result property="createTime" column="create_time"/>
     <result property="updateTime" column="update_time"/>
     <result property="updateBy" column="update_by"/>
   </resultMap>
