@@ -134,7 +134,7 @@ public class BizBuyerOrder extends BaseEntity {
     /**
      * 结果状态码：1：下单成功，2：下单失败，3：回调成功，4：回调失败
      */
-    @Schema(description ="结果状态码：1：下单成功，2：下单失败，3：回调成功，4：回调失败")
+    @Schema(description ="结果状态码：0：下单成功，1：下单失败，2：查询中，3：回调成功，4：回调失败")
     private Integer requestStatus;
 
     /**

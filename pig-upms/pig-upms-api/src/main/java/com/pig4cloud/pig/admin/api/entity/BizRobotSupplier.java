@@ -21,8 +21,7 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.pig4cloud.pig.common.mybatis.base.BaseEntity;
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import lombok.*;
 
 /**
  * 机器人供应商关系表
@@ -31,6 +30,9 @@ import lombok.EqualsAndHashCode;
  * @date 2023-06-16 20:59:27
  */
 @Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @TableName("biz_robot_supplier")
 @EqualsAndHashCode(callSuper = true)
 @Schema(description = "机器人供应商关系表")
