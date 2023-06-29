@@ -20,40 +20,32 @@ import cn.hutool.core.date.DateUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.pig4cloud.pig.admin.api.entity.BizBuyerOrder;
 import com.pig4cloud.pig.admin.api.entity.BizRobotQueryRecord;
-import com.pig4cloud.pig.capi.mapper.BizBuyerOrderMapper;
-import com.pig4cloud.pig.capi.service.BizBuyerOrderService;
+import com.pig4cloud.pig.capi.mapper.BizRobotQueryRecordMapper;
 import com.pig4cloud.pig.capi.service.BizRobotQueryRecordService;
-import com.pig4cloud.pig.capi.response.MaintenanceOrderRes;
-import com.pig4cloud.pig.common.core.constant.enums.capi.RequestStatusEnum;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
-import java.util.Objects;
 
 /**
- * 采购商订单表
+ * 机器人查询记录表
  *
  * @author pig code generator
  * @date 2023-06-16 20:59:27
  */
 @Service
-public class BizBuyerOrderServiceImpl extends ServiceImpl<BizBuyerOrderMapper, BizBuyerOrder> implements BizBuyerOrderService {
+public class BizRobotQueryRecordServiceImpl extends ServiceImpl<BizRobotQueryRecordMapper, BizRobotQueryRecord> implements BizRobotQueryRecordService {
 
-
-	/**
-	 * 通过vin查询成功用户查询
-	 * @param vin
-	 * @return
-	 */
 	@Override
-	public BizBuyerOrder getSuccessMerchantOrderByVin(String vin) {
-		LambdaQueryWrapper<BizBuyerOrder> queryWrapper = new LambdaQueryWrapper<>();
-		queryWrapper.likeRight(BizBuyerOrder::getRequestTime , DateUtil.today())
-				.eq(BizBuyerOrder::getVin, vin)
-				.eq(BizBuyerOrder::getRequestStatus, RequestStatusEnum.CALLBACK_SUCCESS.getType());
-		List<BizBuyerOrder> list = this.list(queryWrapper);
-		return list.stream().findFirst().orElse(null);//取第一个或者返回null
+	public BizRobotQueryRecord getQueryRecordByVin(String vin) {
+		LambdaQueryWrapper<BizRobotQueryRecord> queryWrapper = new LambdaQueryWrapper<>();
+		queryWrapper.eq(BizRobotQueryRecord::getVin, vin);
+		queryWrapper.gt(BizRobotQueryRecord::getQuerytime, DateUtil.offsetDay(DateUtil.date(),-3));
+		queryWrapper.orderByDesc(BizRobotQueryRecord::getQuerytime);
+		List<BizRobotQueryRecord> list = this.list(queryWrapper);
+		return list.stream().findFirst().orElse(null);
 	}
+
+
 }

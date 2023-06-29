@@ -16,23 +16,26 @@
  */
 package com.pig4cloud.pig.capi.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.pig4cloud.pig.admin.api.entity.BizBuyer;
-import com.pig4cloud.pig.capi.mapper.BizBuyerMapper;
-import com.pig4cloud.pig.capi.service.BizBuyerService;
-import lombok.RequiredArgsConstructor;
+import com.pig4cloud.pig.admin.api.entity.BizCarBrandSupplier;
+import com.pig4cloud.pig.admin.api.request.AddBizCarBrandSupplierRequest;
+import com.pig4cloud.pig.capi.mapper.BizCarBrandSupplierMapper;
+import com.pig4cloud.pig.capi.service.BizCarBrandSupplierService;
+import org.apache.commons.compress.utils.Lists;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 
 /**
- * 采购商表
+ * 品牌供应商关系表
  *
  * @author pig code generator
  * @date 2023-06-16 20:59:27
  */
 @Service
-@RequiredArgsConstructor
-public class BizBuyerServiceImpl extends ServiceImpl<BizBuyerMapper, BizBuyer> implements BizBuyerService {
-
+public class BizCarBrandSupplierServiceImpl extends ServiceImpl<BizCarBrandSupplierMapper, BizCarBrandSupplier> implements BizCarBrandSupplierService {
 
 }

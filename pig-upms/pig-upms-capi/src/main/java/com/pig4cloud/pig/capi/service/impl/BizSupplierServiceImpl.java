@@ -17,22 +17,23 @@
 package com.pig4cloud.pig.capi.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.pig4cloud.pig.admin.api.entity.BizBuyer;
-import com.pig4cloud.pig.capi.mapper.BizBuyerMapper;
-import com.pig4cloud.pig.capi.service.BizBuyerService;
+import com.pig4cloud.pig.admin.api.entity.BizSupplier;
+import com.pig4cloud.pig.admin.api.request.AddSupplierRequest;
+import com.pig4cloud.pig.capi.mapper.BizSupplierMapper;
+import com.pig4cloud.pig.capi.service.BizSupplierService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
-
 /**
- * 采购商表
+ * 供应商表
  *
  * @author pig code generator
  * @date 2023-06-16 20:59:27
  */
 @Service
 @RequiredArgsConstructor
-public class BizBuyerServiceImpl extends ServiceImpl<BizBuyerMapper, BizBuyer> implements BizBuyerService {
+public class BizSupplierServiceImpl extends ServiceImpl<BizSupplierMapper, BizSupplier> implements BizSupplierService {
 
 
 }

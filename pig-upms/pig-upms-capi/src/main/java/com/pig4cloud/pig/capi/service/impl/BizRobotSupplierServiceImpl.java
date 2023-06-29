@@ -17,22 +17,18 @@
 package com.pig4cloud.pig.capi.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.pig4cloud.pig.admin.api.entity.BizBuyer;
-import com.pig4cloud.pig.capi.mapper.BizBuyerMapper;
-import com.pig4cloud.pig.capi.service.BizBuyerService;
-import lombok.RequiredArgsConstructor;
+import com.pig4cloud.pig.admin.api.entity.BizRobotSupplier;
+import com.pig4cloud.pig.capi.mapper.BizRobotSupplierMapper;
+import com.pig4cloud.pig.capi.service.BizRobotSupplierService;
 import org.springframework.stereotype.Service;
 
-
 /**
- * 采购商表
+ * 机器人供应商关系表
  *
  * @author pig code generator
  * @date 2023-06-16 20:59:27
  */
 @Service
-@RequiredArgsConstructor
-public class BizBuyerServiceImpl extends ServiceImpl<BizBuyerMapper, BizBuyer> implements BizBuyerService {
-
+public class BizRobotSupplierServiceImpl extends ServiceImpl<BizRobotSupplierMapper, BizRobotSupplier> implements BizRobotSupplierService {
 
 }
