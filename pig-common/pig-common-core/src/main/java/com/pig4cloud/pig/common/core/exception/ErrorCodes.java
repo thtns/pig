@@ -98,4 +98,23 @@ public interface ErrorCodes {
 	 */
 	String SYS_APP_PHONE_UNREGISTERED = "sys.app.phone.unregistered";
 
+	/**
+	 * 无效参数错误,api的aksk错误
+	 */
+	String INVALID_PARAMETER_ERROR = "invalid_parameter_error";
+
+	/**
+	 * 回调商家失败
+	 */
+	String CALLBACK_TO_MERCHANT_FAILED = "callback_to_merchant_failed";
+
+	/**
+	 * 订单不存在
+	 */
+	String ORDER_DOES_NOT_EXIST = "order_does_not_exist";
+
+	/**
+	 * 无结果
+	 */
+	String NO_RESULT = "no_result";
 }
