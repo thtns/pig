@@ -17,20 +17,19 @@
 
 package com.pig4cloud.pig.capi.service;
 
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.pig4cloud.pig.admin.api.entity.BizBuyer;
-import com.pig4cloud.pig.admin.api.request.AddBuyerRequest;
-import com.pig4cloud.pig.admin.api.request.ListBuyerRequest;
+import com.pig4cloud.pig.admin.api.entity.BizCarBrandSupplier;
+import com.pig4cloud.pig.admin.api.request.AddBizCarBrandSupplierRequest;
 
 
 /**
- * 采购商表
+ * 品牌供应商关系表
  *
  * @author pig code generator
  * @date 2023-06-16 20:59:27
  */
-public interface BizBuyerService extends IService<BizBuyer> {
+public interface BizCarBrandSupplierService extends IService<BizCarBrandSupplier> {
+
 
 
 }

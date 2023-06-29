@@ -19,7 +19,7 @@ package com.pig4cloud.pig.capi.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.pig4cloud.pig.admin.api.entity.BizBuyerOrder;
-import com.pig4cloud.pig.capi.vo.OrderResVo;
+import com.pig4cloud.pig.capi.response.MaintenanceOrderRes;
 
 /**
  * 采购商订单表
@@ -30,5 +30,5 @@ import com.pig4cloud.pig.capi.vo.OrderResVo;
 public interface BizBuyerOrderService extends IService<BizBuyerOrder> {
 
 
-	public OrderResVo maintenanceOrder(BizBuyerOrder bizBuyerOrder);
+	BizBuyerOrder getSuccessMerchantOrderByVin(String vin);
 }
