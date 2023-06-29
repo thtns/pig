@@ -17,6 +17,7 @@
 package com.pig4cloud.pig.common.core.util;
 
 import com.pig4cloud.pig.common.core.constant.CommonConstants;
+import com.pig4cloud.pig.common.core.constant.enums.capi.RequestStatusEnum;
 import lombok.*;
 import lombok.experimental.Accessors;
 
@@ -38,7 +39,7 @@ public class R<T> implements Serializable {
 
 	@Getter
 	@Setter
-	private int code;
+	private Integer code;
 
 	@Getter
 	@Setter
@@ -78,6 +79,10 @@ public class R<T> implements Serializable {
 
 	public static <T> R<T> result(T data, int code, String msg) {
 		return restResult(data, code, msg);
+	}
+
+	public static <T> R<T> resultEnumType(T data, Integer requestStatusEnumType) {
+		return restResult(data, requestStatusEnumType, RequestStatusEnum.getDesc(requestStatusEnumType));
 	}
 
 	public static <T> R<T> restResult(T data, int code, String msg) {
