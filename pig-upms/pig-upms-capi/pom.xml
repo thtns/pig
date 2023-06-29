@@ -18,7 +18,11 @@
 			<groupId>com.pig4cloud</groupId>
 			<artifactId>pig-upms-api</artifactId>
 		</dependency>
-		
+		<!--安全模块-->
+		<dependency>
+			<groupId>com.pig4cloud</groupId>
+			<artifactId>pig-common-security</artifactId>
+		</dependency>
 		<!--接口文档-->
 		<dependency>
 			<groupId>com.pig4cloud</groupId>
@@ -49,7 +53,20 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-undertow</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>cn.hutool</groupId>
+			<artifactId>hutool-crypto</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>cn.hutool</groupId>
+			<artifactId>hutool-http</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.alibaba</groupId>
+			<artifactId>fastjson</artifactId>
+		</dependency>
 	</dependencies>
+
 	<build>
 		<finalName>pig-upms-capi</finalName>
 	</build>
