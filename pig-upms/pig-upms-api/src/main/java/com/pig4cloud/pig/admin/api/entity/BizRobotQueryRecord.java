@@ -69,7 +69,7 @@ public class BizRobotQueryRecord extends BaseEntity {
      * 机器人id
      */
     @Schema(description ="机器人id")
-    private String robotId;
+    private Long robotId;
 
     /**
      * 结果状态码：0：失败，1：成功，2：无结果
