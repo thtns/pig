@@ -23,7 +23,7 @@
 
 <mapper namespace="com.pig4cloud.pig.capi.mapper.BizRobotSupplierMapper">
 
-  <resultMap id="bizRobotSupplierMap" type="com.pig4cloud.pig.admin.api.entity.BizRobotSupplier">
+  <resultMap id="bizRobotSupplierMap" type="com.pig4cloud.pig.capi.entity.BizRobotSupplier">
     <id property="id" column="id"/>
     <result property="robotId" column="robot_id"/>
     <result property="supplierId" column="supplier_id"/>

@@ -23,7 +23,7 @@
 
 <mapper namespace="com.pig4cloud.pig.capi.mapper.BizBuyerMapper">
 
-  <resultMap id="bizBuyerMap" type="com.pig4cloud.pig.admin.api.entity.BizBuyer">
+  <resultMap id="bizBuyerMap" type="com.pig4cloud.pig.capi.entity.BizBuyer">
     <id property="id" column="id"/>
     <result property="clientKey" column="client_key"/>
     <result property="clientSecret" column="client_secret"/>

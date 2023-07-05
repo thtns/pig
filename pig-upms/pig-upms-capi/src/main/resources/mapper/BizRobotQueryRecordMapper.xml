@@ -23,7 +23,7 @@
 
 <mapper namespace="com.pig4cloud.pig.capi.mapper.BizRobotQueryRecordMapper">
 
-  <resultMap id="bizRobotQueryRecordMap" type="com.pig4cloud.pig.admin.api.entity.BizRobotQueryRecord">
+  <resultMap id="bizRobotQueryRecordMap" type="com.pig4cloud.pig.capi.entity.BizRobotQueryRecord">
     <id property="id" column="id"/>
     <result property="vin" column="vin"/>
     <result property="supplierId" column="supplier_id"/>

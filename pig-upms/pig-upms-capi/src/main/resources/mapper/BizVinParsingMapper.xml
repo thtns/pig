@@ -23,7 +23,7 @@
 
 <mapper namespace="com.pig4cloud.pig.capi.mapper.BizVinParsingMapper">
 
-  <resultMap id="bizBuyerMap" type="com.pig4cloud.pig.admin.api.entity.BizVinParsing">
+  <resultMap id="bizBuyerMap" type="com.pig4cloud.pig.capi.entity.BizVinParsing">
     <id property="id" column="id"/>
     <result property="vinCode" column="vin_code"/>
     <result property="subBrand" column="sub_brand"/>

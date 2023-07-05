@@ -23,7 +23,7 @@
 
 <mapper namespace="com.pig4cloud.pig.capi.mapper.BizBuyerOrderMapper">
 
-  <resultMap id="bizBuyerOrderMap" type="com.pig4cloud.pig.admin.api.entity.BizBuyerOrder">
+  <resultMap id="bizBuyerOrderMap" type="com.pig4cloud.pig.capi.entity.BizBuyerOrder">
     <id property="id" column="id"/>
     <result property="buyerId" column="buyer_id"/>
     <result property="buyerName" column="buyer_name"/>

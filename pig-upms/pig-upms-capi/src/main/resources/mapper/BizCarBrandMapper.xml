@@ -23,7 +23,7 @@
 
 <mapper namespace="com.pig4cloud.pig.capi.mapper.BizCarBrandMapper">
 
-  <resultMap id="bizCarBrandMap" type="com.pig4cloud.pig.admin.api.entity.BizCarBrand">
+  <resultMap id="bizCarBrandMap" type="com.pig4cloud.pig.capi.entity.BizCarBrand">
     <id property="id" column="id"/>
     <result property="brand" column="brand"/>
     <result property="letter" column="letter"/>
