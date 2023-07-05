@@ -21,7 +21,7 @@
 
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.pig4cloud.pig.admin.mapper.BizCarBrandSupplierMapper">
+<mapper namespace="com.pig4cloud.pig.capi.mapper.BizCarBrandSupplierMapper">
 
   <resultMap id="bizCarBrandSupplierMap" type="com.pig4cloud.pig.admin.api.entity.BizCarBrandSupplier">
     <id property="id" column="id"/>
