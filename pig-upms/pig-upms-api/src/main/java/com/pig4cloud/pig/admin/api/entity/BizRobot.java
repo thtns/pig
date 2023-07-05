@@ -39,7 +39,7 @@ import java.time.LocalDateTime;
 @TableName("biz_robot")
 @EqualsAndHashCode(callSuper = true)
 @Schema(description = "机器人")
-public class BizRobot extends BaseEntity {
+public class BizRobot extends BaseEntity implements Cloneable{
 
     /**
      * 主键id
@@ -59,6 +59,12 @@ public class BizRobot extends BaseEntity {
      */
     @Schema(description ="机器人访问地址")
     private String robotUrl;
+
+	/**
+	 * 代理后访问的ip+port
+	 */
+	@Schema(description ="host机器人访问的ip+端口")
+	private String host;
 
     /**
      * robotProxies
@@ -102,5 +108,14 @@ public class BizRobot extends BaseEntity {
     @Schema(description ="机器人服务结束时间")
     private Time serviceEndTime;
 
+	public Object clone(){
+		BizRobot rebot = null;
+		try {
+			rebot = (BizRobot)super.clone();
+		} catch (CloneNotSupportedException e) {
+			e.printStackTrace();
+		}
+		return rebot;
+	}
 
 }
