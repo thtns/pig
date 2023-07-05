@@ -30,5 +30,26 @@ import com.pig4cloud.pig.capi.response.MaintenanceOrderRes;
 public interface BizBuyerOrderService extends IService<BizBuyerOrder> {
 
 
+	/**
+	 * 通过vin查询成功用户查询
+	 * @param vin
+	 * @return
+	 */
 	BizBuyerOrder getSuccessMerchantOrderByVin(String vin);
+
+	/**
+	 * 根据商户id和vin查询是否有订单记录
+	 * @param vin
+	 * @param bizBuyerId
+	 * @return
+	 */
+	Boolean isOrNotPlaceOrder(String vin, Long bizBuyerId);
+
+	/**
+	 * 判断采购商订单上限
+	 * @param bizBuyerOrder
+	 * @return
+	 */
+	Boolean cheackBuyerOrderLimi(BizBuyerOrder bizBuyerOrder);
+
 }

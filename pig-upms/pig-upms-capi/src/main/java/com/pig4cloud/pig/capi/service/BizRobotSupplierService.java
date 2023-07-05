@@ -19,7 +19,10 @@ package com.pig4cloud.pig.capi.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.pig4cloud.pig.admin.api.entity.BizRobotSupplier;
+import com.pig4cloud.pig.admin.api.entity.BizSupplier;
 import com.pig4cloud.pig.admin.api.request.AddSupplierRobotRequest;
+
+import java.util.List;
 
 
 /**
@@ -30,6 +33,18 @@ import com.pig4cloud.pig.admin.api.request.AddSupplierRobotRequest;
  */
 public interface BizRobotSupplierService extends IService<BizRobotSupplier> {
 
+	/***
+	 * 根据供应商id获取机器人供应商关系表
+	 * @param supplierId 供应商id
+	 * @return
+	 */
+	public List<BizRobotSupplier> getBizRobotSupplierBySupplierId(Long supplierId);
 
+	/**
+	 * 根据供应商列表获取机器人供应商关系表
+	 * @param suppliers	供应商列表
+	 * @return
+	 */
+	public List<BizRobotSupplier> getBizRobotSupplierBySuppliers(List<BizSupplier> suppliers);
 
 }

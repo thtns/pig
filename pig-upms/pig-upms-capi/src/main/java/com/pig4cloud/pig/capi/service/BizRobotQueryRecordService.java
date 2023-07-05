@@ -29,4 +29,11 @@ import com.pig4cloud.pig.admin.api.entity.BizRobotQueryRecord;
 public interface BizRobotQueryRecordService extends IService<BizRobotQueryRecord> {
 
 	public BizRobotQueryRecord getQueryRecordByVin(String vin);
+
+	/**
+	 * 计算今日供应商请求次数
+	 * @param supplierId
+	 * @return
+	 */
+	public Integer getTodayCountBySupplier(Long supplierId);
 }

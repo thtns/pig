@@ -16,11 +16,17 @@
  */
 package com.pig4cloud.pig.capi.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.pig4cloud.pig.admin.api.entity.BizCarBrandSupplier;
 import com.pig4cloud.pig.admin.api.entity.BizRobotSupplier;
+import com.pig4cloud.pig.admin.api.entity.BizSupplier;
 import com.pig4cloud.pig.capi.mapper.BizRobotSupplierMapper;
 import com.pig4cloud.pig.capi.service.BizRobotSupplierService;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 机器人供应商关系表
@@ -31,4 +37,28 @@ import org.springframework.stereotype.Service;
 @Service
 public class BizRobotSupplierServiceImpl extends ServiceImpl<BizRobotSupplierMapper, BizRobotSupplier> implements BizRobotSupplierService {
 
+	/*** 供应商机器人mapper **/
+	BizRobotSupplierMapper bizRobotSupplierMapper;
+
+	/**
+	 * @param supplierId
+	 * @return
+	 */
+	@Override
+	public List<BizRobotSupplier> getBizRobotSupplierBySupplierId(Long supplierId) {
+		QueryWrapper<BizRobotSupplier> robotSupplierWrapper = new QueryWrapper<>();
+		robotSupplierWrapper.eq("supplier_id", supplierId);
+		return bizRobotSupplierMapper.selectList(robotSupplierWrapper);
+	}
+
+	/**
+	 * @param suppliers
+	 * @return
+	 */
+	@Override
+	public List<BizRobotSupplier> getBizRobotSupplierBySuppliers(List<BizSupplier> suppliers) {
+		QueryWrapper<BizRobotSupplier> robotSupplierWrapper = new QueryWrapper<>();
+		robotSupplierWrapper.in("supplier_id", suppliers.stream().map(BizSupplier::getId).collect(Collectors.toList()));
+		return bizRobotSupplierMapper.selectList(robotSupplierWrapper);
+	}
 }

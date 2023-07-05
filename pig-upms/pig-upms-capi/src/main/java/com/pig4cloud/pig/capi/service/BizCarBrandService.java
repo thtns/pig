@@ -18,8 +18,11 @@
 package com.pig4cloud.pig.capi.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.pig4cloud.pig.admin.api.entity.BizBuyerOrder;
 import com.pig4cloud.pig.admin.api.entity.BizCarBrand;
-import com.pig4cloud.pig.admin.api.request.AddCarBrandRequest;
+import com.pig4cloud.pig.capi.service.apo.RebotInfo;
+
+import java.util.List;
 
 
 /**
@@ -31,6 +34,22 @@ import com.pig4cloud.pig.admin.api.request.AddCarBrandRequest;
 public interface BizCarBrandService extends IService<BizCarBrand> {
 
 
+	BizCarBrand getCarBrand(BizBuyerOrder bizBuyerOrder);
+
+	/****
+	 * 根据品牌名称获取品牌对象
+	 * @param vinCode
+	 * @return
+	 */
+	BizCarBrand getCarBrandByBrand(String vinCode);
+
+	/**
+	 * 获取有效机器人（主业务使用）
+	 * @param bizCarBrand
+	 * @param bizBuyerOrder
+	 * @return
+	 */
+	List<RebotInfo> getEffectiveRobot(BizCarBrand bizCarBrand, BizBuyerOrder bizBuyerOrder);
 
 
 }

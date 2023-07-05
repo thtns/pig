@@ -18,8 +18,10 @@
 package com.pig4cloud.pig.capi.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.pig4cloud.pig.admin.api.entity.BizBuyer;
 import com.pig4cloud.pig.admin.api.entity.BizSupplier;
-import com.pig4cloud.pig.admin.api.request.AddSupplierRequest;
+
+import java.util.List;
 
 
 /**
@@ -30,6 +32,10 @@ import com.pig4cloud.pig.admin.api.request.AddSupplierRequest;
  */
 public interface BizSupplierService extends IService<BizSupplier> {
 
-
-
+	/**
+	 * 根据品牌id获取供应商列表
+	 * @param carBrandid  品牌id
+	 * @return List<BizSupplier>
+	 */
+	public List<BizSupplier> getSupplierByCarBrandId(Long carBrandid);
 }

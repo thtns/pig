@@ -16,14 +16,22 @@
  */
 package com.pig4cloud.pig.capi.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.pig4cloud.pig.admin.api.entity.BizBuyer;
+import com.pig4cloud.pig.admin.api.entity.BizCarBrandSupplier;
+import com.pig4cloud.pig.admin.api.entity.BizRobotSupplier;
 import com.pig4cloud.pig.admin.api.entity.BizSupplier;
 import com.pig4cloud.pig.admin.api.request.AddSupplierRequest;
+import com.pig4cloud.pig.capi.mapper.BizCarBrandSupplierMapper;
 import com.pig4cloud.pig.capi.mapper.BizSupplierMapper;
 import com.pig4cloud.pig.capi.service.BizSupplierService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 供应商表
@@ -36,4 +44,21 @@ import org.springframework.stereotype.Service;
 public class BizSupplierServiceImpl extends ServiceImpl<BizSupplierMapper, BizSupplier> implements BizSupplierService {
 
 
+	/*** 品牌供应商mapper **/
+	BizCarBrandSupplierMapper bizCarBrandSupplierMapper;
+
+	BizSupplierMapper bizSupplierMapper;
+
+
+	@Override
+	public List<BizSupplier> getSupplierByCarBrandId(Long carBrandid) {
+		QueryWrapper<BizCarBrandSupplier> carBrandQueryWrapper = new QueryWrapper<>();
+		carBrandQueryWrapper.eq("car_brand_id", carBrandid);
+		// 获取品牌下供应商关系
+		List<BizCarBrandSupplier> bizCarBrandSuppliers = bizCarBrandSupplierMapper.selectList(carBrandQueryWrapper);
+
+		QueryWrapper<BizSupplier> bizSupplierQueryWrapper = new QueryWrapper<>();
+		bizSupplierQueryWrapper.in("id", bizCarBrandSuppliers.stream().map(BizCarBrandSupplier::getSupplierId).collect(Collectors.toList()));
+		return bizSupplierMapper.selectList(bizSupplierQueryWrapper);
+	}
 }

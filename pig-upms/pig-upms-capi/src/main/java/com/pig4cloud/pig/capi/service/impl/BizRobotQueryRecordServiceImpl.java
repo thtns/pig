@@ -47,5 +47,16 @@ public class BizRobotQueryRecordServiceImpl extends ServiceImpl<BizRobotQueryRec
 		return list.stream().findFirst().orElse(null);
 	}
 
+	/**
+	 * @param supplierId
+	 * @return
+	 */
+	@Override
+	public Integer getTodayCountBySupplier(Long supplierId) {
+		LambdaQueryWrapper<BizRobotQueryRecord> queryWrapper = new LambdaQueryWrapper<>();
+		queryWrapper.likeRight(BizRobotQueryRecord::getQuerytime , DateUtil.today())
+				.eq(BizRobotQueryRecord::getSupplierId, supplierId);
 
+		return Math.toIntExact(this.count(queryWrapper));
+	}
 }
