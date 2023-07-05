@@ -56,6 +56,9 @@ public enum RequestStatusEnum {
 	/*** 系统登录失败. */
 	SERVER_LOGIN_FAILURE( 1202, "系统登录失败."),
 
+	/*** 查询记录失败. */
+	SERVER_QUERY_FAILURE( 1203, "查询记录失败."),
+
 	/*** 查询无记录. */
 	SERVER_NO_RESULT( 1204, "查询无记录."),
 
