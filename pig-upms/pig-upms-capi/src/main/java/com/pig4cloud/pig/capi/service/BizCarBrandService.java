@@ -18,8 +18,8 @@
 package com.pig4cloud.pig.capi.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.pig4cloud.pig.admin.api.entity.BizBuyerOrder;
-import com.pig4cloud.pig.admin.api.entity.BizCarBrand;
+import com.pig4cloud.pig.capi.entity.BizBuyerOrder;
+import com.pig4cloud.pig.capi.entity.BizCarBrand;
 import com.pig4cloud.pig.capi.service.apo.RebotInfo;
 
 import java.util.List;

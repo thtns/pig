@@ -19,7 +19,7 @@ package com.pig4cloud.pig.capi.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.pig4cloud.pig.admin.api.entity.BizCarBrandSupplier;
+import com.pig4cloud.pig.capi.entity.BizCarBrandSupplier;
 import com.pig4cloud.pig.admin.api.request.AddBizCarBrandSupplierRequest;
 import com.pig4cloud.pig.capi.mapper.BizCarBrandSupplierMapper;
 import com.pig4cloud.pig.capi.service.BizCarBrandSupplierService;

@@ -17,10 +17,9 @@
 package com.pig4cloud.pig.capi.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.pig4cloud.pig.admin.api.entity.BizBuyer;
+import com.pig4cloud.pig.capi.entity.BizBuyer;
 import com.pig4cloud.pig.capi.mapper.BizBuyerMapper;
 import com.pig4cloud.pig.capi.service.BizBuyerService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 
@@ -31,7 +30,6 @@ import org.springframework.stereotype.Service;
  * @date 2023-06-16 20:59:27
  */
 @Service
-@RequiredArgsConstructor
 public class BizBuyerServiceImpl extends ServiceImpl<BizBuyerMapper, BizBuyer> implements BizBuyerService {
 
 

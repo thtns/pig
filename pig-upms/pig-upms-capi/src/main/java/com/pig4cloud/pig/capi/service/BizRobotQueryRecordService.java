@@ -18,7 +18,7 @@
 package com.pig4cloud.pig.capi.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.pig4cloud.pig.admin.api.entity.BizRobotQueryRecord;
+import com.pig4cloud.pig.capi.entity.BizRobotQueryRecord;
 
 /**
  * 机器人查询记录表

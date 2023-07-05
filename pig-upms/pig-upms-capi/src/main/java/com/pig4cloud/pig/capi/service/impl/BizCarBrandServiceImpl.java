@@ -3,7 +3,7 @@ package com.pig4cloud.pig.capi.service.impl;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.pig4cloud.pig.admin.api.entity.*;
+import com.pig4cloud.pig.capi.entity.*;
 import com.pig4cloud.pig.capi.mapper.BizCarBrandMapper;
 import com.pig4cloud.pig.capi.service.*;
 import com.pig4cloud.pig.capi.service.atripartite.EasyepcDataManager;

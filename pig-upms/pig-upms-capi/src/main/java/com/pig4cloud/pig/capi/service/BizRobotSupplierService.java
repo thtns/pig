@@ -18,8 +18,8 @@
 package com.pig4cloud.pig.capi.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.pig4cloud.pig.admin.api.entity.BizRobotSupplier;
-import com.pig4cloud.pig.admin.api.entity.BizSupplier;
+import com.pig4cloud.pig.capi.entity.BizRobotSupplier;
+import com.pig4cloud.pig.capi.entity.BizSupplier;
 import com.pig4cloud.pig.admin.api.request.AddSupplierRobotRequest;
 
 import java.util.List;
