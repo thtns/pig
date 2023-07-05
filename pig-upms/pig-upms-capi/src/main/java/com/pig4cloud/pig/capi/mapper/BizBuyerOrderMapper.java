@@ -18,7 +18,7 @@
 package com.pig4cloud.pig.capi.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.pig4cloud.pig.admin.api.entity.BizBuyerOrder;
+import com.pig4cloud.pig.capi.entity.BizBuyerOrder;
 import org.apache.ibatis.annotations.Mapper;
 
 /**

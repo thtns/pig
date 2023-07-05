@@ -18,7 +18,7 @@
 package com.pig4cloud.pig.capi.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.pig4cloud.pig.admin.api.entity.BizCarBrand;
+import com.pig4cloud.pig.capi.entity.BizCarBrand;
 import org.apache.ibatis.annotations.Mapper;
 
 /**
