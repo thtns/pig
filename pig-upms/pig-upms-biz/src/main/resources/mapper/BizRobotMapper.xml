@@ -27,6 +27,7 @@
     <id property="id" column="id"/>
     <result property="status" column="status"/>
     <result property="robotUrl" column="robot_url"/>
+    <result property="host" column="host"/>
     <result property="robotProxies" column="robot_proxies"/>
     <result property="robotAccountPassword" column="robot_account_password"/>
     <result property="robotProxiesName" column="robot_proxies_name"/>
