@@ -1,13 +1,13 @@
 package com.pig4cloud.pig.capi.service.impl;
 
+import cn.hutool.core.codec.Base64;
 import cn.hutool.http.HttpRequest;
 import com.alibaba.fastjson.JSON;
-import cn.hutool.core.codec.Base64;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
-import com.pig4cloud.pig.admin.api.entity.BizBuyerOrder;
-import com.pig4cloud.pig.admin.api.entity.BizCarBrand;
-import com.pig4cloud.pig.admin.api.entity.BizRobotQueryRecord;
+import com.pig4cloud.pig.capi.entity.BizBuyerOrder;
+import com.pig4cloud.pig.capi.entity.BizCarBrand;
+import com.pig4cloud.pig.capi.entity.BizRobotQueryRecord;
 import com.pig4cloud.pig.capi.response.MaintenanceOrderRes;
 import com.pig4cloud.pig.capi.service.BizBuyerOrderService;
 import com.pig4cloud.pig.capi.service.BizCarBrandService;
@@ -15,26 +15,26 @@ import com.pig4cloud.pig.capi.service.BizRobotQueryRecordService;
 import com.pig4cloud.pig.capi.service.MaintenanceService;
 import com.pig4cloud.pig.capi.service.apo.RebotInfo;
 import com.pig4cloud.pig.capi.service.apo.RedisKeyDefine;
-import com.pig4cloud.pig.capi.utils.rocketmq.ProducerUtil;
 import com.pig4cloud.pig.common.core.constant.enums.capi.BaseConstants;
 import com.pig4cloud.pig.common.core.constant.enums.capi.RequestStatusEnum;
-import com.pig4cloud.pig.common.core.util.LongByteUtils;
 import com.pig4cloud.pig.common.core.util.R;
 import com.pig4cloud.pig.common.core.util.RedisUtils;
 import com.pig4cloud.pig.common.core.util.RetryUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.IOUtils;
-
+import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.*;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
-
+@Service
 @Slf4j
 public class MaintenanceServiceImpl implements MaintenanceService {
 	final int TIME_OUT = 2000;
@@ -69,8 +69,8 @@ public class MaintenanceServiceImpl implements MaintenanceService {
 		Boolean greater = bizBuyerOrderService.isOrNotPlaceOrder(bizBuyerOrder.getVin(), bizBuyerOrder.getBuyerId());
 		if (greater) {
 			// 加入延时队列，5分钟后执行。
-			ProducerUtil.sendExcarTimeMsg(Long.toString(bizBuyerOrder.getId()), Long.toString(bizBuyerOrder.getId()),
-					LongByteUtils.toByteArray(bizBuyerOrder.getId()), System.currentTimeMillis() + (5 * 60 * 1000));
+//			ProducerUtil.sendExcarTimeMsg(Long.toString(bizBuyerOrder.getId()), Long.toString(bizBuyerOrder.getId()),
+//					LongByteUtils.toByteArray(bizBuyerOrder.getId()), System.currentTimeMillis() + (5 * 60 * 1000));
 			return MaintenanceOrderRes.builder().order_id(String.valueOf(bizBuyerOrder.getId())).vin(bizBuyerOrder.getVin()).build();
 		} else {
 			// 设置请求次数，用户后续判断
@@ -87,7 +87,8 @@ public class MaintenanceServiceImpl implements MaintenanceService {
 	 * @param bizBuyerOrder
 	 */
 	@Override
-	public void getResult(BizBuyerOrder bizBuyerOrder) {
+	public void
+	getResult(BizBuyerOrder bizBuyerOrder) {
 		log.info("主动回调商家：order：" + bizBuyerOrder.getId());
 		maintenanceOrder(bizBuyerOrder);// 执行
 	}

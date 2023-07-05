@@ -18,18 +18,13 @@ package com.pig4cloud.pig.capi.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.pig4cloud.pig.capi.entity.BizBuyer;
 import com.pig4cloud.pig.capi.entity.BizCarBrandSupplier;
-import com.pig4cloud.pig.capi.entity.BizRobotSupplier;
 import com.pig4cloud.pig.capi.entity.BizSupplier;
-import com.pig4cloud.pig.admin.api.request.AddSupplierRequest;
 import com.pig4cloud.pig.capi.mapper.BizCarBrandSupplierMapper;
 import com.pig4cloud.pig.capi.mapper.BizSupplierMapper;
 import com.pig4cloud.pig.capi.service.BizSupplierService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
-
 import java.util.List;
 import java.util.stream.Collectors;
 

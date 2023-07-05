@@ -16,18 +16,11 @@
  */
 package com.pig4cloud.pig.capi.service.impl;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.pig4cloud.pig.capi.entity.BizCarBrandSupplier;
-import com.pig4cloud.pig.admin.api.request.AddBizCarBrandSupplierRequest;
 import com.pig4cloud.pig.capi.mapper.BizCarBrandSupplierMapper;
 import com.pig4cloud.pig.capi.service.BizCarBrandSupplierService;
-import org.apache.commons.compress.utils.Lists;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.ArrayList;
 
 /**
  * 品牌供应商关系表
