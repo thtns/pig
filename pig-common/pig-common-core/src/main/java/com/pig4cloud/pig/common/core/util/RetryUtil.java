@@ -1,5 +1,6 @@
 package com.pig4cloud.pig.common.core.util;
 
+import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
@@ -134,6 +135,7 @@ class RetryAsync extends Retry {
 	}
 }
 
+@UtilityClass
 public final class RetryUtil {
  
 
