@@ -9,6 +9,7 @@ import com.pig4cloud.pig.common.core.util.R;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.servlet.*;
@@ -23,7 +24,8 @@ import java.io.IOException;
 //@WebFilter(urlPatterns = "/maintenance")
 @RequiredArgsConstructor
 public class AuthorizationFilter implements Filter {
-	BizBuyerService bizBuyerService;
+
+	private final BizBuyerService bizBuyerService;
 
 	@Override
 	public void init(FilterConfig filterConfig){
