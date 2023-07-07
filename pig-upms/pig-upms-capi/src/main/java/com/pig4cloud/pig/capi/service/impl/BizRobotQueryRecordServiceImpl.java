@@ -38,12 +38,19 @@ public class BizRobotQueryRecordServiceImpl extends ServiceImpl<BizRobotQueryRec
 
 	@Override
 	public BizRobotQueryRecord getQueryRecordByVin(String vin) {
-		LambdaQueryWrapper<BizRobotQueryRecord> queryWrapper = new LambdaQueryWrapper<>();
-		queryWrapper.eq(BizRobotQueryRecord::getVin, vin);
-		queryWrapper.gt(BizRobotQueryRecord::getQuerytime, DateUtil.offsetDay(DateUtil.date(),-3));
-		queryWrapper.orderByDesc(BizRobotQueryRecord::getQuerytime);
-		List<BizRobotQueryRecord> list = this.list(queryWrapper);
-		return list.stream().findFirst().orElse(null);
+//		LambdaQueryWrapper<BizRobotQueryRecord> queryWrapper = new LambdaQueryWrapper<>();
+//		queryWrapper.eq(BizRobotQueryRecord::getVin, vin);
+//		queryWrapper.gt(BizRobotQueryRecord::getQuerytime, DateUtil.offsetDay(DateUtil.date(),-3));
+//		queryWrapper.orderByDesc(BizRobotQueryRecord::getQuerytime);
+//		List<BizRobotQueryRecord> list = this.list(queryWrapper);
+//		return list.stream().findFirst().orElse(null);
+
+		return this.lambdaQuery()
+				.eq(BizRobotQueryRecord::getVin, vin)
+				.gt(BizRobotQueryRecord::getQuerytime, DateUtil.offsetDay(DateUtil.date(), -3))
+				.orderByDesc(BizRobotQueryRecord::getQuerytime)
+				.last("LIMIT 1")
+				.one();
 	}
 
 	/**

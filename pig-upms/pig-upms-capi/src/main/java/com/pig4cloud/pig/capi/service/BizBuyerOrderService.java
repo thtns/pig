@@ -43,7 +43,7 @@ public interface BizBuyerOrderService extends IService<BizBuyerOrder> {
 	 * @param bizBuyerId
 	 * @return
 	 */
-	Boolean isOrNotPlaceOrder(String vin, Long bizBuyerId);
+	boolean isOrNotPlaceOrder(String vin, Long bizBuyerId);
 
 	/**
 	 * 判断采购商订单上限

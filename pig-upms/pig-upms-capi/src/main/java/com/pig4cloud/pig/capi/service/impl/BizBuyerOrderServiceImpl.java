@@ -43,12 +43,19 @@ public class BizBuyerOrderServiceImpl extends ServiceImpl<BizBuyerOrderMapper, B
 
 	@Override
 	public BizBuyerOrder getSuccessMerchantOrderByVin(String vin) {
-		LambdaQueryWrapper<BizBuyerOrder> queryWrapper = new LambdaQueryWrapper<>();
-		queryWrapper.likeRight(BizBuyerOrder::getRequestTime , DateUtil.today())
+//		LambdaQueryWrapper<BizBuyerOrder> queryWrapper = new LambdaQueryWrapper<>();
+//		queryWrapper.likeRight(BizBuyerOrder::getRequestTime , DateUtil.today())
+//				.eq(BizBuyerOrder::getVin, vin)
+//				.eq(BizBuyerOrder::getRequestStatus, RequestStatusEnum.CALLBACK_SUCCESS.getType());
+//		List<BizBuyerOrder> list = this.list(queryWrapper);
+//		return list.stream().findFirst().orElse(null);//取第一个或者返回null
+		return this.lambdaQuery()
+				.likeRight(BizBuyerOrder::getRequestTime, DateUtil.today())
 				.eq(BizBuyerOrder::getVin, vin)
-				.eq(BizBuyerOrder::getRequestStatus, RequestStatusEnum.CALLBACK_SUCCESS.getType());
-		List<BizBuyerOrder> list = this.list(queryWrapper);
-		return list.stream().findFirst().orElse(null);//取第一个或者返回null
+				.eq(BizBuyerOrder::getRequestStatus, RequestStatusEnum.CALLBACK_SUCCESS.getType())
+				.orderByDesc(BizBuyerOrder::getRequestTime) // 按时间倒序排序
+				.last("LIMIT 1")
+				.one();
 	}
 
 	/**
@@ -58,16 +65,25 @@ public class BizBuyerOrderServiceImpl extends ServiceImpl<BizBuyerOrderMapper, B
 	 * @return
 	 */
 	@Override
-	public Boolean isOrNotPlaceOrder(String vin, Long bizBuyerId) {
-		LambdaQueryWrapper<BizBuyerOrder> queryWrapper = new LambdaQueryWrapper<>();
-		queryWrapper.likeRight(BizBuyerOrder::getRequestTime , DateUtil.today())
+	public boolean isOrNotPlaceOrder(String vin, Long bizBuyerId) {
+//		LambdaQueryWrapper<BizBuyerOrder> queryWrapper = new LambdaQueryWrapper<>();
+//		queryWrapper.likeRight(BizBuyerOrder::getRequestTime , DateUtil.today())
+//				.eq(BizBuyerOrder::getVin, vin)
+//				.eq(BizBuyerOrder::getBuyerId, bizBuyerId)
+//				.and(w -> w.eq(BizBuyerOrder::getRequestStatus, RequestStatusEnum.ORDER_SUCCESS.getType())
+//						.or()
+//						.eq(BizBuyerOrder::getRequestStatus, RequestStatusEnum.QUERYING.getType())
+//				);
+//		return this.count(queryWrapper) > 1;
+		return this.lambdaQuery()
+				.likeRight(BizBuyerOrder::getRequestTime, DateUtil.today())
 				.eq(BizBuyerOrder::getVin, vin)
 				.eq(BizBuyerOrder::getBuyerId, bizBuyerId)
 				.and(w -> w.eq(BizBuyerOrder::getRequestStatus, RequestStatusEnum.ORDER_SUCCESS.getType())
 						.or()
 						.eq(BizBuyerOrder::getRequestStatus, RequestStatusEnum.QUERYING.getType())
-				);
-		return this.count(queryWrapper) > 1;
+				)
+				.exists();
 	}
 
 	/**
