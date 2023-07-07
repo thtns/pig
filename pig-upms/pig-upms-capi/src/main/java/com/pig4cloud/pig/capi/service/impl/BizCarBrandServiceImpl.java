@@ -6,14 +6,14 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.pig4cloud.pig.capi.entity.*;
 import com.pig4cloud.pig.capi.mapper.BizCarBrandMapper;
 import com.pig4cloud.pig.capi.service.*;
-import com.pig4cloud.pig.capi.service.atripartite.EasyepcDataManager;
 import com.pig4cloud.pig.capi.service.apo.RebotInfo;
+import com.pig4cloud.pig.capi.service.atripartite.EasyepcDataManager;
 import com.pig4cloud.pig.common.core.constant.enums.capi.RequestStatusEnum;
 import com.pig4cloud.pig.common.core.util.R;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
-
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -29,29 +29,29 @@ import java.util.stream.Collectors;
 public class BizCarBrandServiceImpl extends ServiceImpl<BizCarBrandMapper, BizCarBrand> implements BizCarBrandService {
 
 	/*** vin解析服务 **/
-	BizVinParsingService bizVinParsingService;
+	private final BizVinParsingService bizVinParsingService;
 
 	/*** 采购商订单服务 **/
-	BizBuyerOrderService bizBuyerOrderService;
+	private final BizBuyerOrderService bizBuyerOrderService;
 
 	/*** 精友数据 **/
-	EasyepcDataManager easyepcDataManager;
+	private final EasyepcDataManager easyepcDataManager;
 
 	/*** 品牌供应商 **/
-	BizCarBrandSupplierService bizCarBrandSupplierService;
+	private final BizCarBrandSupplierService bizCarBrandSupplierService;
 
 
 	/*** 供应商 **/
-	BizSupplierService bizSupplierService;
+	private final BizSupplierService bizSupplierService;
 
 	/*** 供应商机器人 **/
-	BizRobotSupplierService bizRobotSupplierService;
+	private final BizRobotSupplierService bizRobotSupplierService;
 
 	/*** 机器人 **/
-	BizRobotService bizRobotService;
+	private final BizRobotService bizRobotService;
 
 	/*** 供应商机器人查询记录 **/
-	BizRobotQueryRecordService bizRobotQueryRecordService;
+	private final BizRobotQueryRecordService bizRobotQueryRecordService;
 
 	/**
 	 * 获取品牌
@@ -63,12 +63,11 @@ public class BizCarBrandServiceImpl extends ServiceImpl<BizCarBrandMapper, BizCa
 	public BizCarBrand getCarBrand(BizBuyerOrder bizBuyerOrder) {
 		//本地查询vin解析结果表获取品牌
 		BizVinParsing bizVinParsing = bizVinParsingService.getBizVinParsing(bizBuyerOrder.getVin());//解析结果
-		log.info("~~~~~~通过Vin Parsing Service解析  brand...\n Brand : " + bizVinParsing.getBrand());
-
 		BizCarBrand carBrandByWmi;
 		if (null != bizVinParsing) {
+			log.info("~~~~~~通过Vin Parsing Service解析  brand...\n Brand : " + bizVinParsing.getBrand());
 			log.info("~~~~~~解析正常，开始查询...");
-			carBrandByWmi = this.getCarBrandByBrand(bizVinParsing.getBrand());//根据品牌名查询BizCarBrand对象
+			carBrandByWmi = this.getCarBrandByBrand(bizVinParsing.getSubBrand());//根据品牌名查询BizCarBrand对象
 		} else {// 通过三方服务 vin解析品牌
 			log.info("~~~~~~三方解析，开始查询...");
 			String brand = easyepcDataManager.getSaleVinInfo(bizBuyerOrder.getVin());//精友数据查询vin 获取品牌
@@ -111,10 +110,14 @@ public class BizCarBrandServiceImpl extends ServiceImpl<BizCarBrandMapper, BizCa
 	public List<RebotInfo> getEffectiveRobot(BizCarBrand bizCarBrand, BizBuyerOrder bizBuyerOrder) {
 		// 根据品牌获取供应商
 		List<BizSupplier> bizSuppliers = bizSupplierService.getSupplierByCarBrandId(bizCarBrand.getId());
-
+		if (bizSuppliers.size() == 0){
+			log.info("无可用供货商：supplierList is Empty !");
+			return null;
+		}
 		//按照权重供应商分组
 		LinkedHashMap<Integer, List<BizSupplier>> supplierMap = bizSuppliers.stream().
 				collect(Collectors.groupingBy(BizSupplier::getWeight, LinkedHashMap::new, Collectors.toList()));
+
 		List<BizSupplier> supplierList = new ArrayList<>();
 		for (Integer key : supplierMap.keySet()) {
 			List<BizSupplier> value = supplierMap.get(key);
@@ -153,10 +156,10 @@ public class BizCarBrandServiceImpl extends ServiceImpl<BizCarBrandMapper, BizCa
 			if (bizSupplier.getDailyLimitCount() > todayCountBySupplier) {
 				usableSupplierList.add(bizSupplier);
 			}
-			log.info("&*&*&*&*&*&*&*&*&*&*&*&*&*&*&*对比单量一次所用的时间：" + (System.currentTimeMillis() - startTimeAa) + "ms");
+			log.info("对比单量一次所用的时间：" + (System.currentTimeMillis() - startTimeAa) + "ms");
 		}
 		long endTime = System.currentTimeMillis();
-		log.info("&*&*&*&*&*&*&*&*&*&*&*&*&*&*&*对比单量所用的总时间：" + (endTime - startTime) + "ms");
+		log.info("对比单量所用的总时间：" + (endTime - startTime) + "ms");
 
 		//如果是空则直接返回
 		if (usableSupplierList.isEmpty()) {
@@ -167,11 +170,12 @@ public class BizCarBrandServiceImpl extends ServiceImpl<BizCarBrandMapper, BizCa
 		// 组装机器人信息
 		List<RebotInfo> robotEffectiveList = new ArrayList<>();
 		for (BizSupplier supplierDO : usableSupplierList) {
-			BizRobot bizRobot = bizRobotService.getRobotsBySupplierId(supplierDO.getId()).stream().findFirst().orElse(null);
-			if (bizRobot != null){
-				RebotInfo rebotInfo = (RebotInfo) bizRobot.clone();
-				rebotInfo.setSupplierId(supplierDO.getId());				//添加供应商id
-				rebotInfo.setSupplierName(supplierDO.getSupplierName());	//添加供应商名称
+			BizRobot bizRobot = bizRobotService.getRobotsBySupplierId(supplierDO.getId()).stream().findFirst().get();
+			if (bizRobot != null) {
+				RebotInfo rebotInfo = new RebotInfo();
+				BeanUtils.copyProperties(bizRobot, rebotInfo);
+				rebotInfo.setSupplierId(supplierDO.getId());                //添加供应商id
+				rebotInfo.setSupplierName(supplierDO.getSupplierName());    //添加供应商名称
 				robotEffectiveList.add(rebotInfo);
 			}
 		}

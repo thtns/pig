@@ -29,5 +29,5 @@ import com.pig4cloud.pig.capi.entity.BizBuyer;
  */
 public interface BizBuyerService extends IService<BizBuyer> {
 
-
+	BizBuyer getByAkSk(String ak, String sk);
 }
