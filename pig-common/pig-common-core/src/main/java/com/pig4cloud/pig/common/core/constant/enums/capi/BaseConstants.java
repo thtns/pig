@@ -9,4 +9,10 @@ public interface BaseConstants {
 
 	Integer NOT_NEED_PROXY = 0;
 
+	/**
+	 * 0：失败，1：成功，2：无结果
+	 */
+	Integer ROBOT_QUERY_STATUS_FAIL = 0;
+	Integer ROBOT_QUERY_STATUS_SUCCESS = 1;
+	Integer ROBOT_QUERY_STATUS_NO_RESULT= 2;
 }

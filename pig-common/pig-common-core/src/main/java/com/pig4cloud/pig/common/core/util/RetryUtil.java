@@ -4,10 +4,7 @@ import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.Future;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 @Slf4j
 class Retry {
@@ -199,7 +196,16 @@ public final class RetryUtil {
                                               boolean exponential,
                                               long timeoutMs,
                                               ThreadPoolExecutor executor) throws Exception {
+		if (executor == null){
+			executor = createThreadPoolExecutor();
+		}
         Retry retry = new RetryAsync(timeoutMs, executor);
         return retry.doRetry(callable, retryTimes, sleepTimeInMilliSecond, exponential, null);
     }
+
+	public ThreadPoolExecutor createThreadPoolExecutor(){
+		// 缓存队列设置固定长度为2, 为了快速触发 rejectHandler
+		BlockingDeque<Runnable> blockingDeque = new LinkedBlockingDeque<>(2);
+		return new ThreadPoolExecutor(1, 3, 20, TimeUnit.SECONDS, blockingDeque);
+	}
 }
