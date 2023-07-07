@@ -39,7 +39,7 @@ public class AuthorizationFilter implements Filter {
 		HttpServletResponse response = (HttpServletResponse) servletResponse;
 		String requestURI = request.getRequestURI();
 		log.info("api getMethod ：{}", requestURI);
-		try {
+//		try {
 			if (requestURI.contains("/maintenance")) {
 				String key = request.getHeader("AccessKeyId");
 				String secret = request.getHeader("AccessKeySecret");
@@ -63,9 +63,9 @@ public class AuthorizationFilter implements Filter {
 				}
 			}
 			filterChain.doFilter(servletRequest, servletResponse);
-		} catch (Exception e) {
-			log.error("请求拦截错误, 错误是: " + e);
-			return;
-		}
+//		} catch (Exception e) {
+//			log.error("请求拦截错误, 错误是: " + e);
+//			return;
+//		}
 	}
 }
