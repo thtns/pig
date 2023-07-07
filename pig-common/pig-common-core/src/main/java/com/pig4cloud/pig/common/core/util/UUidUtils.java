@@ -21,4 +21,7 @@ public class UUidUtils {
 		return UUID.randomUUID().toString().replaceAll("-", "");
 	}
 
+	public static Long uuLongId(){
+		return (long) Math.abs(UUID.randomUUID().hashCode());
+	}
 }
