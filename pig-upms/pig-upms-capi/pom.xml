@@ -25,6 +25,13 @@
 			<artifactId>pig-common-mybatis</artifactId>
 		</dependency>
 
+		<dependency>
+			<groupId>org.springframework.security</groupId>
+			<artifactId>spring-security-oauth2-core</artifactId>
+			<version>5.7.8</version>
+			<scope>compile</scope>
+		</dependency>
+
 		<!-- orm 模块-->
 		<dependency>
 			<groupId>com.baomidou</groupId>
@@ -98,9 +105,14 @@
 			<version>2.2.1
 			</version>
 		</dependency>
+        <dependency>
+            <groupId>org.apache.tomcat.embed</groupId>
+            <artifactId>tomcat-embed-core</artifactId>
+            <version>9.0.75</version>
+        </dependency>
 
 
-	</dependencies>
+    </dependencies>
 
 	<build>
 		<finalName>pig-upms-capi</finalName>
