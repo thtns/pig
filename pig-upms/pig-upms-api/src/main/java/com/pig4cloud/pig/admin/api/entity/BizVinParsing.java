@@ -29,14 +29,14 @@ public class BizVinParsing extends BaseEntity {
 	private java.lang.String vinCode;
 
 	/**
-	 * 厂商名称（例：长安马自达、一汽大众）
-	 */
-	private java.lang.String subBrand;
-
-	/**
 	 * 品牌名称（例：马自达、大众）
 	 */
 	private java.lang.String brand;
+
+	/**
+	 * 厂商名称（例：长安马自达、一汽大众）
+	 */
+	private java.lang.String subBrand;
 
 	/**
 	 * 关联car_brand_wmi中的doctor_brand

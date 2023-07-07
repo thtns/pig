@@ -30,5 +30,9 @@
     <result property="brand" column="brand"/>
     <result property="doctorBrand" column="doctor_brand"/>
     <result property="content" column="content"/>
+    <result property="createBy" column="create_by"/>
+    <result property="createTime" column="create_time"/>
+    <result property="updateTime" column="update_time"/>
+    <result property="updateBy" column="update_by"/>
   </resultMap>
 </mapper>
