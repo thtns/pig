@@ -1,6 +1,6 @@
 package com.pig4cloud.pig.capi.service;
 
-import com.pig4cloud.pig.admin.api.entity.BizBuyerOrder;
+import com.pig4cloud.pig.capi.entity.BizBuyerOrder;
 import com.pig4cloud.pig.capi.response.MaintenanceOrderRes;
 
 public interface MaintenanceService  {

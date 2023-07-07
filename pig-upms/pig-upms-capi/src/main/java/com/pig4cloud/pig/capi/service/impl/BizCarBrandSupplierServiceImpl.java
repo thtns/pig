@@ -20,6 +20,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.pig4cloud.pig.capi.entity.BizCarBrandSupplier;
 import com.pig4cloud.pig.capi.mapper.BizCarBrandSupplierMapper;
 import com.pig4cloud.pig.capi.service.BizCarBrandSupplierService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 /**
@@ -29,6 +30,7 @@ import org.springframework.stereotype.Service;
  * @date 2023-06-16 20:59:27
  */
 @Service
+@RequiredArgsConstructor
 public class BizCarBrandSupplierServiceImpl extends ServiceImpl<BizCarBrandSupplierMapper, BizCarBrandSupplier> implements BizCarBrandSupplierService {
 
 }

@@ -25,8 +25,8 @@ import com.pig4cloud.pig.capi.mapper.BizCarBrandSupplierMapper;
 import com.pig4cloud.pig.capi.mapper.BizRobotMapper;
 import com.pig4cloud.pig.capi.mapper.BizRobotSupplierMapper;
 import com.pig4cloud.pig.capi.service.BizRobotService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -37,16 +37,17 @@ import java.util.stream.Collectors;
  * @date 2023-06-16 20:59:27
  */
 @Service
+@RequiredArgsConstructor
 public class BizRobotServiceImpl extends ServiceImpl<BizRobotMapper, BizRobot> implements BizRobotService {
 
 	/*** 机器人mapper **/
-	BizRobotMapper bizRobotMapper;
+	private final BizRobotMapper bizRobotMapper;
 
 	/*** 品牌供应商mapper **/
-	BizCarBrandSupplierMapper bizCarBrandSupplierMapper;
+	private final BizCarBrandSupplierMapper bizCarBrandSupplierMapper;
 
 	/*** 供应商机器人mapper **/
-	BizRobotSupplierMapper bizRobotSupplierMapper;
+	private final BizRobotSupplierMapper bizRobotSupplierMapper;
 
 
 	/**
@@ -66,6 +67,9 @@ public class BizRobotServiceImpl extends ServiceImpl<BizRobotMapper, BizRobot> i
 	private List<BizRobot> getByRobotSupplierList(QueryWrapper<BizRobotSupplier> robotSupplierWrapper){
 		List<BizRobotSupplier> robotSupplierList = bizRobotSupplierMapper.selectList(robotSupplierWrapper);
 		// 根据供应商机器人关系获取机器人列表
+		if (robotSupplierList.size() == 0){
+			return null;
+		}
 		QueryWrapper<BizRobot> robotWrapper = new QueryWrapper<>();
 		robotWrapper.eq("status", 1);// 启动
 		robotWrapper.in("id", robotSupplierList.stream().map(BizRobotSupplier::getRobotId).collect(Collectors.toList()));

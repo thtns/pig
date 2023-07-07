@@ -40,9 +40,9 @@ public class BizSupplierServiceImpl extends ServiceImpl<BizSupplierMapper, BizSu
 
 
 	/*** 品牌供应商mapper **/
-	BizCarBrandSupplierMapper bizCarBrandSupplierMapper;
+	private final BizCarBrandSupplierMapper bizCarBrandSupplierMapper;
 
-	BizSupplierMapper bizSupplierMapper;
+	private final BizSupplierMapper bizSupplierMapper;
 
 
 	@Override
@@ -51,7 +51,9 @@ public class BizSupplierServiceImpl extends ServiceImpl<BizSupplierMapper, BizSu
 		carBrandQueryWrapper.eq("car_brand_id", carBrandid);
 		// 获取品牌下供应商关系
 		List<BizCarBrandSupplier> bizCarBrandSuppliers = bizCarBrandSupplierMapper.selectList(carBrandQueryWrapper);
-
+		if (bizCarBrandSuppliers.size() == 0){
+			return null;
+		}
 		QueryWrapper<BizSupplier> bizSupplierQueryWrapper = new QueryWrapper<>();
 		bizSupplierQueryWrapper.in("id", bizCarBrandSuppliers.stream().map(BizCarBrandSupplier::getSupplierId).collect(Collectors.toList()));
 		return bizSupplierMapper.selectList(bizSupplierQueryWrapper);

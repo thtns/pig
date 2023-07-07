@@ -1,6 +1,5 @@
 package com.pig4cloud.pig.capi.service.impl;
 
-import cn.hutool.core.codec.Base64;
 import cn.hutool.http.HttpRequest;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
@@ -18,14 +17,11 @@ import com.pig4cloud.pig.capi.service.apo.RedisKeyDefine;
 import com.pig4cloud.pig.common.core.constant.enums.capi.BaseConstants;
 import com.pig4cloud.pig.common.core.constant.enums.capi.RequestStatusEnum;
 import com.pig4cloud.pig.common.core.util.R;
-import com.pig4cloud.pig.common.core.util.RedisUtils;
 import com.pig4cloud.pig.common.core.util.RetryUtil;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.IOUtils;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.*;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
@@ -36,21 +32,21 @@ import java.util.concurrent.TimeUnit;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class MaintenanceServiceImpl implements MaintenanceService {
 	final int TIME_OUT = 2000;
 
 
-
 	/*** 机器人查询记录 **/
-	BizRobotQueryRecordService bizRobotQueryRecordService;
+	private final BizRobotQueryRecordService bizRobotQueryRecordService;
 
 	/*** 采购商记录 **/
-	BizBuyerOrderService bizBuyerOrderService;
+	private final BizBuyerOrderService bizBuyerOrderService;
 
 	/*** 品牌 **/
-	BizCarBrandService bizCarBrandService;
+	private final BizCarBrandService bizCarBrandService;
 
-	RedisUtils redisUtils;
+	private final RedisTemplate<String, String> redisTemplate;
 
 	@Override
 	public MaintenanceOrderRes maintenanceOrder(BizBuyerOrder bizBuyerOrder) {
@@ -60,12 +56,7 @@ public class MaintenanceServiceImpl implements MaintenanceService {
 			localMysqlParsing(bizBuyerOrder, bizRobotQueryRecord);
 			return MaintenanceOrderRes.builder().order_id(String.valueOf(bizBuyerOrder.getId())).vin(bizBuyerOrder.getVin()).build();
 		}
-		/***
-		 * 因为有重试机制和队列机制存在，并且采购商可以主动发起回调
-		 * 		因此，我们会通过采购商id和vin判断今天是否有订单，存在的话就放入延迟队列中；
-		 * 			延迟队列触发之后也会回调 maintenanceOrder,
-		 * 			所以当greater为false时，则是新发起，为true时则是客户回调请求或 延迟队列调用
-		 */
+
 		Boolean greater = bizBuyerOrderService.isOrNotPlaceOrder(bizBuyerOrder.getVin(), bizBuyerOrder.getBuyerId());
 		if (greater) {
 			// 加入延时队列，5分钟后执行。
@@ -156,7 +147,7 @@ public class MaintenanceServiceImpl implements MaintenanceService {
 		Map<String, Object> paramMap = new HashMap<>(16);
 		paramMap.put("order_id", bizBuyerOrder.getId());
 		paramMap.put("maintain_data", bizRobotQueryRecord.getResult());
-		R result = R.ok(paramMap);
+		R<Map<String, Object>> result = R.ok(paramMap);
 
 		log.info("####第四步（回调商家）：给商家最终结果" + JSON.toJSONString(result));
 		return HttpRequest.post(bizBuyerOrder.getCallbackUrl()).body(JSON.toJSONString(result)).contentType("application/json").execute().body();
@@ -199,7 +190,7 @@ public class MaintenanceServiceImpl implements MaintenanceService {
 		Map<String, Object> paramMap = new HashMap<>(16);
 		paramMap.put("order_id", bizBuyerOrder.getId());
 		paramMap.put("maintain_data", null);
-		R result = R.resultEnumType(paramMap, errorCode);
+		R<Map<String, Object>> result = R.resultEnumType(paramMap, errorCode);
 
 		log.info("####第四步（回调商家）：给商家最终结果" + JSON.toJSONString(result));
 		return HttpRequest.post(bizBuyerOrder.getCallbackUrl()).body(JSON.toJSONString(result)).contentType("application/json").execute().body();
@@ -224,24 +215,21 @@ public class MaintenanceServiceImpl implements MaintenanceService {
 		if (robotList.isEmpty()) {
 			if (bizBuyerOrder.getRetryCount() > 1) {
 				log.info("错误回调给商家：供应商ID：" + bizBuyerOrder.getSupplierId());
-				if (bizBuyerOrder.getRetryCount() > 1) {
-					log.info("错误回调给商家：供应商ID：" + bizBuyerOrder.getSupplierId());
-					merchantCallBackError(bizBuyerOrder, RequestStatusEnum.ORDER_SUCCESS.getType(), RequestStatusEnum.SERVER_QUERY_FAILURE.getType());
-				}
-				bizBuyerOrder.setRequestStatus(RequestStatusEnum.API_TIME_NONSUPPORT.getType());
-				bizBuyerOrder.setFailureReason(JSON.toJSONString(R.resultEnumType(null, RequestStatusEnum.API_TIME_NONSUPPORT.getType())));
-				bizBuyerOrderService.updateById(bizBuyerOrder);
-				throw new RuntimeException(JSON.toJSONString(R.resultEnumType(null, RequestStatusEnum.API_TIME_NONSUPPORT.getType())));
+				merchantCallBackError(bizBuyerOrder, RequestStatusEnum.ORDER_SUCCESS.getType(), RequestStatusEnum.SERVER_QUERY_FAILURE.getType());
 			}
+			bizBuyerOrder.setRequestStatus(RequestStatusEnum.API_TIME_NONSUPPORT.getType());
+			bizBuyerOrder.setFailureReason(JSON.toJSONString(R.resultEnumType(null, RequestStatusEnum.API_TIME_NONSUPPORT.getType())));
+			bizBuyerOrderService.updateById(bizBuyerOrder);
+			throw new RuntimeException(JSON.toJSONString(R.resultEnumType(null, RequestStatusEnum.API_TIME_NONSUPPORT.getType())));
 		}
 
 		//异步请求机器人
-		CompletableFuture.runAsync(() -> {
-			long startTime = System.currentTimeMillis();
-			log.info("第三步：异步请求机器人~~");
-			syncRequestRobot(robotList, bizBuyerOrder);
-			log.info("&*&*&*&*&*&*&*&*&*&*&*&*&*&*&*整个异步流程运行时间：" + (System.currentTimeMillis() - startTime) + "ms");
-		});
+//		CompletableFuture.runAsync(() -> {
+		long startTime = System.currentTimeMillis();
+		log.info("第三步：异步请求机器人~~");
+		syncRequestRobot(robotList, bizBuyerOrder);
+		log.info("&*&*&*&*&*&*&*&*&*&*&*&*&*&*&*整个异步流程运行时间：" + (System.currentTimeMillis() - startTime) + "ms");
+//		});
 		log.info("第四步：异步请求机器人完成~~");
 	}
 
@@ -281,10 +269,10 @@ public class MaintenanceServiceImpl implements MaintenanceService {
 	private Boolean checkQueue(RebotInfo rebotInfo, BizBuyerOrder bizBuyerOrder) {
 		//检查此品牌的机器人在redis是否标识可用。
 
-		String queue = RedisUtils.get(RedisKeyDefine.QUEUE + bizBuyerOrder.getCarBrandId() + rebotInfo.getSupplierId());
+		String queue = redisTemplate.opsForValue().get(RedisKeyDefine.QUEUE + bizBuyerOrder.getCarBrandId() + rebotInfo.getSupplierId());
 
 		if (Objects.isNull(queue) || queue.equals(RedisKeyDefine.ENABLE)) {
-			RedisUtils.set(RedisKeyDefine.QUEUE + bizBuyerOrder.getCarBrandId() + rebotInfo.getSupplierId(),
+			redisTemplate.opsForValue().set(RedisKeyDefine.QUEUE + bizBuyerOrder.getCarBrandId() + rebotInfo.getSupplierId(),
 					RedisKeyDefine.DISABLE, 8, TimeUnit.MINUTES);
 			return true;
 		}
@@ -292,83 +280,87 @@ public class MaintenanceServiceImpl implements MaintenanceService {
 	}
 
 	private Boolean checkProxy(String proxyUrl) {
-		if (StringUtils.isBlank(proxyUrl)) {
-			return false;
-		}
-
-		log.info("~~~~开始检查代理地址是否可用：" + proxyUrl);
-		String headerKey = "Proxy-Authorization";
-		String headerValue = "";
-		InetSocketAddress addr = null;
-		URL url = null;
-		try {
-			url = new URL("http://www.baidu.com");
-		} catch (MalformedURLException e) {
-			e.printStackTrace();
-		}
-		if (proxyUrl.contains("@")) {
-			log.info("带帐号密码...");
-			String[] accountInfo = proxyUrl.split("@");
-			log.info(accountInfo[0]);
-			if (accountInfo.length > 0) {
-				String[] split = accountInfo[0].split(":");
-				log.info(JSON.toJSONString(split));
-				String account = split[1].substring(2);
-				String password = split[2];
-
-				headerValue = "Basic " + Base64.encode(account + ":" + password);
-			}
-			if (accountInfo.length > 1) {
-				String[] addrInfo = accountInfo[1].split(":");
-				addr = new InetSocketAddress(addrInfo[0], Integer.parseInt(addrInfo[1]));
-			}
-		} else {
-			String[] split = proxyUrl.split(":");
-			log.info(JSON.toJSONString(split));
-			addr = new InetSocketAddress(split[1].substring(2), Integer.parseInt(split[2]));
-		}
-
-		Proxy proxy = new Proxy(Proxy.Type.HTTP, addr);
-		URLConnection conn;
-		try {
-			conn = url.openConnection(proxy);
-			conn.setConnectTimeout(6000);
-			conn.setReadTimeout(6000);
-			conn.setRequestProperty(headerKey, headerValue);
-			InputStream in = conn.getInputStream();
-			String s = IOUtils.toString(in);
-			if (s.indexOf("百度") > 0 || s.indexOf("baidu") > 0) {
-				log.info("~~~~可用");
-				return true;
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		log.info("~~~~不可用");
-		return false;
+		return true;
+//		if (StringUtils.isBlank(proxyUrl)) {
+//			return false;
+//		}
+//		log.info("~~~~开始检查代理地址是否可用：" + proxyUrl);
+//		String hostname = "";
+//		int port = 0;
+//		String account = null;
+//		String password = "";
+//
+//		if (proxyUrl.contains("@")) {
+//			log.info("带帐号密码...");
+//			String[] accountInfo = proxyUrl.split("@");
+//			log.info(accountInfo[0]);
+//			if (accountInfo.length > 0) {
+//				String[] split = accountInfo[0].split(":");
+//				log.info(JSON.toJSONString(split));
+//				account = split[1].substring(2);
+//				password = split[2];
+//			}
+//			if (accountInfo.length > 1) {
+//				String[] addrInfo = accountInfo[1].split(":");
+//				hostname = addrInfo[0];
+//				port = Integer.parseInt(addrInfo[1]);
+//				//构造proxy的地址和端口并返回
+//				SocketAddress socketAddress = new InetSocketAddress(hostname,port);
+//			}
+//		}
+//		else {
+//			String[] split = proxyUrl.split(":");
+//			log.info(JSON.toJSONString(split));
+//			hostname = split[0];
+//			port = Integer.parseInt(split[1]);
+//		}
+//		try {
+//			HttpHost proxy = new HttpHost(hostname, port, "http");
+//			CredentialsProvider provider = new BasicCredentialsProvider();
+//			provider.setCredentials(new AuthScope(proxy), new UsernamePasswordCredentials(account, password));
+//			CloseableHttpClient httpClient = HttpClients.custom().setDefaultCredentialsProvider(provider).build();
+//			RequestConfig requestConfig = RequestConfig.custom().setProxy(proxy).build();
+//			CloseableHttpResponse response = null;
+//			HttpGet get = new HttpGet("http://www.baidu.com");
+//			get.setConfig(requestConfig);
+//			response = httpClient.execute(get);
+//
+//			InputStream inputStream = response.getEntity().getContent();
+//			String s = IOUtils.toString(inputStream);
+//			if (s.indexOf("百度") > 0 || s.indexOf("baidu") > 0) {
+//				log.info("~~~~可用");
+//				return true;
+//			}
+//		}catch (IOException e){
+//			e.printStackTrace();
+//		}
+//		log.info("~~~~不可用");
+//		return false;
 	}
 
 	/**
 	 * 请求机器人
-	 * @param bizBuyerOrder		订单信息
-	 * @param bizRobotInfo		机器人信息
-	 * @param robotProxy		代理
+	 *
+	 * @param bizBuyerOrder 订单信息
+	 * @param bizRobotInfo  机器人信息
+	 * @param robotProxy    代理
 	 * @return
 	 */
-	private Boolean robotRequest(BizBuyerOrder bizBuyerOrder, RebotInfo bizRobotInfo, String robotProxy){
+	private Boolean robotRequest(BizBuyerOrder bizBuyerOrder, RebotInfo bizRobotInfo, String robotProxy) {
 		log.info("####第一步【异步】：异步请求机器人~~~ vin");
 		String robotAccountPassword = bizRobotInfo.getRobotAccountPassword();
 		JSONObject object = JSONObject.parseObject(robotAccountPassword);
 
 		Map<String, Object> paramMap = new HashMap<>(16);
+		paramMap.put("vin", bizBuyerOrder.getVin());
 		object.forEach(paramMap::put);
 
-		paramMap.put("host", bizRobotInfo.getRobotUrl());
+		paramMap.put("host", bizRobotInfo.getHost());
 		if (StringUtils.isNotBlank(bizBuyerOrder.getEngineCode())) {
 			paramMap.put("engine_no", bizBuyerOrder.getEngineCode());
 		}
 
-		if (StringUtils.isEmpty(robotProxy) && bizRobotInfo.getNeedDynamicProxy() == BaseConstants.NEED_PROXY) {
+		if (!StringUtils.isEmpty(robotProxy) && bizRobotInfo.getNeedDynamicProxy() == BaseConstants.NEED_PROXY) {
 			log.debug("机器人代理名称：" + bizRobotInfo.getRobotProxiesName());
 			paramMap.put("proxy", robotProxy);
 		} else {
@@ -377,7 +369,7 @@ public class MaintenanceServiceImpl implements MaintenanceService {
 		paramMap.put("task_id", bizBuyerOrder.getId());
 
 		log.info("####请求机器人开始" + bizBuyerOrder.getVin());
-		String result = HttpRequest.post(bizRobotInfo.getRobotUrl() + "/" + bizBuyerOrder.getVin())
+		String result = HttpRequest.post(bizRobotInfo.getRobotUrl())
 				.body(JSON.toJSONString(paramMap))
 				.contentType("application/json")
 				.execute().body();

@@ -18,21 +18,16 @@ package com.pig4cloud.pig.capi.service.impl;
 
 import cn.hutool.core.date.DateUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.pig4cloud.pig.capi.entity.BizBuyer;
 import com.pig4cloud.pig.capi.entity.BizBuyerOrder;
-import com.pig4cloud.pig.capi.entity.BizRobotQueryRecord;
 import com.pig4cloud.pig.capi.mapper.BizBuyerOrderMapper;
 import com.pig4cloud.pig.capi.service.BizBuyerOrderService;
 import com.pig4cloud.pig.capi.service.BizBuyerService;
-import com.pig4cloud.pig.capi.service.BizRobotQueryRecordService;
-import com.pig4cloud.pig.capi.response.MaintenanceOrderRes;
 import com.pig4cloud.pig.common.core.constant.enums.capi.RequestStatusEnum;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
 import java.util.List;
-import java.util.Objects;
 
 /**
  * 采购商订单表
@@ -41,9 +36,10 @@ import java.util.Objects;
  * @date 2023-06-16 20:59:27
  */
 @Service
+@RequiredArgsConstructor
 public class BizBuyerOrderServiceImpl extends ServiceImpl<BizBuyerOrderMapper, BizBuyerOrder> implements BizBuyerOrderService {
 
-	BizBuyerService bizBuyerService;
+	private final BizBuyerService bizBuyerService;
 
 	@Override
 	public BizBuyerOrder getSuccessMerchantOrderByVin(String vin) {

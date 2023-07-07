@@ -18,14 +18,12 @@ package com.pig4cloud.pig.capi.service.impl;
 
 import cn.hutool.core.date.DateUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.pig4cloud.pig.capi.entity.BizRobotQueryRecord;
 import com.pig4cloud.pig.capi.mapper.BizRobotQueryRecordMapper;
 import com.pig4cloud.pig.capi.service.BizRobotQueryRecordService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -35,6 +33,7 @@ import java.util.List;
  * @date 2023-06-16 20:59:27
  */
 @Service
+@RequiredArgsConstructor
 public class BizRobotQueryRecordServiceImpl extends ServiceImpl<BizRobotQueryRecordMapper, BizRobotQueryRecord> implements BizRobotQueryRecordService {
 
 	@Override
