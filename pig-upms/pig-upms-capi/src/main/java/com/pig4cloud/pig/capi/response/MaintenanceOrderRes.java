@@ -1,4 +1,4 @@
-package com.pig4cloud.pig.capi.vo;
+package com.pig4cloud.pig.capi.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class OrderResVo {
+public class MaintenanceOrderRes {
 	/**
 	 * 车辆vin码
 	 */

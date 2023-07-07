@@ -1,10 +1,10 @@
-package com.pig4cloud.pig.capi.vo;
+package com.pig4cloud.pig.capi.request;
 
 import lombok.Data;
 import javax.validation.constraints.NotBlank;
 
 @Data
-public class OrderReqVo {
+public class MaintenanceOrderRequest {
 
 	@NotBlank(message = "VIN码不能为空")
 	private String vin;
