@@ -38,4 +38,6 @@ public interface BizSupplierService extends IService<BizSupplier> {
 	 * @return List<BizSupplier>
 	 */
 	public List<BizSupplier> getSupplierByCarBrandId(Long carBrandid);
+
+	public void shutDownSupplier(Long id);
 }

@@ -21,6 +21,8 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.pig4cloud.pig.capi.entity.BizBuyerOrder;
 import com.pig4cloud.pig.capi.response.MaintenanceOrderRes;
 
+import java.util.List;
+
 /**
  * 采购商订单表
  *
@@ -50,6 +52,8 @@ public interface BizBuyerOrderService extends IService<BizBuyerOrder> {
 	 * @param bizBuyerOrder
 	 * @return
 	 */
-	Boolean cheackBuyerOrderLimi(BizBuyerOrder bizBuyerOrder);
+	Boolean checkBuyerOrderLimit(BizBuyerOrder bizBuyerOrder);
+
+	public BizBuyerOrder getSameCarBrandOrder(BizBuyerOrder bizBuyerOrder);
 
 }

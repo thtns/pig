@@ -29,6 +29,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.util.List;
 
+import static cn.hutool.core.date.DateUtil.today;
+
 /**
  * 采购商订单表
  *
@@ -43,14 +45,8 @@ public class BizBuyerOrderServiceImpl extends ServiceImpl<BizBuyerOrderMapper, B
 
 	@Override
 	public BizBuyerOrder getSuccessMerchantOrderByVin(String vin) {
-//		LambdaQueryWrapper<BizBuyerOrder> queryWrapper = new LambdaQueryWrapper<>();
-//		queryWrapper.likeRight(BizBuyerOrder::getRequestTime , DateUtil.today())
-//				.eq(BizBuyerOrder::getVin, vin)
-//				.eq(BizBuyerOrder::getRequestStatus, RequestStatusEnum.CALLBACK_SUCCESS.getType());
-//		List<BizBuyerOrder> list = this.list(queryWrapper);
-//		return list.stream().findFirst().orElse(null);//取第一个或者返回null
 		return this.lambdaQuery()
-				.likeRight(BizBuyerOrder::getRequestTime, DateUtil.today())
+				.likeRight(BizBuyerOrder::getRequestTime, today())
 				.eq(BizBuyerOrder::getVin, vin)
 				.eq(BizBuyerOrder::getRequestStatus, RequestStatusEnum.CALLBACK_SUCCESS.getType())
 				.orderByDesc(BizBuyerOrder::getRequestTime) // 按时间倒序排序
@@ -66,17 +62,8 @@ public class BizBuyerOrderServiceImpl extends ServiceImpl<BizBuyerOrderMapper, B
 	 */
 	@Override
 	public boolean isOrNotPlaceOrder(String vin, Long bizBuyerId) {
-//		LambdaQueryWrapper<BizBuyerOrder> queryWrapper = new LambdaQueryWrapper<>();
-//		queryWrapper.likeRight(BizBuyerOrder::getRequestTime , DateUtil.today())
-//				.eq(BizBuyerOrder::getVin, vin)
-//				.eq(BizBuyerOrder::getBuyerId, bizBuyerId)
-//				.and(w -> w.eq(BizBuyerOrder::getRequestStatus, RequestStatusEnum.ORDER_SUCCESS.getType())
-//						.or()
-//						.eq(BizBuyerOrder::getRequestStatus, RequestStatusEnum.QUERYING.getType())
-//				);
-//		return this.count(queryWrapper) > 1;
 		return this.lambdaQuery()
-				.likeRight(BizBuyerOrder::getRequestTime, DateUtil.today())
+				.likeRight(BizBuyerOrder::getRequestTime, today())
 				.eq(BizBuyerOrder::getVin, vin)
 				.eq(BizBuyerOrder::getBuyerId, bizBuyerId)
 				.and(w -> w.eq(BizBuyerOrder::getRequestStatus, RequestStatusEnum.ORDER_SUCCESS.getType())
@@ -92,17 +79,27 @@ public class BizBuyerOrderServiceImpl extends ServiceImpl<BizBuyerOrderMapper, B
 	 * @return
 	 */
 	@Override
-	public Boolean cheackBuyerOrderLimi(BizBuyerOrder bizBuyerOrder) {
-		// 获取采购商(单数限制)
-		BizBuyer bizBuyer = bizBuyerService.getById(bizBuyerOrder.getBuyerId());
+	public Boolean checkBuyerOrderLimit(BizBuyerOrder bizBuyerOrder) {
+		Long buyerId = bizBuyerOrder.getBuyerId();
+		BizBuyer bizBuyer = bizBuyerService.getById(buyerId);
 
-		// 判断采购商上限,查询计算下单成功，查询中，回调成功的（不包含查詢失敗的和此時段無法訪問兩種狀態的數據，即查詢失敗的）
+		// 判断采购商上限 不包含查詢失敗的和此時段無法訪問兩種狀態的數據，即查詢失敗的
 		LambdaQueryWrapper<BizBuyerOrder> queryWrapper = new LambdaQueryWrapper<>();
-		queryWrapper.likeRight(BizBuyerOrder::getRequestTime , DateUtil.today())
-				.eq(BizBuyerOrder::getBuyerId, bizBuyerOrder.getBuyerId())
+		queryWrapper.likeRight(BizBuyerOrder::getRequestTime , today())
+				.eq(BizBuyerOrder::getBuyerId, buyerId)
 				.ne(BizBuyerOrder::getRequestStatus, RequestStatusEnum.API_BRAND_NONSUPPORT.getType())
 				.ne(BizBuyerOrder::getRequestStatus, RequestStatusEnum.ORDER_FAILURE.getType());
 		return bizBuyer.getDailylimitCount() > this.count(queryWrapper);
 	}
 
+	public BizBuyerOrder getSameCarBrandOrder(BizBuyerOrder bizBuyerOrder) {
+		return this.lambdaQuery()
+				.likeRight(BizBuyerOrder::getRequestTime, today())
+				.eq(BizBuyerOrder::getCarBrandId, bizBuyerOrder.getCarBrandId())
+				.eq(BizBuyerOrder::getRequestStatus, RequestStatusEnum.QUERYING.getType())
+				.ne(BizBuyerOrder::getId, bizBuyerOrder.getId()) // 排除传入的bizBuyerOrder
+				.orderByAsc(BizBuyerOrder::getRequestTime)
+				.last("LIMIT 1")
+				.one();
+	}
 }

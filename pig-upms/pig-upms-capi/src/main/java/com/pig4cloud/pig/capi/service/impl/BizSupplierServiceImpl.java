@@ -25,7 +25,10 @@ import com.pig4cloud.pig.capi.mapper.BizSupplierMapper;
 import com.pig4cloud.pig.capi.service.BizSupplierService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -46,16 +49,25 @@ public class BizSupplierServiceImpl extends ServiceImpl<BizSupplierMapper, BizSu
 
 
 	@Override
-	public List<BizSupplier> getSupplierByCarBrandId(Long carBrandid) {
+	public List<BizSupplier> getSupplierByCarBrandId(Long carBrandId) {
 		QueryWrapper<BizCarBrandSupplier> carBrandQueryWrapper = new QueryWrapper<>();
-		carBrandQueryWrapper.eq("car_brand_id", carBrandid);
-		// 获取品牌下供应商关系
+		carBrandQueryWrapper.eq("car_brand_id", carBrandId);
 		List<BizCarBrandSupplier> bizCarBrandSuppliers = bizCarBrandSupplierMapper.selectList(carBrandQueryWrapper);
-		if (bizCarBrandSuppliers.size() == 0){
-			return null;
+		if (bizCarBrandSuppliers.isEmpty()) {
+			return Collections.emptyList();
 		}
 		QueryWrapper<BizSupplier> bizSupplierQueryWrapper = new QueryWrapper<>();
 		bizSupplierQueryWrapper.in("id", bizCarBrandSuppliers.stream().map(BizCarBrandSupplier::getSupplierId).collect(Collectors.toList()));
 		return bizSupplierMapper.selectList(bizSupplierQueryWrapper);
+
+	}
+
+	public void shutDownSupplier(Long id){
+		BizSupplier bizSupplier = this.getById(id);
+		if (Objects.isNull(bizSupplier)){
+			return;
+		}
+		bizSupplier.setStatus(0);
+		this.updateById(bizSupplier);
 	}
 }
