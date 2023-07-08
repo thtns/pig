@@ -77,6 +77,18 @@ public class R<T> implements Serializable {
 		return restResult(data, CommonConstants.FAIL, msg);
 	}
 
+	public static <T> R<Object> apiOk() {
+		return restResult(null, CommonConstants.API_SUCCESS, null);
+	}
+
+	public static <T> R<T> apiOk(T data) {
+		return restResult(data, CommonConstants.API_SUCCESS, null);
+	}
+
+	public static <T> R<T> apiOk(T data, String msg) {
+		return restResult(data, CommonConstants.API_SUCCESS, msg);
+	}
+
 	public static <T> R<T> result(T data, int code, String msg) {
 		return restResult(data, code, msg);
 	}
