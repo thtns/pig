@@ -32,6 +32,10 @@ public enum RequestStatusEnum {
 	/*** 回调失败*/
     CALLBACK_FAILURE(4, "回调失败"),
 
+	/*** 查询无记录. */
+	CALLBACK_NO_RESULT( 5, "查询无记录."),
+
+
 
 
 
