@@ -116,7 +116,7 @@ public class CallBackController {
 					RequestStatusEnum.CALLBACK_SUCCESS,
 					Objects.requireNonNull(RequestStatusEnum.getStatusEnumByCode(robotError.getCode())));
 		}
-		return R.apiOk();
+		return R.ok();
 	}
 
     private void retryLogic(RobotCallbcakErroRequest robotError, BizBuyerOrder bizBuyerOrder) {
