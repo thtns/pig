@@ -92,4 +92,10 @@ public interface CommonConstants {
 	 */
 	String REQUEST_START_TIME = "REQUEST-START-TIME";
 
+
+	/**
+	 * 成功标记
+	 */
+	Integer API_SUCCESS = 200;
+
 }
