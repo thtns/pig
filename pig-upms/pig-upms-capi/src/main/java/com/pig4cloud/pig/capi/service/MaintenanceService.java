@@ -1,7 +1,8 @@
 package com.pig4cloud.pig.capi.service;
 
 import com.pig4cloud.pig.capi.entity.BizBuyerOrder;
-import com.pig4cloud.pig.capi.response.MaintenanceOrderRes;
+import com.pig4cloud.pig.capi.request.RobotCallbackRequest;
+import com.pig4cloud.pig.common.core.util.R;
 
 public interface MaintenanceService  {
 
@@ -10,7 +11,9 @@ public interface MaintenanceService  {
 	 * @param bizBuyerOrder
 	 * @return
 	 */
-	public MaintenanceOrderRes maintenanceOrder(BizBuyerOrder bizBuyerOrder);
+	public R<Object> processMaintenanceOrder(BizBuyerOrder bizBuyerOrder);
 
 	public void getResult(BizBuyerOrder bizBuyerOrder);
+
+	public void robotRequestCallBack(RobotCallbackRequest rebotCallbackRequest) throws Exception ;
 }
