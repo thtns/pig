@@ -9,6 +9,7 @@ import com.pig4cloud.pig.capi.service.BizBuyerOrderService;
 import com.pig4cloud.pig.capi.service.BizCarBrandService;
 import com.pig4cloud.pig.capi.service.BizRobotQueryRecordService;
 import com.pig4cloud.pig.capi.service.apo.RedisKeyDefine;
+import com.pig4cloud.pig.common.core.constant.CommonConstants;
 import com.pig4cloud.pig.common.core.constant.enums.capi.RequestStatusEnum;
 import com.pig4cloud.pig.common.core.util.R;
 import lombok.RequiredArgsConstructor;
@@ -47,13 +48,16 @@ public class CallBackManager {
 			return merchantCallBackError(bizBuyerOrder, RequestStatusEnum.CALLBACK_NO_RESULT, RequestStatusEnum.CALLBACK_NO_RESULT);
 		}
 		log.info("####第三步（回调商家）：开始");
-		Map<String, Object> paramMap = new HashMap<>(16);
+		Map<String, Object> paramMap = new HashMap<>();
 		paramMap.put("order_id", bizBuyerOrder.getId());
 		paramMap.put("maintain_data", robotResponse);
-		R<Map<String, Object>> result = R.ok(paramMap);
 
-		log.info("####第四步（回调商家）：给商家最终结果" + JSON.toJSONString(result));
-		return HttpRequest.post(bizBuyerOrder.getCallbackUrl()).body(JSON.toJSONString(result)).contentType("application/json").execute().body();
+		Map<String, Object> resultMap = new HashMap<>();
+		resultMap.put("code", CommonConstants.SUCCESS);
+		resultMap.put("data", paramMap);
+
+		log.info("####第四步（回调商家）：给商家最终结果" + JSON.toJSONString(resultMap));
+		return HttpRequest.post(bizBuyerOrder.getCallbackUrl()).body(JSON.toJSONString(resultMap)).contentType("application/json").execute().body();
 	}
 
 	/**
@@ -92,10 +96,13 @@ public class CallBackManager {
 		Map<String, Object> paramMap = new HashMap<>(16);
 		paramMap.put("order_id", bizBuyerOrder.getId());
 		paramMap.put("maintain_data", null);
-		R<Map<String, Object>> result = R.resultEnumType(paramMap, failCode.getType());
 
-		log.info("####第四步（回调商家）：给商家最终结果" + JSON.toJSONString(result));
-		return HttpRequest.post(bizBuyerOrder.getCallbackUrl()).body(JSON.toJSONString(result)).contentType("application/json").execute().body();
+		Map<String, Object> resultMap = new HashMap<>();
+		resultMap.put("code", failCode.getType());
+		resultMap.put("data", paramMap);
+
+		log.info("####第四步（回调商家）：给商家最终结果" + JSON.toJSONString(resultMap));
+		return HttpRequest.post(bizBuyerOrder.getCallbackUrl()).body(JSON.toJSONString(resultMap)).contentType("application/json").execute().body();
 	}
 
 
