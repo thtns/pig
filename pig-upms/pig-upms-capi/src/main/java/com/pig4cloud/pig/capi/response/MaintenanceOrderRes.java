@@ -18,5 +18,5 @@ public class MaintenanceOrderRes {
 	/**
 	 * 订单id
 	 */
-	private String order_id;
+	private Long order_id;
 }
