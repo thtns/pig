@@ -44,7 +44,7 @@ public class CallBackManager {
 	public String merchantCallBack(BizBuyerOrder bizBuyerOrder, RobotResponse robotResponse) {
 		// 如果回调明细为空，则回调查无记录
 		if (Objects.isNull(robotResponse)) {
-			return merchantCallBackError(bizBuyerOrder, RequestStatusEnum.CALLBACK_SUCCESS, RequestStatusEnum.SERVER_NO_RESULT);
+			return merchantCallBackError(bizBuyerOrder, RequestStatusEnum.CALLBACK_NO_RESULT, RequestStatusEnum.CALLBACK_NO_RESULT);
 		}
 		log.info("####第三步（回调商家）：开始");
 		Map<String, Object> paramMap = new HashMap<>(16);
