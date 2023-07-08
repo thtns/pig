@@ -73,7 +73,7 @@ public class CallBackManager {
 		bizBuyerOrderService.saveOrUpdate(bizBuyerOrder);
 
 		log.info("异常回调merchantOrderRecordDO ：" + JSON.toJSONString(bizBuyerOrder));
-		if (failCode.getType().equals(RequestStatusEnum.SERVER_NO_RESULT.getType())) {
+		if (failCode.getType().equals(RequestStatusEnum.SERVER_NO_RESULT.getType())) {//机器人无记录的话
 			//调查无记录,存储本次查询
 			bizRobotQueryRecordService.save(
 					BizRobotQueryRecord.builder()
@@ -83,7 +83,7 @@ public class CallBackManager {
 							.supplierId(bizBuyerOrder
 									.getSupplierId())
 							.supplierName(bizBuyerOrder.getSupplierName())
-							.resultStatus(0)                          // 0失败,1成功
+							.resultStatus(RequestStatusEnum.CALLBACK_NO_RESULT.getType()) // 0失败,1成功，5无记录
 							.failureReason(failureReasonStr)          // 失败原因； 如果成功的话则需要设置result
 							.querytime(LocalDateTime.now()).build()); // 当前时间
 		}
