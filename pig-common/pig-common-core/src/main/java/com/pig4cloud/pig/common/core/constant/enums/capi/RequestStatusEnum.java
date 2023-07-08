@@ -52,6 +52,9 @@ public enum RequestStatusEnum {
 	/*** 回调商家失败. */
 	API_CALLBACK_FAILURE( 1005, "回调商家失败."),
 
+	/*** 订单超时. */
+	API_ORDER_LONG_TIME( 1006, "订单超时驳回."),
+
 	/*** 未知错误. */
 	SERVER_UNKNOWN_ERROR( 1200, "未知错误."),
 
@@ -107,6 +110,13 @@ public enum RequestStatusEnum {
 	public static String getDesc(Integer code) {
 		for (RequestStatusEnum ele : values()) {
 			if(ele.getType().equals(code)) return ele.getDescription();
+		}
+		return null;
+	}
+
+	public static RequestStatusEnum getStatusEnumByCode(Integer code) {
+		for (RequestStatusEnum ele : values()) {
+			if(ele.getType().equals(code)) return ele;
 		}
 		return null;
 	}
