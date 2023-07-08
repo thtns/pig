@@ -27,6 +27,8 @@ import com.pig4cloud.pig.capi.mapper.BizRobotSupplierMapper;
 import com.pig4cloud.pig.capi.service.BizRobotService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -67,8 +69,8 @@ public class BizRobotServiceImpl extends ServiceImpl<BizRobotMapper, BizRobot> i
 	private List<BizRobot> getByRobotSupplierList(QueryWrapper<BizRobotSupplier> robotSupplierWrapper){
 		List<BizRobotSupplier> robotSupplierList = bizRobotSupplierMapper.selectList(robotSupplierWrapper);
 		// 根据供应商机器人关系获取机器人列表
-		if (robotSupplierList.size() == 0){
-			return null;
+		if (robotSupplierList.isEmpty()) {
+			return Collections.emptyList();
 		}
 		QueryWrapper<BizRobot> robotWrapper = new QueryWrapper<>();
 		robotWrapper.eq("status", 1);// 启动
@@ -91,7 +93,7 @@ public class BizRobotServiceImpl extends ServiceImpl<BizRobotMapper, BizRobot> i
 		// 根据供应商获取 供应商机器人关系  // 这里可以做一个是否加权排序
 		QueryWrapper<BizRobotSupplier> robotSupplierWrapper = new QueryWrapper<>();
 		robotSupplierWrapper.in("supplier_id", bizCarBrandSuppliers.stream().map(BizCarBrandSupplier::getSupplierId).collect(Collectors.toList()));
-		return this.getByRobotSupplierList(robotSupplierWrapper);
+		return getByRobotSupplierList(robotSupplierWrapper);
 	}
 
 	/**
@@ -104,7 +106,7 @@ public class BizRobotServiceImpl extends ServiceImpl<BizRobotMapper, BizRobot> i
 		// 根据供应商获取 供应商机器人关系  // 这里可以做一个是否加权排序
 		QueryWrapper<BizRobotSupplier> robotSupplierWrapper = new QueryWrapper<>();
 		robotSupplierWrapper.eq("supplier_id", supplierId);
-		return this.getByRobotSupplierList(robotSupplierWrapper);
+		return getByRobotSupplierList(robotSupplierWrapper);
 	}
 
 }

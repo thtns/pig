@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.Objects;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -22,14 +23,11 @@ public class BizVinParsingServiceImpl extends ServiceImpl<BizVinParsingMapper, B
 	 */
 	@Override
 	public BizVinParsing getBizVinParsing(String vinCode) {
-		log.info("~~~~~~~VIN码前8位：" + vinCode);
+		log.info("~~~~~~~VIN码：{}", vinCode);
 		LambdaQueryWrapper<BizVinParsing> queryWrapper = new LambdaQueryWrapper<>();
 		queryWrapper.eq(BizVinParsing::getVinCode, vinCode);
 		BizVinParsing bizVinParsing = this.getOne(queryWrapper);
-		log.info("~~~~~~~VIN Parsing Code ：" + bizVinParsing);
-		if (Objects.isNull(bizVinParsing)){
-			return null;
-		}
-		return bizVinParsing;
+		log.info("~~~~~~~VIN Parsing Code result ：{}", bizVinParsing.getSubBrand());
+		return Optional.ofNullable(bizVinParsing).orElse(null);
 	}
 }

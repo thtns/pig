@@ -26,6 +26,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.util.List;
 
+import static cn.hutool.core.date.DateUtil.today;
+
 /**
  * 机器人查询记录表
  *
@@ -38,13 +40,6 @@ public class BizRobotQueryRecordServiceImpl extends ServiceImpl<BizRobotQueryRec
 
 	@Override
 	public BizRobotQueryRecord getQueryRecordByVin(String vin) {
-//		LambdaQueryWrapper<BizRobotQueryRecord> queryWrapper = new LambdaQueryWrapper<>();
-//		queryWrapper.eq(BizRobotQueryRecord::getVin, vin);
-//		queryWrapper.gt(BizRobotQueryRecord::getQuerytime, DateUtil.offsetDay(DateUtil.date(),-3));
-//		queryWrapper.orderByDesc(BizRobotQueryRecord::getQuerytime);
-//		List<BizRobotQueryRecord> list = this.list(queryWrapper);
-//		return list.stream().findFirst().orElse(null);
-
 		return this.lambdaQuery()
 				.eq(BizRobotQueryRecord::getVin, vin)
 				.gt(BizRobotQueryRecord::getQuerytime, DateUtil.offsetDay(DateUtil.date(), -3))
@@ -60,7 +55,7 @@ public class BizRobotQueryRecordServiceImpl extends ServiceImpl<BizRobotQueryRec
 	@Override
 	public Integer getTodayCountBySupplier(Long supplierId) {
 		LambdaQueryWrapper<BizRobotQueryRecord> queryWrapper = new LambdaQueryWrapper<>();
-		queryWrapper.likeRight(BizRobotQueryRecord::getQuerytime , DateUtil.today())
+		queryWrapper.likeRight(BizRobotQueryRecord::getQuerytime , today())
 				.eq(BizRobotQueryRecord::getSupplierId, supplierId);
 
 		return Math.toIntExact(this.count(queryWrapper));
