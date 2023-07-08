@@ -1,5 +1,6 @@
 package com.pig4cloud.pig.capi.service.impl;
 
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.pig4cloud.pig.capi.entity.BizVinParsing;
@@ -27,7 +28,7 @@ public class BizVinParsingServiceImpl extends ServiceImpl<BizVinParsingMapper, B
 		LambdaQueryWrapper<BizVinParsing> queryWrapper = new LambdaQueryWrapper<>();
 		queryWrapper.eq(BizVinParsing::getVinCode, vinCode);
 		BizVinParsing bizVinParsing = this.getOne(queryWrapper);
-		log.info("~~~~~~~VIN Parsing Code result ：{}", bizVinParsing.getSubBrand());
+		log.info("~~~~~~~VIN Parsing Code result ：{}", JSON.toJSONString(bizVinParsing));
 		return Optional.ofNullable(bizVinParsing).orElse(null);
 	}
 }
