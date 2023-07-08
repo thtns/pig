@@ -64,7 +64,7 @@ public class BizCarBrandServiceImpl extends ServiceImpl<BizCarBrandMapper, BizCa
 		BizVinParsing bizVinParsing = bizVinParsingService.getBizVinParsing(bizBuyerOrder.getVin());//解析结果
 		BizCarBrand carBrandByWmi;
 		if (Optional.ofNullable(bizVinParsing).isPresent()) {
-			log.info("~~~~ Step3.1.1: 存在本地 Vin：{} 解析品牌记录： Brand = {} ", vin, bizVinParsing.getBrand());
+			log.info("~~~~ Step3.1.1: 存在本地 Vin：{} 解析品牌记录： Brand = {} ", vin, bizVinParsing.getSubBrand());
 			log.info("~~~~ Step3.1.2: 开始查询 Vin：{} 本地对应品牌信息.... ", vin);
 			carBrandByWmi = getCarBrandByBrand(bizVinParsing.getSubBrand());//根据品牌名查询BizCarBrand对象
 		} else {
@@ -72,14 +72,14 @@ public class BizCarBrandServiceImpl extends ServiceImpl<BizCarBrandMapper, BizCa
 			String brand = easyepcDataManager.getSaleVinInfo(bizBuyerOrder.getVin());
 			if (brand == null) {
 				log.info("~~~~ Step3.1.2: 不存在三方解析 Vin：{} 品牌. 不支持该品牌. 退出下单. ", vin);
-				handleOrderFailure(bizBuyerOrder, RequestStatusEnum.API_VIN_UNIDENTIFIABLE);
+				handleOrderFailure(bizBuyerOrder, RequestStatusEnum.API_VIN_UNIDENTIFIABLE, RequestStatusEnum.API_VIN_UNIDENTIFIABLE);
 			}
 			log.info("~~~~ Step3.1.2: 开始查询 Vin：{} 本地对应品牌信息.... ", vin);
 			carBrandByWmi = getCarBrandByBrand(brand);
 		}
 		if (Objects.isNull(carBrandByWmi)) {
 			log.info("~~~~ Step3.1.3: 不存在三方解析 Vin：{} 品牌. 不支持该品牌. 退出下单. ", vin);
-			handleOrderFailure(bizBuyerOrder, RequestStatusEnum.API_BRAND_NONSUPPORT);
+			handleOrderFailure(bizBuyerOrder, RequestStatusEnum.API_BRAND_NONSUPPORT, RequestStatusEnum.API_BRAND_NONSUPPORT);
 		}
 
 		bizBuyerOrder.setCarBrandId(carBrandByWmi.getId());
@@ -87,8 +87,8 @@ public class BizCarBrandServiceImpl extends ServiceImpl<BizCarBrandMapper, BizCa
 		return carBrandByWmi;
 	}
 
-	private void handleOrderFailure(BizBuyerOrder bizBuyerOrder, RequestStatusEnum failureReason) {
-		callBackManager.merchantCallBackError(bizBuyerOrder, RequestStatusEnum.ORDER_FAILURE, failureReason);
+	private void handleOrderFailure(BizBuyerOrder bizBuyerOrder, RequestStatusEnum erroCode, RequestStatusEnum failureReason) {
+		callBackManager.merchantCallBackError(bizBuyerOrder, erroCode, failureReason);
 		throw new RuntimeException(JSON.toJSONString(R.resultEnumType(null, failureReason.getType())));
 	}
 
@@ -148,7 +148,7 @@ public class BizCarBrandServiceImpl extends ServiceImpl<BizCarBrandMapper, BizCa
 		boolean buyerFlag = bizBuyerOrderService.checkBuyerOrderLimit(bizBuyerOrder);
 		if (!buyerFlag) {// 采购商上限限制
 			log.info("~~~~ Step3.2.3.1: 采购商请求已达上限. 退出下单. ");
-			handleOrderFailure(bizBuyerOrder, RequestStatusEnum.SERVER_QUERY_FULL_ERROR);
+			handleOrderFailure(bizBuyerOrder, RequestStatusEnum.SERVER_QUERY_FULL_ERROR, RequestStatusEnum.SERVER_QUERY_FULL_ERROR);
 		}
 
 		log.info("~~~~ Step3.2.4: 计算供应商单量. 移除不可用供应商. ");
@@ -190,8 +190,8 @@ public class BizCarBrandServiceImpl extends ServiceImpl<BizCarBrandMapper, BizCa
 
 	private void handleEmptySupplierList(BizBuyerOrder bizBuyerOrder, String errorMessage) {
 		if (bizBuyerOrder.getRetryCount() > 1) {
-			handleOrderFailure(bizBuyerOrder, RequestStatusEnum.CALLBACK_FAILURE);
+			handleOrderFailure(bizBuyerOrder, RequestStatusEnum.CALLBACK_FAILURE, RequestStatusEnum.CALLBACK_FAILURE);
 		}
-		handleOrderFailure(bizBuyerOrder, RequestStatusEnum.API_TIME_NONSUPPORT);
+		handleOrderFailure(bizBuyerOrder, RequestStatusEnum.API_TIME_NONSUPPORT, RequestStatusEnum.API_TIME_NONSUPPORT);
 	}
 }
