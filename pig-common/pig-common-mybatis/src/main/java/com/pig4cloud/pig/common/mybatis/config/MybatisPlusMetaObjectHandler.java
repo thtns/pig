@@ -72,7 +72,7 @@ public class MybatisPlusMetaObjectHandler implements MetaObjectHandler {
 		if (Optional.ofNullable(authentication).isPresent()) {
 			return authentication.getName();
 		}
-		return null;
+		return "管理员";
 	}
 
 }
