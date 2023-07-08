@@ -78,7 +78,7 @@ public class MaintenanceController {
 			}
 			maintenanceService.getResult(bizBuyerOrder);
 		}
-		return R.apiOk();
+		return R.ok();
 	}
 
 

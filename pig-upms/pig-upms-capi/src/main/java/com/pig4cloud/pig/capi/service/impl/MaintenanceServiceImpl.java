@@ -91,7 +91,7 @@ public class MaintenanceServiceImpl implements MaintenanceService {
 		JSONObject obj = new JSONObject();
 		obj.put("code", code);
 		obj.put("data", buildMaintenanceOrderRes(bizBuyerOrder));
-		return R.apiOk(obj);
+		return R.ok(obj, "操作成功!");
 	}
 
 	private void sendDelayedMessage(BizBuyerOrder bizBuyerOrder) {
@@ -99,8 +99,17 @@ public class MaintenanceServiceImpl implements MaintenanceService {
 		producerUtil.sendTimeMsg(String.valueOf(bizBuyerOrder.getId()), delayTime);
 	}
 
-	private MaintenanceOrderRes buildMaintenanceOrderRes(BizBuyerOrder bizBuyerOrder) {
-		bizBuyerOrderService.saveOrUpdate(bizBuyerOrder);
+	private MaintenanceOrderRes buildMaintenanceOrderRes(BizBuyerOrder bizBuyerOrder){
+		boolean falg = true;
+		while (falg)
+			try{
+				Thread.sleep(TIME_OUT);
+				bizBuyerOrderService.saveOrUpdate(bizBuyerOrder);
+				falg = false;
+			}catch (Exception e){
+
+			}
+
 		return MaintenanceOrderRes.builder()
 				.order_id(bizBuyerOrder.getId())
 				.vin(bizBuyerOrder.getVin())
