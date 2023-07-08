@@ -18,6 +18,7 @@ import com.pig4cloud.pig.capi.service.apo.RebotInfo;
 import com.pig4cloud.pig.capi.service.apo.RedisKeyDefine;
 import com.pig4cloud.pig.capi.service.atripartite.CallBackManager;
 import com.pig4cloud.pig.capi.utils.rocketmq.ProducerUtil;
+import com.pig4cloud.pig.common.core.constant.CommonConstants;
 import com.pig4cloud.pig.common.core.constant.enums.capi.BaseConstants;
 import com.pig4cloud.pig.common.core.constant.enums.capi.RequestStatusEnum;
 import com.pig4cloud.pig.common.core.util.R;
@@ -83,9 +84,10 @@ public class MaintenanceServiceImpl implements MaintenanceService {
 			jsonObject.put("orderId", bizBuyerOrder.getId());
 			return R.resultEnumType(jsonObject, RequestStatusEnum.ORDER_FAILURE.getType());
 		}
-		int code = 0;
+		int code = RequestStatusEnum.ORDER_PLACING.getType();
 		if (!Objects.equals(bizBuyerOrder.getRequestStatus(), RequestStatusEnum.QUERYING.getType())
-				|| !Objects.equals(bizBuyerOrder.getRequestStatus(), RequestStatusEnum.ORDER_SUCCESS.getType())) {
+				|| !Objects.equals(bizBuyerOrder.getRequestStatus(), RequestStatusEnum.ORDER_SUCCESS.getType())
+				|| !Objects.equals(bizBuyerOrder.getRequestStatus(), RequestStatusEnum.CALLBACK_SUCCESS.getType())) {
 			code = bizBuyerOrder.getRequestStatus();
 		}
 		JSONObject obj = new JSONObject();
