@@ -56,29 +56,47 @@ public class MaintenanceServiceImpl implements MaintenanceService {
 	private final ProducerUtil producerUtil;
 
 
-
 	public R<Object> processMaintenanceOrder(BizBuyerOrder bizBuyerOrder) {
-		BizRobotQueryRecord bizRobotQueryRecord = bizRobotQueryRecordService.getQueryRecordByVin(bizBuyerOrder.getVin());
+		try {
+			String vin = bizBuyerOrder.getVin();
+			Long buyerId = bizBuyerOrder.getBuyerId();
+			log.info("~~~~ Step2: 通过Vin：{} 查询机器人查询记录.", vin);
+			BizRobotQueryRecord bizRobotQueryRecord = bizRobotQueryRecordService.getQueryRecordByVin(vin);
 
-		if (Optional.ofNullable(bizRobotQueryRecord).isPresent()) {
-			localMysqlParsing(bizBuyerOrder, bizRobotQueryRecord);
-		} else {
-			boolean isPlaceOrder = bizBuyerOrderService.isOrNotPlaceOrder(bizBuyerOrder.getVin(), bizBuyerOrder.getBuyerId());
-
-			if (isPlaceOrder) {
-				// 将消息发送到延迟队列
-				producerUtil.sendTimeMsg(String.valueOf(bizBuyerOrder.getId()), System.currentTimeMillis() + (300 * 1000));
+			if (Optional.ofNullable(bizRobotQueryRecord).isPresent()) {
+				log.info("~~~~ Step2.1: 本地存在 Vin：{} 机器人查询记录. 加载本地结果数据.....", vin);
+				localMysqlParsing(bizBuyerOrder, bizRobotQueryRecord);
 			} else {
-				bizBuyerOrder.setRetryCount(bizBuyerOrder.getRetryCount() + 1);
-				spiderServerRequest(bizBuyerOrder);
+				log.info("~~~~ Step2.1: 本地不存在 Vin：{}  机器人查询记录. ", vin);
+				log.info("~~~~ Step2.2: 通过Vin：{} 和 BuyerId：{} 查询是否已下过的订单.... ", vin, buyerId);
+				boolean isPlaceOrder = bizBuyerOrderService.isOrNotPlaceOrder(vin, buyerId);
+				if (isPlaceOrder) {
+					log.info("~~~~ Step2.3: 本地存在Vin：{} 和 BuyerId：{} 的订单. 发送订单到延迟消息队列. ", vin, buyerId);
+					sendDelayedMessage(bizBuyerOrder);    // 有同样请求,将消息发送到延迟队列, 等有结果后加载本地并回调商家
+				} else {
+					log.info("~~~~ Step2.3: 本地不存在Vin：{} 和 BuyerId：{} 的订单. 发起新机器人订单. ", vin, buyerId);
+					spiderServerRequest(bizBuyerOrder); // 新发起机器人请求
+				}
 			}
+		} catch (RuntimeException runtimeException) {
+			JSONObject jsonObject = new JSONObject();
+			jsonObject.put("orderId", bizBuyerOrder.getId());
+			return R.resultEnumType(jsonObject, RequestStatusEnum.ORDER_FAILURE.getType());
 		}
-		JSONObject jsonObject = new JSONObject();
-		jsonObject.put("orderId", bizBuyerOrder.getId());
+		int code = 0;
+		if (!Objects.equals(bizBuyerOrder.getRequestStatus(), RequestStatusEnum.QUERYING.getType())
+				|| !Objects.equals(bizBuyerOrder.getRequestStatus(), RequestStatusEnum.ORDER_SUCCESS.getType())) {
+			code = bizBuyerOrder.getRequestStatus();
+		}
+		JSONObject obj = new JSONObject();
+		obj.put("code", code);
+		obj.put("data", buildMaintenanceOrderRes(bizBuyerOrder));
+		return R.apiOk(obj);
+	}
 
-		Object data  = buildMaintenanceOrderRes(bizBuyerOrder);
-		return R.apiOk(data);
-
+	private void sendDelayedMessage(BizBuyerOrder bizBuyerOrder) {
+		long delayTime = System.currentTimeMillis() + (300 * 1000);
+		producerUtil.sendTimeMsg(String.valueOf(bizBuyerOrder.getId()), delayTime);
 	}
 
 	private MaintenanceOrderRes buildMaintenanceOrderRes(BizBuyerOrder bizBuyerOrder) {
@@ -109,27 +127,35 @@ public class MaintenanceServiceImpl implements MaintenanceService {
 	 * @return
 	 */
 	private void localMysqlParsing(BizBuyerOrder bizBuyerOrder, BizRobotQueryRecord bizRobotQueryRecord) {
-		// 验证vin+merchantId+createDate是否有数据，如果有addJob走延时队列
-		BizBuyerOrder successOrder = bizBuyerOrderService.getSuccessMerchantOrderByVin(bizBuyerOrder.getVin());
-		if (Objects.nonNull(successOrder)){
+		String vin = bizBuyerOrder.getVin();
+		log.info("~~~~ Step3: 开始加载本地 Vin：{} 订单记录", vin);
+		BizBuyerOrder successOrder = bizBuyerOrderService.getSuccessMerchantOrderByVin(vin);
+		if (Objects.nonNull(successOrder)) {
+			log.info("~~~~ Step3.1: 存在本地 Vin：{} 订单记录, 更新订单品牌信息....", vin);
 			bizBuyerOrder.setBuyerId(successOrder.getBuyerId());
 			bizBuyerOrder.setBuyerName(successOrder.getCarBrandName());
+			bizBuyerOrder.setSupplierId(successOrder.getSupplierId());
+			bizBuyerOrder.setSupplierName(successOrder.getSupplierName());
+			bizBuyerOrder.setRobotId(successOrder.getRobotId());
 		}
-		log.info("~~~~第三步【本地数据库有vin请求数据】：本地数据解析....");
+		log.info("~~~~ Step3.2: 本地数据解析....");
 		CompletableFuture.runAsync(() -> {
-			log.info("####第四步【本地数据库有vin:%s请求数据】（异步）：异步解析开始");
+			log.info("#### Step3.3: 异步解析开始");
 			try {
 				Thread.sleep(TIME_OUT);
 				RetryUtil.executeWithRetry(() -> {
-					log.info("####第二步【本地数据库有vin请求数据】（异步）：RetryUtil开始回调，回调采购商维修数据");
-					RobotResponse robotResponse = JSONObject.parseObject(bizRobotQueryRecord.getResult(),RobotResponse.class);
+					log.info("#### Step3.4.1: Vin：{} RetryUtil开始回调 ", vin);
+					RobotResponse robotResponse = JSONObject.parseObject(bizRobotQueryRecord.getResult(), RobotResponse.class);
+					log.info("#### Step3.4.2:  order_id: {}，回调采购商维修数据 : {}", vin
+							, JSON.toJSONString(JSONObject.parseObject(bizRobotQueryRecord.getResult(), RobotResponse.class)));
 					return callBackManager.merchantCallBack(bizBuyerOrder, robotResponse);
 				}, 3, 1000L, false);
 			} catch (Exception e) {
 				// 更新失败原因和失败状态： 回调失败
+				log.info("#### Step3.4.3: RetryUtil回调失败....");
 				bizBuyerOrder.setRequestStatus(RequestStatusEnum.CALLBACK_FAILURE.getType());
 				bizBuyerOrder.setFailureReason(JSON.toJSONString(R.resultEnumType(null, RequestStatusEnum.CALLBACK_FAILURE.getType())));
-				bizBuyerOrderService.updateById(bizBuyerOrder);
+				bizBuyerOrderService.saveOrUpdate(bizBuyerOrder);
 			}
 		});
 
@@ -144,13 +170,8 @@ public class MaintenanceServiceImpl implements MaintenanceService {
 
 		bizBuyerOrder.setCallbackTime(LocalDateTime.now());
 		bizBuyerOrder.setRequestStatus(RequestStatusEnum.CALLBACK_SUCCESS.getType());
-		bizBuyerOrderService.saveOrUpdate(bizBuyerOrder);
-		log.info("~~~~第四步【数据库有数据】：结束，商家访问数据库更新成功" + JSON.toJSONString(bizBuyerOrder));
+		log.info("~~~~ Step4 本地数据解析结束, 商家数据赋值更新 ：" + JSON.toJSONString(bizBuyerOrder));
 	}
-
-
-
-
 
 
 	/**
@@ -159,25 +180,40 @@ public class MaintenanceServiceImpl implements MaintenanceService {
 	 * @param bizBuyerOrder
 	 */
 	private void spiderServerRequest(BizBuyerOrder bizBuyerOrder) {
-		BizCarBrand carBrand = bizCarBrandService.getCarBrand(bizBuyerOrder);
-		log.info("~~~~第三步：品牌" + JSON.toJSONString(carBrand));
+		log.info("~~~~ Step3: 新发起机器人订单开始. ");
+		bizBuyerOrder.setRetryCount(bizBuyerOrder.getRetryCount() + 1);
+		BizCarBrand carBrand = null;
+		try {
+			carBrand = bizCarBrandService.getCarBrand(bizBuyerOrder);
+			log.info("~~~~ Step3.1.4: 解析后的品牌信息: {}.", JSON.toJSONString(carBrand));
+		} catch (RuntimeException runtimeException) { // 不支持该品牌
+			// 里面抛错这里直接返回在外面保存更新
+			return;
+		}
 
-		//匹配机器人，获取有效的供应商【后期可以加入机器人选举策略】
+		log.info("~~~~ Step3.2: 开始匹配有效机器人. ");
 		long startTimeEffective = System.currentTimeMillis();
-		List<RebotInfo> robotList = bizCarBrandService.getEffectiveRobot(carBrand, bizBuyerOrder);
-		log.info("&*&*&*&*&*&*&*&*&*&*&*&*&*&*&*选举机器人运行时间：" + (System.currentTimeMillis() - startTimeEffective) + "ms");
+		List<RebotInfo> robotList = null;
+		try {
+			robotList = bizCarBrandService.getEffectiveRobot(carBrand, bizBuyerOrder);
+			log.info("选举机器人运行时间：" + (System.currentTimeMillis() - startTimeEffective) + "ms");
+		} catch (RuntimeException runtimeException) { // 没有可用的机器人
+			return;
+		}
 
 		//异步请求机器人
+		List<RebotInfo> finalRobotList = robotList;
 		CompletableFuture.runAsync(() -> {
 			long startTime = System.currentTimeMillis();
-			log.info("第三步：异步请求机器人~~");
-			syncRequestRobot(robotList, bizBuyerOrder);
-			log.info("&*&*&*&*&*&*&*&*&*&*&*&*&*&*&*整个异步流程运行时间：" + (System.currentTimeMillis() - startTime) + "ms");
+			log.info("~~~~ Step3.3: 异步请求机器人. ");
+			syncRequestRobot(finalRobotList, bizBuyerOrder);
+			log.info("~~~~ Step3.4: 异步流程运行时间：{} ms", (System.currentTimeMillis() - startTime));
 		});
-		log.info("第四步：异步请求机器人完成~~");
+		log.info("~~~~ Step3.5:异步请求机器人完成~~");
 	}
 
 	private void syncRequestRobot(List<RebotInfo> robotList, BizBuyerOrder bizBuyerOrder) {
+		log.info(">>> 异步请求开始.");
 		log.info(">>> 未上限的供应商机器人个数：" + robotList.size());
 		boolean requestRobotFlag = false;
 		for (RebotInfo bizRobotInfo : robotList) {
@@ -185,31 +221,28 @@ public class MaintenanceServiceImpl implements MaintenanceService {
 			bizBuyerOrder.setSupplierName(bizRobotInfo.getSupplierName());          // 供应商名称
 			bizBuyerOrder.setRobotId(bizRobotInfo.getId());
 			bizBuyerOrder.setRequestStatus(RequestStatusEnum.QUERYING.getType());
-			bizBuyerOrderService.updateById(bizBuyerOrder);                      // 更新订单信息
+			bizBuyerOrderService.saveOrUpdate(bizBuyerOrder);                       // 更新订单信息
 
 			// 队列验证
 			if (!checkQueue(bizBuyerOrder)) {
-				log.info("#### 机器人被占用，请检查REDIS...");
+				log.info(">>> 机器人被占用，请检查REDIS...");
 				continue;
 			}
 
 			String[] robotProxies = bizRobotInfo.getRobotProxies().split(";");
-			// 如果无代理或代理可用
-			//if (robotProxies.length == 0 && robotRequest(bizBuyerOrder, bizRobotInfo, null)) {
-			//	return;
-			//}
 			for (String robotProxy : robotProxies) {
-//				if (checkProxy(robotProxy)) {
-					requestRobotFlag =  robotRequest(bizBuyerOrder, bizRobotInfo, robotProxy);
-//				}
+				requestRobotFlag = robotRequest(bizBuyerOrder, bizRobotInfo, robotProxy);
 			}
 		}
-		if (!requestRobotFlag){// 说明所有请求都是失败的
-			log.info("#### syncRequestRobot 请求结果失败，准备解锁REDIS...");
+		if (!requestRobotFlag) {// 说明所有请求都是失败的
+			log.info(">>> 异步请求机器人服务失败，准备解锁REDIS...");
 			UnlockQueue(bizBuyerOrder);
+			log.info(">>> 解锁REDIS 完成...");
 			bizBuyerOrder.setRequestStatus(RequestStatusEnum.ORDER_FAILURE.getType()); //更新下单失败
 			bizBuyerOrderService.updateById(bizBuyerOrder);
-			log.info("更新订单状态{}完成~~", RequestStatusEnum.ORDER_FAILURE.getDescription());
+			log.info(">>> 更新订单状态 {} 完成...", RequestStatusEnum.ORDER_FAILURE.getDescription());
+		}else{
+			log.info(">>> 异步请求机器人服务成功. 等待回调");
 		}
 	}
 
@@ -217,7 +250,7 @@ public class MaintenanceServiceImpl implements MaintenanceService {
 		//检查此品牌的机器人在redis是否标识可用。
 		String queueKey = RedisKeyDefine.QUEUE + bizBuyerOrder.getCarBrandId() + bizBuyerOrder.getSupplierId();
 		String queue = redisTemplate.opsForValue().get(queueKey);
-		
+
 		if (Objects.isNull(queue) || queue.equals(RedisKeyDefine.ENABLE)) {
 			redisTemplate.opsForValue().set(RedisKeyDefine.QUEUE + bizBuyerOrder.getCarBrandId() + bizBuyerOrder.getSupplierId(),
 					RedisKeyDefine.DISABLE, 8, TimeUnit.MINUTES);
@@ -226,7 +259,7 @@ public class MaintenanceServiceImpl implements MaintenanceService {
 		return false;
 	}
 
-	private void UnlockQueue(BizBuyerOrder bizBuyerOrder){
+	private void UnlockQueue(BizBuyerOrder bizBuyerOrder) {
 		String queueKey = RedisKeyDefine.QUEUE + bizBuyerOrder.getCarBrandId() + bizBuyerOrder.getSupplierId();
 		String queue = redisTemplate.opsForValue().get(queueKey);
 		if (RedisKeyDefine.DISABLE.equals(queue)) {

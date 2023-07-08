@@ -70,7 +70,7 @@ public class CallBackManager {
 		bizBuyerOrder.setRequestStatus(statusCode.getType());
 		bizBuyerOrder.setFailureReason(failureReasonStr);
 		bizBuyerOrder.setCallbackTime(LocalDateTime.now());
-		bizBuyerOrderService.updateById(bizBuyerOrder);
+		bizBuyerOrderService.saveOrUpdate(bizBuyerOrder);
 
 		log.info("异常回调merchantOrderRecordDO ：" + JSON.toJSONString(bizBuyerOrder));
 		if (failCode.getType().equals(RequestStatusEnum.SERVER_NO_RESULT.getType())) {

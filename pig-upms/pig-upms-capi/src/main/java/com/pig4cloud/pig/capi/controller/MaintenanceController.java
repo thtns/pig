@@ -30,7 +30,7 @@ import java.time.LocalDateTime;
 @RequiredArgsConstructor
 @RequestMapping("/maintenance")
 @Tag(name = "车辆维修数据查询")
-public class MaintenanceApi {
+public class MaintenanceController {
 
 
 	private final BizBuyerService bizBuyerService;
@@ -42,12 +42,12 @@ public class MaintenanceApi {
 
 	@PostMapping(value = {"/order"})
 	public R order(HttpServletRequest request, @RequestBody MaintenanceOrderRequest req) {
-		log.info("~~~~第一步：下单参数:" + JSON.toJSONString(req));
-		log.info("~~~~第二步：校验权限:");
+		log.info("~~~~ Step1: 准备下单, 参数为: {}", JSON.toJSONString(req));
 		String key = request.getHeader("AccessKeyId");
 		String secret = request.getHeader("AccessKeySecret");
 		BizBuyer bizBuyer = bizBuyerService.getByAkSk(key, secret);
 		Long orderId = UUidUtils.uuLongId();
+		log.info("~~~~ Step1.1: 开始构建下单数据...");
 		BizBuyerOrder bizBuyerOrder = BizBuyerOrder.builder()
 				.id(orderId)                              //订单id
 				.buyerId(bizBuyer.getId())                //用户id
@@ -63,8 +63,7 @@ public class MaintenanceApi {
 				.requestStatus(RequestStatusEnum.ORDER_PLACING.getType())                //订单状态
 				.retryCount(0)                            //重试次数
 				.build();
-		bizBuyerOrder.setCreateBy("api管理员");
-		bizBuyerOrder.setUpdateBy("api管理员");
+		log.info("~~~~ Step1.2: 构建下单数据结束.");
 		return maintenanceService.processMaintenanceOrder(bizBuyerOrder);
 	}
 

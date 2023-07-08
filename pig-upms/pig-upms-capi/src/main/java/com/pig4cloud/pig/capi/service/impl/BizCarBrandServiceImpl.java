@@ -59,28 +59,31 @@ public class BizCarBrandServiceImpl extends ServiceImpl<BizCarBrandMapper, BizCa
 	 */
 	@Override
 	public BizCarBrand getCarBrand(BizBuyerOrder bizBuyerOrder) {
-		//本地查询vin解析结果表获取品牌
+		String vin = bizBuyerOrder.getVin();
+		log.info("~~~~ Step3.1: 开始加载本地 Vin：{} 解析品牌记录. ", vin);
 		BizVinParsing bizVinParsing = bizVinParsingService.getBizVinParsing(bizBuyerOrder.getVin());//解析结果
 		BizCarBrand carBrandByWmi;
 		if (Optional.ofNullable(bizVinParsing).isPresent()) {
-			log.info("~~~~~~通过Vin Parsing Service解析  brand...\n Brand : " + bizVinParsing.getBrand());
-			log.info("~~~~~~解析正常，开始查询...");
+			log.info("~~~~ Step3.1.1: 存在本地 Vin：{} 解析品牌记录： Brand = {} ", vin, bizVinParsing.getBrand());
+			log.info("~~~~ Step3.1.2: 开始查询 Vin：{} 本地对应品牌信息.... ", vin);
 			carBrandByWmi = getCarBrandByBrand(bizVinParsing.getSubBrand());//根据品牌名查询BizCarBrand对象
 		} else {
-			log.info("~~~~~~三方解析，开始查询...");
+			log.info("~~~~ Step3.1.1: 不存在本地 Vin：{} 三方解析，开始查询... ", vin);
 			String brand = easyepcDataManager.getSaleVinInfo(bizBuyerOrder.getVin());
 			if (brand == null) {
+				log.info("~~~~ Step3.1.2: 不存在三方解析 Vin：{} 品牌. 不支持该品牌. 退出下单. ", vin);
 				handleOrderFailure(bizBuyerOrder, RequestStatusEnum.API_VIN_UNIDENTIFIABLE);
 			}
+			log.info("~~~~ Step3.1.2: 开始查询 Vin：{} 本地对应品牌信息.... ", vin);
 			carBrandByWmi = getCarBrandByBrand(brand);
 		}
 		if (Objects.isNull(carBrandByWmi)) {
+			log.info("~~~~ Step3.1.3: 不存在三方解析 Vin：{} 品牌. 不支持该品牌. 退出下单. ", vin);
 			handleOrderFailure(bizBuyerOrder, RequestStatusEnum.API_BRAND_NONSUPPORT);
 		}
 
 		bizBuyerOrder.setCarBrandId(carBrandByWmi.getId());
 		bizBuyerOrder.setCarBrandName(carBrandByWmi.getBrand());
-		bizBuyerOrderService.updateById(bizBuyerOrder);
 		return carBrandByWmi;
 	}
 
@@ -102,10 +105,14 @@ public class BizCarBrandServiceImpl extends ServiceImpl<BizCarBrandMapper, BizCa
 	 */
 	@Override
 	public List<RebotInfo> getEffectiveRobot(BizCarBrand bizCarBrand, BizBuyerOrder bizBuyerOrder) {
+		log.info("~~~~ Step3.2: 开始匹配有效机器人. ");
+		Long bizCarBrandId =  bizCarBrand.getId();
 		// 根据品牌获取供应商
+		log.info("~~~~ Step3.2.1: 开始查询品牌 bizCarBrandId：{} 本地供应商信息..... ", bizCarBrandId);
 		List<BizSupplier> bizSuppliers = bizSupplierService.getSupplierByCarBrandId(bizCarBrand.getId());
 
 		if (bizSuppliers.isEmpty()) {
+			log.info("~~~~ Step3.2.1.1: 不存在本地 bizCarBrandId：{} 供应商信息. 退出下单. ", bizCarBrandId);
 			handleEmptySupplierList(bizBuyerOrder, "bizSuppliers is Empty !");
 		}
 
@@ -113,6 +120,7 @@ public class BizCarBrandServiceImpl extends ServiceImpl<BizCarBrandMapper, BizCa
 		LinkedHashMap<Integer, List<BizSupplier>> supplierMap = bizSuppliers.stream().
 				collect(Collectors.groupingBy(BizSupplier::getWeight, LinkedHashMap::new, Collectors.toList()));
 
+		log.info("~~~~ Step3.2.2: 供应商加权重洗排序... ");
 		List<BizSupplier> supplierList = supplierMap.entrySet().stream()
 				.flatMap(entry -> {
 					int weight = entry.getKey();
@@ -126,19 +134,24 @@ public class BizCarBrandServiceImpl extends ServiceImpl<BizCarBrandMapper, BizCa
 
 		// 处理重试的逻辑【如果此请求是重试，要排除上一次请求的supplier】(注意：第一次请求retryCount = 1，每次重试+1)
 		if (bizBuyerOrder.getRetryCount() > 1) {
+			log.info("~~~~ Step3.2.2.1: 检查重试, 移除上次请求供应商... ");
 			supplierList.removeIf(supplierDO -> supplierDO.getId().equals(bizBuyerOrder.getSupplierId()));
 		}
 
 		if (supplierList.isEmpty()) {
+			log.info("~~~~ Step3.2.2.2: supplierList is Empty !. 退出下单. ");
 			handleEmptySupplierList(bizBuyerOrder, "supplierList is Empty !");
 		}
 
+		log.info("~~~~ Step3.2.3: 计算采购商请求上限.... ");
 		// 采购商订单限制,暂时不不限制(会在后台设置大限量)
 		boolean buyerFlag = bizBuyerOrderService.checkBuyerOrderLimit(bizBuyerOrder);
 		if (!buyerFlag) {// 采购商上限限制
-			callBackManager.merchantCallBackError(bizBuyerOrder, RequestStatusEnum.SERVER_QUERY_FULL_ERROR, RequestStatusEnum.SERVER_QUERY_FULL_ERROR);
+			log.info("~~~~ Step3.2.3.1: 采购商请求已达上限. 退出下单. ");
+			handleOrderFailure(bizBuyerOrder, RequestStatusEnum.SERVER_QUERY_FULL_ERROR);
 		}
 
+		log.info("~~~~ Step3.2.4: 计算供应商单量. 移除不可用供应商. ");
 		// 执行: 供货商限量计算逻辑
 		long startTime = System.currentTimeMillis();
 		List<BizSupplier> usableSupplierList = supplierList.stream()
@@ -147,11 +160,12 @@ public class BizCarBrandServiceImpl extends ServiceImpl<BizCarBrandMapper, BizCa
 		long endTime = System.currentTimeMillis();
 		log.info("对比单量所用的总时间：" + (endTime - startTime) + "ms");
 
-
 		if (usableSupplierList.isEmpty()) {
+			log.info("~~~~ Step3.2.4.1: usableSupplierList is Empty. 退出下单. ");
 			handleEmptySupplierList(bizBuyerOrder, "usableSupplierList is Empty !");
 		}
 
+		log.info("~~~~ Step3.2.5: 组装有效机器人列表.... ");
 		List<RebotInfo> robotEffectiveList = usableSupplierList.stream()
 				.map(supplierDO -> {
 					BizRobot bizRobot = bizRobotService.getRobotsBySupplierId(supplierDO.getId()).stream().findFirst().orElse(null);
@@ -168,13 +182,13 @@ public class BizCarBrandServiceImpl extends ServiceImpl<BizCarBrandMapper, BizCa
 				.collect(Collectors.toList());
 
 		if (robotEffectiveList.isEmpty()) {
+			log.info("~~~~ Step3.2.5.1: robotEffectiveList is Empty.  退出下单.");
 			handleEmptySupplierList(bizBuyerOrder, "robotEffectiveList is Empty !");
 		}
 		return robotEffectiveList;
 	}
 
 	private void handleEmptySupplierList(BizBuyerOrder bizBuyerOrder, String errorMessage) {
-		log.info("无可用供货商：" + errorMessage);
 		if (bizBuyerOrder.getRetryCount() > 1) {
 			handleOrderFailure(bizBuyerOrder, RequestStatusEnum.CALLBACK_FAILURE);
 		}
