@@ -94,8 +94,52 @@ public interface CommonConstants {
 
 
 	/**
-	 * 成功标记
+	 * 系统错误
 	 */
-	Integer API_SUCCESS = 200;
+	Integer SERVICE_ERRO = -100;
+
+	/**
+	 * 服务请求不存在
+	 */
+	Integer SERVICE_NOT_HAVE = -1;
+	/**
+	 * 服务请求参数非法unlawful
+	 */
+	Integer SERVICE_PARAMES_UNLAWFUL = -2;
+
+	/**
+	 * 缺少应用键参数
+	 */
+	Integer SERVICE_PARAMES_DELETION = -3;
+
+	/**
+	 * 服务请求的应用键参数无效invalid
+	 */
+	Integer SERVICE_PARAMES_INVALID = -4;
+
+	/**
+	 * 服务请求需要签名,缺少签名参数
+	 */
+	Integer SERVICE_NEED_AKSK = -5;
+
+	/**
+	 * 服务请求的签名无效
+	 */
+	Integer SERVICE_AKSK_INVALID = -6;
+
+	/**
+	 * 服务请求超时
+	 */
+	Integer SERVICE_TIME_OUT = -7;
+	/**
+	 * 服务请求业务逻辑出错
+	 */
+	Integer SERVICE_RUN_ERRO = -8;
+
+	/**
+	 * 服务不可用  unavailable
+	 */
+	Integer SERVICE_UNAVAILABLE = -9;
+
 
 }
