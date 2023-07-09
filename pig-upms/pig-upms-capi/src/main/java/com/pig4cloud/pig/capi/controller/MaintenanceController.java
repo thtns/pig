@@ -15,6 +15,7 @@ import com.pig4cloud.pig.common.core.util.UUidUtils;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -43,8 +44,11 @@ public class MaintenanceController {
 	@PostMapping(value = {"/order"})
 	public R order(HttpServletRequest request, @RequestBody MaintenanceOrderRequest req) {
 		log.info("~~~~ Step1: 准备下单, 参数为: {}", JSON.toJSONString(req));
-		String key = request.getHeader("AccessKeyId");
-		String secret = request.getHeader("AccessKeySecret");
+		String key = request.getHeader("app_key");
+		String secret = request.getHeader("secret_key");
+		if (StringUtils.isEmpty(key)||StringUtils.isEmpty(key)){
+			return R.resultEnumType(null,RequestStatusEnum.MISS_REQUIRED_PARAMETERS.getType());
+		}
 		BizBuyer bizBuyer = bizBuyerService.getByAkSk(key, secret);
 		Long orderId = UUidUtils.uuLongId();
 		log.info("~~~~ Step1.1: 开始构建下单数据...");
