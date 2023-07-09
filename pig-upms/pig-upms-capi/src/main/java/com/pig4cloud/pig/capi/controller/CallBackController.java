@@ -72,8 +72,9 @@ public class CallBackController {
 	}
 
 
-	@PostMapping("/callback/error")
+	@PostMapping("/error")
 	public R callbackError(@RequestBody RobotCallbcakErroRequest robotError) {
+		log.info("	机器人失败回调开始，参数：" + JSON.toJSONString(robotError));
 		Long orderId = JSONObject.parseObject(JSON.toJSONString(robotError.getData())).getLong("orderId");
 		BizBuyerOrder bizBuyerOrder = bizBuyerOrderService.getById(orderId);
 		Long supplierId = bizBuyerOrder.getSupplierId();
