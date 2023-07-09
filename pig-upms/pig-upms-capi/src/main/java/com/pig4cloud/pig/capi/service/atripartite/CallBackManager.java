@@ -95,10 +95,11 @@ public class CallBackManager {
 		log.info("####第三步（回调商家）：开始");
 		Map<String, Object> paramMap = new HashMap<>(16);
 		paramMap.put("order_id", bizBuyerOrder.getId());
-		paramMap.put("maintain_data", null);
+//		paramMap.put("maintain_data", null);
 
 		Map<String, Object> resultMap = new HashMap<>();
 		resultMap.put("code", failCode.getType());
+		resultMap.put("msg", RequestStatusEnum.getDesc(failCode.getType()));
 		resultMap.put("data", paramMap);
 
 		log.info("####第四步（回调商家）：给商家最终结果" + JSON.toJSONString(resultMap));
