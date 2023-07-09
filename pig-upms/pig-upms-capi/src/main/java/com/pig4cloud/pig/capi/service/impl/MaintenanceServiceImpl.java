@@ -84,7 +84,7 @@ public class MaintenanceServiceImpl implements MaintenanceService {
 			jsonObject.put("orderId", bizBuyerOrder.getId());
 			return R.resultEnumType(jsonObject, RequestStatusEnum.ORDER_FAILURE.getType());
 		}
-		int code = RequestStatusEnum.ORDER_PLACING.getType();
+		int code = RequestStatusEnum.ORDER_SUCCESS.getType();
 		if (!Objects.equals(bizBuyerOrder.getRequestStatus(), RequestStatusEnum.QUERYING.getType())
 				|| !Objects.equals(bizBuyerOrder.getRequestStatus(), RequestStatusEnum.ORDER_SUCCESS.getType())
 				|| !Objects.equals(bizBuyerOrder.getRequestStatus(), RequestStatusEnum.CALLBACK_SUCCESS.getType())) {
