@@ -41,8 +41,8 @@ public class AuthorizationFilter implements Filter {
 		log.info("api getMethod ：{}", requestURI);
 //		try {
 			if (requestURI.contains("/maintenance")) {
-				String key = request.getHeader("AccessKeyId");
-				String secret = request.getHeader("AccessKeySecret");
+				String key = request.getHeader("app_key");
+				String secret = request.getHeader("secret_key");
 				log.info(" AccessKeyId {}, AccessKeySecret {}", key, secret);
 				if (StringUtils.isBlank(key) || StringUtils.isBlank(secret)) {
 					log.error(JSON.toJSONString(R.resultEnumType(null, RequestStatusEnum.MISS_REQUIRED_PARAMETERS.getType())));
