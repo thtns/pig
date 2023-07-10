@@ -64,7 +64,7 @@ public class MaintenanceController {
 				.requestParams(JSON.toJSONString(req))    //请求参数
 				.requestHeader(JSON.toJSONString(RequestUtils.getHeadersInfo(request)))    //请求头
 				.requestTime(LocalDateTime.now())         //请求时间
-				.requestStatus(RequestStatusEnum.ORDER_PLACING.getType())                //订单状态
+				.requestStatus(RequestStatusEnum.ORDER_SUCCESS.getType())                //订单状态
 				.retryCount(0)                            //重试次数
 				.build();
 		log.info("~~~~ Step1.2: 构建下单数据结束.");
