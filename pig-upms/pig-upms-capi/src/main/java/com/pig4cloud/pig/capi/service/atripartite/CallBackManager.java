@@ -47,7 +47,7 @@ public class CallBackManager {
 		if (Objects.isNull(robotResponse)) {
 			return merchantCallBackError(bizBuyerOrder, RequestStatusEnum.CALLBACK_NO_RESULT, RequestStatusEnum.CALLBACK_NO_RESULT);
 		}
-		log.info("####第三步（回调商家）：开始");
+		log.info("####第三步（成功回调商家）：开始");
 		Map<String, Object> paramMap = new HashMap<>();
 		paramMap.put("order_id", bizBuyerOrder.getId());
 		paramMap.put("maintain_data", robotResponse);
@@ -56,7 +56,7 @@ public class CallBackManager {
 		resultMap.put("code", CommonConstants.SUCCESS);
 		resultMap.put("data", paramMap);
 
-		log.info("####第四步（回调商家）：给商家最终结果" + JSON.toJSONString(resultMap));
+		log.info("####第四步（成功回调商家）：给商家最终结果" + JSON.toJSONString(resultMap));
 		return HttpRequest.post(bizBuyerOrder.getCallbackUrl()).body(JSON.toJSONString(resultMap)).contentType("application/json").execute().body();
 	}
 
@@ -76,7 +76,7 @@ public class CallBackManager {
 		bizBuyerOrder.setCallbackTime(LocalDateTime.now());
 		bizBuyerOrderService.saveOrUpdate(bizBuyerOrder);
 
-		log.info("异常回调merchantOrderRecordDO ：" + JSON.toJSONString(bizBuyerOrder));
+		log.info("异常回调订单信息 ：" + JSON.toJSONString(bizBuyerOrder));
 		if (failCode.getType().equals(RequestStatusEnum.SERVER_NO_RESULT.getType())) {//机器人无记录的话
 			//调查无记录,存储本次查询
 			bizRobotQueryRecordService.save(
@@ -92,7 +92,7 @@ public class CallBackManager {
 							.querytime(LocalDateTime.now()).build()); // 当前时间
 		}
 
-		log.info("####第三步（回调商家）：开始");
+		log.info("####第三步（失败回调商家）：开始");
 		Map<String, Object> paramMap = new HashMap<>(16);
 		paramMap.put("order_id", bizBuyerOrder.getId());
 //		paramMap.put("maintain_data", null);
@@ -102,7 +102,7 @@ public class CallBackManager {
 		resultMap.put("msg", RequestStatusEnum.getDesc(failCode.getType()));
 		resultMap.put("data", paramMap);
 
-		log.info("####第四步（回调商家）：给商家最终结果" + JSON.toJSONString(resultMap));
+		log.info("####第四步（失败回调商家）：给商家最终结果" + JSON.toJSONString(resultMap));
 		return HttpRequest.post(bizBuyerOrder.getCallbackUrl()).body(JSON.toJSONString(resultMap)).contentType("application/json").execute().body();
 	}
 
