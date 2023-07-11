@@ -219,6 +219,7 @@ public class MaintenanceServiceImpl implements MaintenanceService {
 			robotList = bizCarBrandService.getEffectiveRobot(carBrand, bizBuyerOrder);
 			log.info("选举机器人运行时间：" + (System.currentTimeMillis() - startTimeEffective) + "ms");
 		} catch (RuntimeException runtimeException) { // 没有可用的机器人
+			log.info("没有可用的机器人, 异常是：{}", runtimeException.getMessage());
 			return;
 		}
 
@@ -429,12 +430,19 @@ public class MaintenanceServiceImpl implements MaintenanceService {
 		log.info("#### 【异步】{} 请求机器人开始：", bizBuyerOrder.getVin());
 		log.info("#### 【异步】{} 机器人请求url：{}", bizBuyerOrder.getVin(), bizRobotInfo.getRobotUrl());
 		log.info("#### 【异步】{} 机器人请求数据：{}", bizBuyerOrder.getVin(), JSON.toJSONString(paramMap));
-		String result = HttpRequest.post(bizRobotInfo.getRobotUrl())
-				.body(JSON.toJSONString(paramMap))
-				.contentType("application/json")
-				.execute().body();
-		log.info("#### 【异步】{} 请求机器人结束", bizBuyerOrder.getVin());
+		String result = "";
+		try {
+			result = HttpRequest.post(bizRobotInfo.getRobotUrl())
+					.body(JSON.toJSONString(paramMap))
+					.contentType("application/json")
+					.execute().body();
+		}catch (Exception e){
+			log.info("#### 【异步】{} 机器人请求异常, 异常信息:{}", bizBuyerOrder.getVin(), e.getMessage());
+			log.info("#### 【异步】{} 请求机器人结束", bizBuyerOrder.getVin());
+			return Boolean.FALSE;
+		}
 		log.info("#### 【异步】{} 机器人查询数据：{}", bizBuyerOrder.getVin(), result);
+		log.info("#### 【异步】{} 请求机器人结束", bizBuyerOrder.getVin());
 		JSONObject jsonObject = JSONObject.parseObject(result);
 		return Boolean.TRUE.equals(jsonObject.get("success"));
 	}
