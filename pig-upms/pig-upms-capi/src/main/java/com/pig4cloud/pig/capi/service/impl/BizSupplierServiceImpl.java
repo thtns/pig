@@ -57,6 +57,7 @@ public class BizSupplierServiceImpl extends ServiceImpl<BizSupplierMapper, BizSu
 			return Collections.emptyList();
 		}
 		QueryWrapper<BizSupplier> bizSupplierQueryWrapper = new QueryWrapper<>();
+		bizSupplierQueryWrapper.eq("status", 1);
 		bizSupplierQueryWrapper.in("id", bizCarBrandSuppliers.stream().map(BizCarBrandSupplier::getSupplierId).collect(Collectors.toList()));
 		return bizSupplierMapper.selectList(bizSupplierQueryWrapper);
 
