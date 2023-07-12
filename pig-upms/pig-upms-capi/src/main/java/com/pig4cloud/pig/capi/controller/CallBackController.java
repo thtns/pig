@@ -62,8 +62,8 @@ public class CallBackController {
 	@PostMapping("/yes")
 	public R callback(HttpServletRequest request, @RequestBody RobotCallbackRequest rebotCallbackRequest) throws Exception {
 		String ipAddr = RequestUtils.getIpAddress(request);
-		log.info("	机器人成功回调开始，参数：" + JSON.toJSONString(rebotCallbackRequest));
-		log.info("	机器人回调ip: {}", ipAddr);
+		log.info("callback yes ：机器人成功回调开始，参数：" + JSON.toJSONString(rebotCallbackRequest));
+		log.info("callback yes ：机器人回调ip: {}", ipAddr);
 		maintenanceService.robotRequestCallBack(rebotCallbackRequest);
 
 		BizBuyerOrder bizBuyerOrder = bizBuyerOrderService.getById(rebotCallbackRequest.getOrderId());
@@ -74,8 +74,8 @@ public class CallBackController {
 
 	@PostMapping("/error")
 	public R callbackError(@RequestBody RobotCallbcakErroRequest robotError) {
-		log.info("	机器人失败回调开始，参数：" + JSON.toJSONString(robotError));
-		Long orderId = JSONObject.parseObject(JSON.toJSONString(robotError.getData())).getLong("orderId");
+		log.info("机器人失败回调开始，参数：" + JSON.toJSONString(robotError));
+		Long orderId = JSON.parseObject(JSON.toJSONString(robotError.getData())).getLong("orderId");
 		BizBuyerOrder bizBuyerOrder = bizBuyerOrderService.getById(orderId);
 		Long supplierId = bizBuyerOrder.getSupplierId();
 		if (robotError.getCode() == RequestStatusEnum.SERVER_LOGIN_FAILURE.getType() ||
@@ -93,7 +93,7 @@ public class CallBackController {
 		} else if (robotError.getCode() == RequestStatusEnum.SERVER_UNKNOWN_ERROR.getType()
 				|| robotError.getCode() == RequestStatusEnum.REBOT_SSL_ERROR.getType()
 				|| robotError.getCode() == RequestStatusEnum.REBOT_SYSTEM_CONNECTION_ERROR.getType()) {
-			if (redisOperationManager.redisOperationUnknownErrorKey(supplierId)) {
+			if (Boolean.TRUE.equals(redisOperationManager.redisOperationUnknownErrorKey(supplierId))) {
 				// 下线供应商
 				log.info("机器人未知错误发生了2次，下架供应商ID：" + supplierId);
 				bizSupplierService.shutDownSupplier(supplierId);
@@ -120,17 +120,17 @@ public class CallBackController {
 		return R.ok();
 	}
 
-    private void retryLogic(RobotCallbcakErroRequest robotError, BizBuyerOrder bizBuyerOrder) {
-        // 判断是否重试过，如果重试过进行错误回调。没重试过，去重试。
-		if (bizBuyerOrder.getRetryCount() > 1){
-            log.info("错误回调给商家：供应商ID：" + bizBuyerOrder.getSupplierId());
+	private void retryLogic(RobotCallbcakErroRequest robotError, BizBuyerOrder bizBuyerOrder) {
+		// 判断是否重试过，如果重试过进行错误回调。没重试过，去重试。
+		if (bizBuyerOrder.getRetryCount() > 1) {
+			log.info("错误回调给商家：供应商ID：" + bizBuyerOrder.getSupplierId());
 			callBackManager.merchantCallBackError(bizBuyerOrder,
 					RequestStatusEnum.CALLBACK_SUCCESS,
 					Objects.requireNonNull(RequestStatusEnum.getStatusEnumByCode(robotError.getCode())));
 			callBackQuanManager.callBackQueueManage(bizBuyerOrder);
-        }else {
-            //重新发起请求
-            maintenanceService.processMaintenanceOrder(bizBuyerOrder);
-        }
-    }
+		} else {
+			//重新发起请求
+			maintenanceService.processMaintenanceOrder(bizBuyerOrder);
+		}
+	}
 }
