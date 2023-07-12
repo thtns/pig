@@ -418,7 +418,7 @@ public class MaintenanceServiceImpl implements MaintenanceService {
 
 		if (Objects.isNull(queue) || queue.equals(RedisKeyDefine.ENABLE)) {
 			redisTemplate.opsForValue().set(RedisKeyDefine.QUEUE + bizBuyerOrder.getCarBrandId() + bizBuyerOrder.getSupplierId(),
-					RedisKeyDefine.DISABLE, 8, TimeUnit.MINUTES);
+					RedisKeyDefine.DISABLE, 3, TimeUnit.MINUTES);
 			return true;
 		}
 		return false;

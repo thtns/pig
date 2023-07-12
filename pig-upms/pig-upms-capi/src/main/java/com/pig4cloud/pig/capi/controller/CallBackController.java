@@ -101,23 +101,22 @@ public class CallBackController {
 			retryLogic(robotError, bizBuyerOrder);
 		} else if (robotError.getCode() == RequestStatusEnum.REBOT_PROXY_CONNECTION_ERROR.getType()
 				|| robotError.getCode() == RequestStatusEnum.REBOT_READ_TIMEOUT_ERROR.getType()) {
-			// 清楚机器人redis占用队列
-			callBackQuanManager.callBackQueueManage(bizBuyerOrder);
-			// 其它错误回调
-			log.info("错误回调给商家：供应商ID：" + supplierId);
-			callBackManager.merchantCallBackErrorWithCode(bizBuyerOrder,
-					RequestStatusEnum.CALLBACK_SUCCESS,
-					Objects.requireNonNull(RequestStatusEnum.getStatusEnumByCode(robotError.getCode())));
+			callFailure(bizBuyerOrder, supplierId, robotError);
 		} else {
-			// 清楚机器人redis占用队列
-			callBackQuanManager.callBackQueueManage(bizBuyerOrder);
-			// 其它错误回调
-			log.info("错误回调给商家：供应商ID：" + supplierId);
-			callBackManager.merchantCallBackErrorWithCode(bizBuyerOrder,
-					RequestStatusEnum.CALLBACK_SUCCESS,
-					Objects.requireNonNull(RequestStatusEnum.getStatusEnumByCode(robotError.getCode())));
+			callFailure(bizBuyerOrder, supplierId, robotError);
 		}
 		return R.ok();
+	}
+
+	public void callFailure(BizBuyerOrder bizBuyerOrder, Long supplierId, RobotCallbcakErroRequest robotError){
+		// 清楚机器人redis占用队列
+		callBackQuanManager.callBackQueueManage(bizBuyerOrder);
+		// 其它错误回调
+		log.info("错误回调给商家：供应商ID：" + supplierId);
+		callBackManager.merchantCallBackErrorWithCode(bizBuyerOrder,
+				RequestStatusEnum.CALLBACK_FAILURE,
+				Objects.requireNonNull(RequestStatusEnum.getStatusEnumByCode(robotError.getCode())));
+
 	}
 
 	private void retryLogic(RobotCallbcakErroRequest robotError, BizBuyerOrder bizBuyerOrder) {

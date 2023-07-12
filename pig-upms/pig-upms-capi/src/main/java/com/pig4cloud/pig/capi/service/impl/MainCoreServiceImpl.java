@@ -134,30 +134,29 @@ public class MainCoreServiceImpl implements MainCoreService {
 		}
 
 		//机器人记录赋值采购商订单失败原因
-		if (StringUtils.isNotBlank(bizRobotQueryRecord.getFailureReason())) {
+		String failureReason = bizRobotQueryRecord.getFailureReason();
+		if (StringUtils.isNotBlank(failureReason)) {
 			log.info("~~~~ Step3.2: 本地数据失败解析....同步到订单数据并回调给商户。");
-			bizBuyerOrder.setFailureReason(bizRobotQueryRecord.getFailureReason());
+			bizBuyerOrder.setFailureReason(failureReason);
 			CompletableFuture.runAsync(() -> {
-				log.info("#### Step3.3: 异步解析开始");
+				log.info("#### Step3.3: 错误回调开始");
 				try {
 					Thread.sleep(TIME_OUT);
 					AtomicInteger times = new AtomicInteger(1);
 					RetryUtil.executeWithRetry(() -> {
 						log.info("#### Step3.4.1: Vin：{} RetryUtil开始回调 第{}次", vin, times);
 						times.addAndGet(1);
-						RobotResponse robotResponse = JSON.parseObject(bizRobotQueryRecord.getResult(), RobotResponse.class);
-						log.info("#### Step3.4.2:  order_id: {}，回调采购商维修数据 : {}", order_id
-								, JSON.toJSONString(JSON.parseObject(bizRobotQueryRecord.getResult(), RobotResponse.class)));
-						String result = callBackManager.merchantCallBack(bizBuyerOrder, robotResponse);
+						log.error("#### Step3.4.2:  order_id: {}，回调采购商维修数据 : {}", order_id, failureReason);
+						String result = callBackManager.merchantCallBackError(bizBuyerOrder);
 						JSONObject jsonObject = JSON.parseObject(result);
 						if (Boolean.TRUE.equals(jsonObject.get("success"))){// 成功回调, 则更新订单状态
-							bizBuyerOrder.setRequestStatus(RequestStatusEnum.CALLBACK_SUCCESS.getType());
-							bizBuyerOrder.setResult(JSON.toJSONString(robotResponse));
+							bizBuyerOrder.setRequestStatus(RequestStatusEnum.CALLBACK_FAILURE.getType());
+							bizBuyerOrder.setFailureReason(failureReason);
 							bizBuyerOrder.setCallbackTime(LocalDateTime.now());
 							bizBuyerOrderService.saveOrUpdate(bizBuyerOrder);
-						}else if (Boolean.FALSE.equals(jsonObject.get("success")) && times.get() >= 3){// 三次失败状态
+						}else if (Boolean.FALSE.equals(jsonObject.get("success")) && times.get() >= 3){// 三次失败状态 失败回调请求用户失败
 							bizBuyerOrder.setRequestStatus(RequestStatusEnum.CALLBACK_FAILURE.getType());
-							bizBuyerOrder.setFailureReason(JSON.toJSONString(jsonObject));
+							bizBuyerOrder.setFailureReason(JSON.toJSONString(R.resultEnumType(null, RequestStatusEnum.API_CALLBACK_FAILURE.getType())));
 							bizBuyerOrder.setCallbackTime(LocalDateTime.now());
 							bizBuyerOrderService.saveOrUpdate(bizBuyerOrder);
 						}

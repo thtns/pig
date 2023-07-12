@@ -34,7 +34,7 @@ public class CallBackQuanManager {
 		log.info("~~~redis中队列数据：" + queue);
 		if (RedisKeyDefine.DISABLE.equals(queue)) {
 			log.info("~~~更改redis中数据");
-			redisTemplate.opsForValue().set(queueKey, RedisKeyDefine.ENABLE, 8, TimeUnit.MINUTES);
+			redisTemplate.opsForValue().set(queueKey, RedisKeyDefine.ENABLE, 3, TimeUnit.MINUTES);
 		}
 		// 查询数据库排队的数据
 		log.info("~~~查询数据库");
