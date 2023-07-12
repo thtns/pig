@@ -16,7 +16,6 @@
  */
 package com.pig4cloud.pig.capi.service.impl;
 
-import cn.hutool.core.date.DateUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.pig4cloud.pig.capi.entity.BizBuyer;
@@ -27,7 +26,6 @@ import com.pig4cloud.pig.capi.service.BizBuyerService;
 import com.pig4cloud.pig.common.core.constant.enums.capi.RequestStatusEnum;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import java.util.List;
 
 import static cn.hutool.core.date.DateUtil.today;
 

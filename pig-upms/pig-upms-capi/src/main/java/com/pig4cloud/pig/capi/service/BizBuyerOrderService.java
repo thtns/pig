@@ -19,9 +19,6 @@ package com.pig4cloud.pig.capi.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.pig4cloud.pig.capi.entity.BizBuyerOrder;
-import com.pig4cloud.pig.capi.response.MaintenanceOrderRes;
-
-import java.util.List;
 
 /**
  * 采购商订单表

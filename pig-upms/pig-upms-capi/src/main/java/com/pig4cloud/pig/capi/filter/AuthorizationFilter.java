@@ -29,7 +29,7 @@ public class AuthorizationFilter implements Filter {
 
 	@Override
 	public void init(FilterConfig filterConfig){
-		System.out.println("初始化过滤器!");
+		log.info("初始化过滤器!");
 	}
 
 	@Override
@@ -39,33 +39,28 @@ public class AuthorizationFilter implements Filter {
 		HttpServletResponse response = (HttpServletResponse) servletResponse;
 		String requestURI = request.getRequestURI();
 		log.info("api getMethod ：{}", requestURI);
-//		try {
-			if (requestURI.contains("/maintenance")) {
-				String key = request.getHeader("app_key");
-				String secret = request.getHeader("secret_key");
-				log.info(" AccessKeyId {}, AccessKeySecret {}", key, secret);
-				if (StringUtils.isBlank(key) || StringUtils.isBlank(secret)) {
-					log.error(JSON.toJSONString(R.resultEnumType(null, RequestStatusEnum.MISS_REQUIRED_PARAMETERS.getType())));
-					response.reset();
-					response.setContentType("application/json;charset=utf-8");
-					response.getWriter().write(JSON.toJSONString(R.resultEnumType(null, RequestStatusEnum.MISS_REQUIRED_PARAMETERS.getType())));                    // 发送字符实体内容
-					response.setStatus(RequestStatusEnum.MISS_REQUIRED_PARAMETERS.getType());
-					return;
-				}
-				BizBuyer bizBuyer = bizBuyerService.getByAkSk(key, secret);
-				if (bizBuyer == null) {
-					log.error(JSON.toJSONString(R.resultEnumType(null, RequestStatusEnum.AKSK_FAIL.getType())));
-					response.reset();
-					response.setContentType("application/json;charset=utf-8");
-					response.getWriter().write(JSON.toJSONString(R.resultEnumType(null, RequestStatusEnum.AKSK_FAIL.getType())));                    // 发送字符实体内容
-					response.setStatus(RequestStatusEnum.AKSK_FAIL.getType());
-					return;
-				}
+		if (requestURI.contains("/maintenance")) {
+			String key = request.getHeader("app_key");
+			String secret = request.getHeader("secret_key");
+			log.info(" AccessKeyId {}, AccessKeySecret {}", key, secret);
+			if (StringUtils.isBlank(key) || StringUtils.isBlank(secret)) {
+				log.error(JSON.toJSONString(R.resultEnumType(null, RequestStatusEnum.MISS_REQUIRED_PARAMETERS.getType())));
+				response.reset();
+				response.setContentType("application/json;charset=utf-8");
+				response.getWriter().write(JSON.toJSONString(R.resultEnumType(null, RequestStatusEnum.MISS_REQUIRED_PARAMETERS.getType())));                    // 发送字符实体内容
+				response.setStatus(RequestStatusEnum.MISS_REQUIRED_PARAMETERS.getType());
+				return;
 			}
-			filterChain.doFilter(servletRequest, servletResponse);
-//		} catch (Exception e) {
-//			log.error("请求拦截错误, 错误是: " + e);
-//			return;
-//		}
+			BizBuyer bizBuyer = bizBuyerService.getByAkSk(key, secret);
+			if (bizBuyer == null) {
+				log.error(JSON.toJSONString(R.resultEnumType(null, RequestStatusEnum.AKSK_FAIL.getType())));
+				response.reset();
+				response.setContentType("application/json;charset=utf-8");
+				response.getWriter().write(JSON.toJSONString(R.resultEnumType(null, RequestStatusEnum.AKSK_FAIL.getType())));                    // 发送字符实体内容
+				response.setStatus(RequestStatusEnum.AKSK_FAIL.getType());
+				return;
+			}
+		}
+		filterChain.doFilter(servletRequest, servletResponse);
 	}
 }

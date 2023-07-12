@@ -105,14 +105,5 @@ public class BizRobot extends BaseEntity implements Cloneable{
     @Schema(description ="机器人服务结束时间")
     private Time serviceEndTime;
 
-	public Object clone(){
-		BizRobot rebot = null;
-		try {
-			rebot = (BizRobot)super.clone();
-		} catch (CloneNotSupportedException e) {
-			e.printStackTrace();
-		}
-		return rebot;
-	}
 
 }

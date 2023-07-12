@@ -94,9 +94,8 @@ public class MainCoreServiceImpl implements MainCoreService {
 		}
 		//机器人记录赋值采购商订单成功结果
 		if (Objects.nonNull(bizRobotQueryRecord.getResult())) {
+			log.info("~~~~ Step3.2: 本地数据成功解析....回调给用商户并同步到订单数据。");
 			bizBuyerOrder.setResult(bizRobotQueryRecord.getResult());
-
-			log.info("~~~~ Step3.2: 本地数据解析....");
 			CompletableFuture.runAsync(() -> {
 				log.info("#### Step3.3: 异步解析开始");
 				try {
@@ -131,16 +130,51 @@ public class MainCoreServiceImpl implements MainCoreService {
 					bizBuyerOrderService.saveOrUpdate(bizBuyerOrder);
 				}
 			});
-
+			bizBuyerOrder.setCallbackTime(LocalDateTime.now());
+			bizBuyerOrder.setRequestStatus(RequestStatusEnum.CALLBACK_SUCCESS.getType());
 		}
+
 		//机器人记录赋值采购商订单失败原因
 		if (StringUtils.isNotBlank(bizRobotQueryRecord.getFailureReason())) {
+			log.info("~~~~ Step3.2: 本地数据失败解析....回调给商户并同步到订单数据。");
 			bizBuyerOrder.setFailureReason(bizRobotQueryRecord.getFailureReason());
+			CompletableFuture.runAsync(() -> {
+				log.info("#### Step3.3: 异步解析开始");
+				try {
+					Thread.sleep(TIME_OUT);
+					AtomicInteger times = new AtomicInteger(1);
+					RetryUtil.executeWithRetry(() -> {
+						log.info("#### Step3.4.1: Vin：{} RetryUtil开始回调 第{}次", vin, times);
+						times.addAndGet(1);
+						RobotResponse robotResponse = JSONObject.parseObject(bizRobotQueryRecord.getResult(), RobotResponse.class);
+						log.info("#### Step3.4.2:  order_id: {}，回调采购商维修数据 : {}", vin
+								, JSON.toJSONString(JSONObject.parseObject(bizRobotQueryRecord.getResult(), RobotResponse.class)));
+						String result = callBackManager.merchantCallBack(bizBuyerOrder, robotResponse);
+						JSONObject jsonObject = JSONObject.parseObject(result);
+						if (Boolean.TRUE.equals(jsonObject.get("success"))){// 成功回调, 则更新订单状态
+							bizBuyerOrder.setRequestStatus(RequestStatusEnum.CALLBACK_SUCCESS.getType());
+							bizBuyerOrder.setResult(JSON.toJSONString(robotResponse));
+							bizBuyerOrder.setCallbackTime(LocalDateTime.now());
+							bizBuyerOrderService.saveOrUpdate(bizBuyerOrder);
+						}else if (Boolean.FALSE.equals(jsonObject.get("success")) && times.get() >= 3){// 三次失败状态
+							bizBuyerOrder.setRequestStatus(RequestStatusEnum.CALLBACK_FAILURE.getType());
+							bizBuyerOrder.setFailureReason(JSON.toJSONString(jsonObject));
+							bizBuyerOrder.setCallbackTime(LocalDateTime.now());
+							bizBuyerOrderService.saveOrUpdate(bizBuyerOrder);
+						}
+						return null;
+					}, 3, 1000L, false);
+				} catch (Exception e) {
+					// 更新失败原因和失败状态： 回调失败
+					log.info("#### Step3.4.3: RetryUtil回调失败....");
+					bizBuyerOrder.setRequestStatus(RequestStatusEnum.CALLBACK_FAILURE.getType());
+					bizBuyerOrder.setFailureReason(JSON.toJSONString(R.resultEnumType(null, RequestStatusEnum.CALLBACK_FAILURE.getType())));
+					bizBuyerOrderService.saveOrUpdate(bizBuyerOrder);
+				}
+			});
+			bizBuyerOrder.setCallbackTime(LocalDateTime.now());
+			bizBuyerOrder.setRequestStatus(RequestStatusEnum.CALLBACK_FAILURE.getType());
 		}
-		bizBuyerOrder.setCallbackTime(LocalDateTime.now());
-		bizBuyerOrder.setRequestStatus(RequestStatusEnum.CALLBACK_SUCCESS.getType());
-
-
 		log.info("~~~~ Step4 本地数据解析结束, 商家数据赋值更新 ：" + JSON.toJSONString(bizBuyerOrder));
 	}
 }
