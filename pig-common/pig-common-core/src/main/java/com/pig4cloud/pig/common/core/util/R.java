@@ -39,7 +39,7 @@ public class R<T> implements Serializable {
 
 	@Getter
 	@Setter
-	private Integer code;
+	private Integer code = CommonConstants.SUCCESS;
 
 	@Getter
 	@Setter
@@ -94,7 +94,7 @@ public class R<T> implements Serializable {
 	}
 
 	public Boolean isSuccess() {
-		return (this.code == CommonConstants.SUCCESS);
+		return (this.code.equals(CommonConstants.SUCCESS));
 	}
 
 }
