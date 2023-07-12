@@ -33,6 +33,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
 @Slf4j
@@ -111,14 +112,14 @@ public class MaintenanceServiceImpl implements MaintenanceService {
 		producerUtil.sendTimeMsg(String.valueOf(bizBuyerOrder.getId()), delayTime);
 	}
 
-	private MaintenanceOrderRes buildMaintenanceOrderRes(BizBuyerOrder bizBuyerOrder){
+	private MaintenanceOrderRes buildMaintenanceOrderRes(BizBuyerOrder bizBuyerOrder) {
 		boolean falg = true;
 		while (falg)
-			try{
+			try {
 				Thread.sleep(TIME_OUT);
 				bizBuyerOrderService.saveOrUpdate(bizBuyerOrder);
 				falg = false;
-			}catch (Exception e){
+			} catch (Exception e) {
 
 			}
 
@@ -167,7 +168,7 @@ public class MaintenanceServiceImpl implements MaintenanceService {
 				RetryUtil.executeWithRetry(() -> {
 					log.info("#### Step3.4.1: Vin：{} RetryUtil开始回调 ", vin);
 					RobotResponse robotResponse = JSONObject.parseObject(bizRobotQueryRecord.getResult(), RobotResponse.class);
-					log.info("#### Step3.4.2:  order_id: {}，回调采购商维修数据 : {}", vin
+					log.info("#### Step3.4.2:  order_id: {}，回调采购商维修数据 : {}", bizBuyerOrder.getId()
 							, JSON.toJSONString(JSONObject.parseObject(bizRobotQueryRecord.getResult(), RobotResponse.class)));
 					return callBackManager.merchantCallBack(bizBuyerOrder, robotResponse);
 				}, 3, 1000L, false);
@@ -279,7 +280,7 @@ public class MaintenanceServiceImpl implements MaintenanceService {
 //					bizBuyerOrder.setCallbackTime(LocalDateTime.now());
 //					RetryUtil.executeWithRetry(() -> {
 //						log.info("#### 错误回调：此时间段不支持查询~~~");
-//						return merchantCallBackManager.merchantCallBackError(
+//						return merchantCallBackManager.merchantCallBackErrorWithCode(
 //								merchantOrderRecordDO,
 //								MaintenanceRequestStatusEnum.TIME_NO_SUPPORT.getStatus(),
 //								ApiResult.error(ApiResultCode.TIME_NONSUPPORT)
@@ -436,7 +437,7 @@ public class MaintenanceServiceImpl implements MaintenanceService {
 					.body(JSON.toJSONString(paramMap))
 					.contentType("application/json")
 					.execute().body();
-		}catch (Exception e){
+		} catch (Exception e) {
 			log.info("#### 【异步】{} 机器人请求异常, 异常信息:{}", bizBuyerOrder.getVin(), e.getMessage());
 			log.info("#### 【异步】{} 请求机器人结束", bizBuyerOrder.getVin());
 			return Boolean.FALSE;
@@ -462,21 +463,49 @@ public class MaintenanceServiceImpl implements MaintenanceService {
 				.result(JSON.toJSONString(robotResponse))
 				.querytime(LocalDateTime.now())
 				.build();
-		log.info("vin {{}} robotRequestCallBack 保存机器人查询记录： {}", bizBuyerOrder.getVin(), JSON.toJSONString(JSON.toJSONString(robotResponse)));
+		if (Objects.isNull(robotResponse)) {
+			log.info("callback yes ：机器人查询无记录,修改查询结果为无记录...");
+			bizRobotQueryRecord.setResultStatus(BaseConstants.ROBOT_QUERY_STATUS_NO_RESULT);
+		}
 		//保存机器人请求成功结果
-		CompletableFuture<Void> cf = CompletableFuture.runAsync(() ->
-				bizRobotQueryRecordService.save(bizRobotQueryRecord)
+		bizRobotQueryRecordService.save(bizRobotQueryRecord);
+		log.info("callback yes ：vin {{}} robotRequestCallBack 保存机器人查询记录： {}", bizBuyerOrder.getVin(), JSON.toJSONString(JSON.toJSONString(robotResponse)));
+
+		CompletableFuture.runAsync(() ->
+				{
+					log.info("callback yes ： 开始异步回调商家");
+					try {
+						AtomicInteger times = new AtomicInteger(1);
+						RetryUtil.executeWithRetry(() -> {
+							log.info("callback yes : RetryUtil开始回调 第{}次", times);
+							times.addAndGet(1);
+							log.info("callback yes :  order_id: {}，回调采购商维修数据 : {}", bizBuyerOrder.getId(), JSON.toJSONString(robotResponse));
+							String result = callBackManager.merchantCallBack(bizBuyerOrder, robotResponse);
+							JSONObject jsonObject = JSONObject.parseObject(result);
+							if (Boolean.TRUE.equals(jsonObject.get("success"))) {// 成功回调, 则更新订单状态
+								bizBuyerOrder.setRequestStatus(RequestStatusEnum.CALLBACK_SUCCESS.getType());
+								bizBuyerOrder.setResult(JSON.toJSONString(robotResponse));
+								bizBuyerOrder.setCallbackTime(LocalDateTime.now());
+								bizBuyerOrderService.updateById(bizBuyerOrder);
+							} else if (Boolean.FALSE.equals(jsonObject.get("success")) && times.get() >= 3) {// 三次失败状态
+								bizBuyerOrder.setRequestStatus(RequestStatusEnum.CALLBACK_FAILURE.getType());
+								bizBuyerOrder.setFailureReason(JSON.toJSONString(jsonObject));
+								bizBuyerOrder.setCallbackTime(LocalDateTime.now());
+								bizBuyerOrderService.updateById(bizBuyerOrder);
+							}
+							log.info("vin {{}} robotRequestCallBack 更新订单状态： {}", bizBuyerOrder.getVin(), RequestStatusEnum.getStatusEnumByCode(bizBuyerOrder.getRequestStatus()));
+							return null;
+						}, 3, 3000L, false);
+					} catch (Exception e) {
+						// 更新失败原因和失败状态： 回调失败
+						log.info("callback yes : RetryUtil回调失败....");
+						bizBuyerOrder.setRequestStatus(RequestStatusEnum.CALLBACK_FAILURE.getType());
+						bizBuyerOrder.setFailureReason(JSON.toJSONString(R.resultEnumType(null, RequestStatusEnum.CALLBACK_FAILURE.getType())));
+						bizBuyerOrderService.updateById(bizBuyerOrder);
+						log.info("vin {{}} robotRequestCallBack 更新订单状态： {}", bizBuyerOrder.getVin(), RequestStatusEnum.getStatusEnumByCode(bizBuyerOrder.getRequestStatus()));
+					}
+				}
 		);
-
-		// 异步回调商家
-		RetryUtil.asyncExecuteWithRetry(() -> callBackManager.merchantCallBack(bizBuyerOrder, robotResponse),
-				3, 3000L, false, 6000L, null);
-
-		bizBuyerOrder.setRequestStatus(RequestStatusEnum.CALLBACK_SUCCESS.getType());
-		bizBuyerOrder.setResult(JSON.toJSONString(robotResponse));
-		bizBuyerOrder.setCallbackTime(LocalDateTime.now());
-		bizBuyerOrderService.updateById(bizBuyerOrder);
-		log.info("vin {{}} robotRequestCallBack 更新订单状态： {}", bizBuyerOrder.getVin(), RequestStatusEnum.CALLBACK_SUCCESS.getDescription());
 	}
 
 }
