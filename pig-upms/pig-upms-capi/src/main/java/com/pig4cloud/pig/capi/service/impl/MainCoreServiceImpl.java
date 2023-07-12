@@ -82,6 +82,7 @@ public class MainCoreServiceImpl implements MainCoreService {
 	 */
 	private void localMysqlParsing(BizBuyerOrder bizBuyerOrder, BizRobotQueryRecord bizRobotQueryRecord) {
 		String vin = bizBuyerOrder.getVin();
+		Long order_id = bizBuyerOrder.getId();
 		log.info("~~~~ Step3: 开始加载本地 Vin：{} 订单记录", vin);
 		BizBuyerOrder successOrder = bizBuyerOrderService.getSuccessMerchantOrderByVin(vin);
 		if (Objects.nonNull(successOrder)) {
@@ -94,7 +95,7 @@ public class MainCoreServiceImpl implements MainCoreService {
 		}
 		//机器人记录赋值采购商订单成功结果
 		if (Objects.nonNull(bizRobotQueryRecord.getResult())) {
-			log.info("~~~~ Step3.2: 本地数据成功解析....回调给用商户并同步到订单数据。");
+			log.info("~~~~ Step3.2: 本地数据成功解析....同步到订单数据并回调给商户。");
 			bizBuyerOrder.setResult(bizRobotQueryRecord.getResult());
 			CompletableFuture.runAsync(() -> {
 				log.info("#### Step3.3: 异步解析开始");
@@ -104,11 +105,11 @@ public class MainCoreServiceImpl implements MainCoreService {
 					RetryUtil.executeWithRetry(() -> {
 						log.info("#### Step3.4.1: Vin：{} RetryUtil开始回调 第{}次", vin, times);
 						times.addAndGet(1);
-						RobotResponse robotResponse = JSONObject.parseObject(bizRobotQueryRecord.getResult(), RobotResponse.class);
-						log.info("#### Step3.4.2:  order_id: {}，回调采购商维修数据 : {}", vin
-								, JSON.toJSONString(JSONObject.parseObject(bizRobotQueryRecord.getResult(), RobotResponse.class)));
+						RobotResponse robotResponse = JSON.parseObject(bizRobotQueryRecord.getResult(), RobotResponse.class);
+						log.info("#### Step3.4.2:  order_id: {}，回调采购商维修数据 : {}", order_id
+								, JSON.toJSONString(JSON.parseObject(bizRobotQueryRecord.getResult(), RobotResponse.class)));
 						String result = callBackManager.merchantCallBack(bizBuyerOrder, robotResponse);
-						JSONObject jsonObject = JSONObject.parseObject(result);
+						JSONObject jsonObject = JSON.parseObject(result);
 						if (Boolean.TRUE.equals(jsonObject.get("success"))){// 成功回调, 则更新订单状态
 							bizBuyerOrder.setRequestStatus(RequestStatusEnum.CALLBACK_SUCCESS.getType());
 							bizBuyerOrder.setResult(JSON.toJSONString(robotResponse));
@@ -126,17 +127,15 @@ public class MainCoreServiceImpl implements MainCoreService {
 					// 更新失败原因和失败状态： 回调失败
 					log.info("#### Step3.4.3: RetryUtil回调失败....");
 					bizBuyerOrder.setRequestStatus(RequestStatusEnum.CALLBACK_FAILURE.getType());
-					bizBuyerOrder.setFailureReason(JSON.toJSONString(R.resultEnumType(null, RequestStatusEnum.CALLBACK_FAILURE.getType())));
+					bizBuyerOrder.setFailureReason(JSON.toJSONString(R.resultEnumType(null, RequestStatusEnum.API_CALLBACK_FAILURE.getType())));
 					bizBuyerOrderService.saveOrUpdate(bizBuyerOrder);
 				}
 			});
-			bizBuyerOrder.setCallbackTime(LocalDateTime.now());
-			bizBuyerOrder.setRequestStatus(RequestStatusEnum.CALLBACK_SUCCESS.getType());
 		}
 
 		//机器人记录赋值采购商订单失败原因
 		if (StringUtils.isNotBlank(bizRobotQueryRecord.getFailureReason())) {
-			log.info("~~~~ Step3.2: 本地数据失败解析....回调给商户并同步到订单数据。");
+			log.info("~~~~ Step3.2: 本地数据失败解析....同步到订单数据并回调给商户。");
 			bizBuyerOrder.setFailureReason(bizRobotQueryRecord.getFailureReason());
 			CompletableFuture.runAsync(() -> {
 				log.info("#### Step3.3: 异步解析开始");
@@ -146,11 +145,11 @@ public class MainCoreServiceImpl implements MainCoreService {
 					RetryUtil.executeWithRetry(() -> {
 						log.info("#### Step3.4.1: Vin：{} RetryUtil开始回调 第{}次", vin, times);
 						times.addAndGet(1);
-						RobotResponse robotResponse = JSONObject.parseObject(bizRobotQueryRecord.getResult(), RobotResponse.class);
-						log.info("#### Step3.4.2:  order_id: {}，回调采购商维修数据 : {}", vin
-								, JSON.toJSONString(JSONObject.parseObject(bizRobotQueryRecord.getResult(), RobotResponse.class)));
+						RobotResponse robotResponse = JSON.parseObject(bizRobotQueryRecord.getResult(), RobotResponse.class);
+						log.info("#### Step3.4.2:  order_id: {}，回调采购商维修数据 : {}", order_id
+								, JSON.toJSONString(JSON.parseObject(bizRobotQueryRecord.getResult(), RobotResponse.class)));
 						String result = callBackManager.merchantCallBack(bizBuyerOrder, robotResponse);
-						JSONObject jsonObject = JSONObject.parseObject(result);
+						JSONObject jsonObject = JSON.parseObject(result);
 						if (Boolean.TRUE.equals(jsonObject.get("success"))){// 成功回调, 则更新订单状态
 							bizBuyerOrder.setRequestStatus(RequestStatusEnum.CALLBACK_SUCCESS.getType());
 							bizBuyerOrder.setResult(JSON.toJSONString(robotResponse));
@@ -168,12 +167,10 @@ public class MainCoreServiceImpl implements MainCoreService {
 					// 更新失败原因和失败状态： 回调失败
 					log.info("#### Step3.4.3: RetryUtil回调失败....");
 					bizBuyerOrder.setRequestStatus(RequestStatusEnum.CALLBACK_FAILURE.getType());
-					bizBuyerOrder.setFailureReason(JSON.toJSONString(R.resultEnumType(null, RequestStatusEnum.CALLBACK_FAILURE.getType())));
+					bizBuyerOrder.setFailureReason(JSON.toJSONString(R.resultEnumType(null, RequestStatusEnum.API_CALLBACK_FAILURE.getType())));
 					bizBuyerOrderService.saveOrUpdate(bizBuyerOrder);
 				}
 			});
-			bizBuyerOrder.setCallbackTime(LocalDateTime.now());
-			bizBuyerOrder.setRequestStatus(RequestStatusEnum.CALLBACK_FAILURE.getType());
 		}
 		log.info("~~~~ Step4 本地数据解析结束, 商家数据赋值更新 ：" + JSON.toJSONString(bizBuyerOrder));
 	}
