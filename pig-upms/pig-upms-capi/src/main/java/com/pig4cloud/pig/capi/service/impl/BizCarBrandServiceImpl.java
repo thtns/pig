@@ -88,7 +88,7 @@ public class BizCarBrandServiceImpl extends ServiceImpl<BizCarBrandMapper, BizCa
 	}
 
 	private void handleOrderFailure(BizBuyerOrder bizBuyerOrder, RequestStatusEnum erroCode, RequestStatusEnum failureReason) {
-		callBackManager.merchantCallBackError(bizBuyerOrder, erroCode, failureReason);
+		callBackManager.merchantCallBackErrorWithCode(bizBuyerOrder, erroCode, failureReason);
 		throw new RuntimeException(JSON.toJSONString(R.resultEnumType(null, failureReason.getType())));
 	}
 
