@@ -88,7 +88,12 @@ public class BizCarBrandServiceImpl extends ServiceImpl<BizCarBrandMapper, BizCa
 	}
 
 	private void handleOrderFailure(BizBuyerOrder bizBuyerOrder, RequestStatusEnum erroCode, RequestStatusEnum failureReason) {
-		callBackManager.merchantCallBackErrorWithCode(bizBuyerOrder, erroCode, failureReason);
+		if (bizBuyerOrder.getRetryCount() > 1) {// 只有大于1次的才回调
+			callBackManager.merchantCallBackErrorWithCode(bizBuyerOrder, RequestStatusEnum.CALLBACK_FAILURE, RequestStatusEnum.CALLBACK_FAILURE);
+		} else {
+			bizBuyerOrder.setRequestStatus(erroCode.getType());
+			bizBuyerOrder.setFailureReason(JSON.toJSONString(R.resultEnumType(null, failureReason.getType())));
+		}
 		throw new RuntimeException(JSON.toJSONString(R.resultEnumType(null, failureReason.getType())));
 	}
 
@@ -106,14 +111,14 @@ public class BizCarBrandServiceImpl extends ServiceImpl<BizCarBrandMapper, BizCa
 	@Override
 	public List<RebotInfo> getEffectiveRobot(BizCarBrand bizCarBrand, BizBuyerOrder bizBuyerOrder) {
 		log.info("~~~~ Step3.2: 开始匹配有效机器人. ");
-		Long bizCarBrandId =  bizCarBrand.getId();
+		Long bizCarBrandId = bizCarBrand.getId();
 		// 根据品牌获取供应商
-		log.info("~~~~ Step3.2.1: 开始查询品牌 bizCarBrandId：{} 本地供应商信息..... ", bizCarBrandId);
+		log.info("~~~~ Step3.2.1: 开始查询品牌 bizCarBrandId：{} 本地供应商机器人信息..... ", bizCarBrandId);
 		List<BizSupplier> bizSuppliers = bizSupplierService.getSupplierByCarBrandId(bizCarBrand.getId());
 
 		if (bizSuppliers.isEmpty()) {
-			log.info("~~~~ Step3.2.1.1: 不存在本地 bizCarBrandId：{} 供应商信息. 退出下单. ", bizCarBrandId);
-			handleEmptySupplierList(bizBuyerOrder, "bizSuppliers is Empty !");
+			log.info("~~~~ Step3.2.1.1: 不存在本地 bizCarBrandId：{} 供应商机器人信息{}. 退出下单. ", bizCarBrandId, "bizSuppliers is Empty !");
+			handleEmptySupplierList(bizBuyerOrder);
 		}
 
 		//按照权重供应商分组
@@ -140,7 +145,7 @@ public class BizCarBrandServiceImpl extends ServiceImpl<BizCarBrandMapper, BizCa
 
 		if (supplierList.isEmpty()) {
 			log.info("~~~~ Step3.2.2.2: supplierList is Empty !. 退出下单. ");
-			handleEmptySupplierList(bizBuyerOrder, "supplierList is Empty !");
+			handleEmptySupplierList(bizBuyerOrder);
 		}
 
 		log.info("~~~~ Step3.2.3: 计算采购商请求上限.... ");
@@ -162,7 +167,7 @@ public class BizCarBrandServiceImpl extends ServiceImpl<BizCarBrandMapper, BizCa
 
 		if (usableSupplierList.isEmpty()) {
 			log.info("~~~~ Step3.2.4.1: usableSupplierList is Empty. 退出下单. ");
-			handleEmptySupplierList(bizBuyerOrder, "usableSupplierList is Empty !");
+			handleEmptySupplierList(bizBuyerOrder);
 		}
 
 		log.info("~~~~ Step3.2.5: 组装有效机器人列表.... ");
@@ -183,15 +188,12 @@ public class BizCarBrandServiceImpl extends ServiceImpl<BizCarBrandMapper, BizCa
 
 		if (robotEffectiveList.isEmpty()) {
 			log.info("~~~~ Step3.2.5.1: robotEffectiveList is Empty.  退出下单.");
-			handleEmptySupplierList(bizBuyerOrder, "robotEffectiveList is Empty !");
+			handleEmptySupplierList(bizBuyerOrder);
 		}
 		return robotEffectiveList;
 	}
 
-	private void handleEmptySupplierList(BizBuyerOrder bizBuyerOrder, String errorMessage) {
-		if (bizBuyerOrder.getRetryCount() > 1) {
-			handleOrderFailure(bizBuyerOrder, RequestStatusEnum.CALLBACK_FAILURE, RequestStatusEnum.CALLBACK_FAILURE);
-		}
+	private void handleEmptySupplierList(BizBuyerOrder bizBuyerOrder) {
 		handleOrderFailure(bizBuyerOrder, RequestStatusEnum.API_TIME_NONSUPPORT, RequestStatusEnum.API_TIME_NONSUPPORT);
 	}
 }
