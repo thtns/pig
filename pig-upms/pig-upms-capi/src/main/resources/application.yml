@@ -9,11 +9,9 @@ spring:
       username: @nacos.username@
       password: @nacos.password@
       discovery:
-        server-addr: ${NACOS_HOST:@NACOS_HOST@}:${NACOS_PORT:8848}
-        namespace: @profiles.active@
+        server-addr: ${NACOS_HOST:pig-register}:${NACOS_PORT:8848}
       config:
         server-addr: ${spring.cloud.nacos.discovery.server-addr}
-        namespace: ${spring.cloud.nacos.discovery.namespace}
   config:
     import:
       - nacos:${spring.application.name}-@profiles.active@.yml
