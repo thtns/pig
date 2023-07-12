@@ -105,7 +105,7 @@ public class CallBackController {
 			callBackQuanManager.callBackQueueManage(bizBuyerOrder);
 			// 其它错误回调
 			log.info("错误回调给商家：供应商ID：" + supplierId);
-			callBackManager.merchantCallBackError(bizBuyerOrder,
+			callBackManager.merchantCallBackErrorWithCode(bizBuyerOrder,
 					RequestStatusEnum.CALLBACK_SUCCESS,
 					Objects.requireNonNull(RequestStatusEnum.getStatusEnumByCode(robotError.getCode())));
 		} else {
@@ -113,7 +113,7 @@ public class CallBackController {
 			callBackQuanManager.callBackQueueManage(bizBuyerOrder);
 			// 其它错误回调
 			log.info("错误回调给商家：供应商ID：" + supplierId);
-			callBackManager.merchantCallBackError(bizBuyerOrder,
+			callBackManager.merchantCallBackErrorWithCode(bizBuyerOrder,
 					RequestStatusEnum.CALLBACK_SUCCESS,
 					Objects.requireNonNull(RequestStatusEnum.getStatusEnumByCode(robotError.getCode())));
 		}
@@ -124,7 +124,7 @@ public class CallBackController {
 		// 判断是否重试过，如果重试过进行错误回调。没重试过，去重试。
 		if (bizBuyerOrder.getRetryCount() > 1) {
 			log.info("错误回调给商家：供应商ID：" + bizBuyerOrder.getSupplierId());
-			callBackManager.merchantCallBackError(bizBuyerOrder,
+			callBackManager.merchantCallBackErrorWithCode(bizBuyerOrder,
 					RequestStatusEnum.CALLBACK_SUCCESS,
 					Objects.requireNonNull(RequestStatusEnum.getStatusEnumByCode(robotError.getCode())));
 			callBackQuanManager.callBackQueueManage(bizBuyerOrder);
