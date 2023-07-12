@@ -1,6 +1,7 @@
 package com.pig4cloud.pig.capi.service.atripartite;
 
 import cn.hutool.http.HttpRequest;
+import cn.hutool.http.HttpResponse;
 import com.alibaba.fastjson.JSON;
 import com.pig4cloud.pig.capi.entity.BizBuyerOrder;
 import com.pig4cloud.pig.capi.entity.BizRobotQueryRecord;
@@ -36,13 +37,12 @@ public class CallBackManager {
 	private final BizBuyerOrderService bizBuyerOrderService;
 
 
-
 	/***
 	 * 给商家做回调请求
 	 * @param bizBuyerOrder
 	 * @param robotResponse
 	 */
-	public String merchantCallBack(BizBuyerOrder bizBuyerOrder, RobotResponse robotResponse) {
+	public Integer merchantCallBack(BizBuyerOrder bizBuyerOrder, RobotResponse robotResponse) {
 		// 如果回调明细为空，则回调查无记录
 		if (Objects.isNull(robotResponse)) {
 			return merchantCallBackErrorWithCode(bizBuyerOrder, RequestStatusEnum.CALLBACK_NO_RESULT, RequestStatusEnum.CALLBACK_NO_RESULT);
@@ -57,7 +57,11 @@ public class CallBackManager {
 		resultMap.put("data", paramMap);
 
 		log.info("#### merchantCallBack（成功回调商家）：给商家最终结果：{}", JSON.toJSONString(resultMap));
-		return HttpRequest.post(bizBuyerOrder.getCallbackUrl()).body(JSON.toJSONString(resultMap)).contentType("application/json").execute().body();
+		HttpResponse result = HttpRequest.post(bizBuyerOrder.getCallbackUrl()).body(JSON.toJSONString(resultMap)).contentType("application/json").execute();
+		Integer status = result.getStatus();
+		String content = result.body();
+		log.info("回调商户接口返回状态：{}, 返回内容：{}", status, content);
+		return status;
 	}
 
 	/**
@@ -68,7 +72,7 @@ public class CallBackManager {
 	 * @param failCode      错误编码
 	 * @return
 	 */
-	public String merchantCallBackErrorWithCode(BizBuyerOrder bizBuyerOrder, RequestStatusEnum statusCode, RequestStatusEnum failCode) {
+	public Integer merchantCallBackErrorWithCode(BizBuyerOrder bizBuyerOrder, RequestStatusEnum statusCode, RequestStatusEnum failCode) {
 		String failureReasonStr = JSON.toJSONString(R.resultEnumType(null, failCode.getType()));
 		//更新采购订单id
 		bizBuyerOrder.setRequestStatus(statusCode.getType());
@@ -103,10 +107,14 @@ public class CallBackManager {
 		resultMap.put("data", paramMap);
 
 		log.info("#### merchantCallBackErrorWithCode（失败回调商家）：给商家最终结果：{}", JSON.toJSONString(resultMap));
-		return HttpRequest.post(bizBuyerOrder.getCallbackUrl()).body(JSON.toJSONString(resultMap)).contentType("application/json").execute().body();
+		HttpResponse result = HttpRequest.post(bizBuyerOrder.getCallbackUrl()).body(JSON.toJSONString(resultMap)).contentType("application/json").execute();
+		Integer status = result.getStatus();
+		String content = result.body();
+		log.info("回调商户接口返回状态：{}, 返回内容：{}", status, content);
+		return status;
 	}
 
-	public String merchantCallBackError(BizBuyerOrder bizBuyerOrder) {
+	public Integer merchantCallBackError(BizBuyerOrder bizBuyerOrder) {
 		log.info("#### merchantCallBackError 异常回调订单信息 ：" + JSON.toJSONString(bizBuyerOrder));
 		log.info("#### merchantCallBackError（失败回调商家）：开始");
 		Map<String, Object> paramMap = new HashMap<>(16);
@@ -118,7 +126,11 @@ public class CallBackManager {
 		resultMap.put("data", paramMap);
 
 		log.info("#### merchantCallBackError（失败回调商家）：给商家最终结果" + JSON.toJSONString(resultMap));
-		return HttpRequest.post(bizBuyerOrder.getCallbackUrl()).body(JSON.toJSONString(resultMap)).contentType("application/json").execute().body();
+		HttpResponse result = HttpRequest.post(bizBuyerOrder.getCallbackUrl()).body(JSON.toJSONString(resultMap)).contentType("application/json").execute();
+		Integer status = result.getStatus();
+		String content = result.body();
+		log.info("回调商户接口返回状态：{}, 返回内容：{}", status, content);
+		return status;
 	}
 
 

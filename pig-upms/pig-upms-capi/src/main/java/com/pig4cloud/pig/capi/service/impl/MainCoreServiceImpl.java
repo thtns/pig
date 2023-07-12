@@ -108,16 +108,15 @@ public class MainCoreServiceImpl implements MainCoreService {
 						RobotResponse robotResponse = JSON.parseObject(bizRobotQueryRecord.getResult(), RobotResponse.class);
 						log.info("#### Step3.4.2:  order_id: {}，回调采购商维修数据 : {}", order_id
 								, JSON.toJSONString(JSON.parseObject(bizRobotQueryRecord.getResult(), RobotResponse.class)));
-						String result = callBackManager.merchantCallBack(bizBuyerOrder, robotResponse);
-						JSONObject jsonObject = JSON.parseObject(result);
-						if (Boolean.TRUE.equals(jsonObject.get("success"))){// 成功回调, 则更新订单状态
+						Integer status = callBackManager.merchantCallBack(bizBuyerOrder, robotResponse);
+						if (status.equals(200)){// 成功回调, 则更新订单状态
 							bizBuyerOrder.setRequestStatus(RequestStatusEnum.CALLBACK_SUCCESS.getType());
 							bizBuyerOrder.setResult(JSON.toJSONString(robotResponse));
 							bizBuyerOrder.setCallbackTime(LocalDateTime.now());
 							bizBuyerOrderService.saveOrUpdate(bizBuyerOrder);
-						}else if (Boolean.FALSE.equals(jsonObject.get("success")) && times.get() >= 3){// 三次失败状态
+						}else if (status.equals(200) && times.get() >= 3){// 三次失败状态
 							bizBuyerOrder.setRequestStatus(RequestStatusEnum.CALLBACK_FAILURE.getType());
-							bizBuyerOrder.setFailureReason(JSON.toJSONString(jsonObject));
+							bizBuyerOrder.setFailureReason(JSON.toJSONString(R.resultEnumType(null, RequestStatusEnum.API_CALLBACK_FAILURE.getType())));
 							bizBuyerOrder.setCallbackTime(LocalDateTime.now());
 							bizBuyerOrderService.saveOrUpdate(bizBuyerOrder);
 						}
@@ -147,14 +146,13 @@ public class MainCoreServiceImpl implements MainCoreService {
 						log.info("#### Step3.4.1: Vin：{} RetryUtil开始回调 第{}次", vin, times);
 						times.addAndGet(1);
 						log.error("#### Step3.4.2:  order_id: {}，回调采购商维修数据 : {}", order_id, failureReason);
-						String result = callBackManager.merchantCallBackError(bizBuyerOrder);
-						JSONObject jsonObject = JSON.parseObject(result);
-						if (Boolean.TRUE.equals(jsonObject.get("success"))){// 成功回调, 则更新订单状态
+						Integer status = callBackManager.merchantCallBackError(bizBuyerOrder);
+						if (status.equals(200)){// 成功回调, 则更新订单状态
 							bizBuyerOrder.setRequestStatus(RequestStatusEnum.CALLBACK_FAILURE.getType());
 							bizBuyerOrder.setFailureReason(failureReason);
 							bizBuyerOrder.setCallbackTime(LocalDateTime.now());
 							bizBuyerOrderService.saveOrUpdate(bizBuyerOrder);
-						}else if (Boolean.FALSE.equals(jsonObject.get("success")) && times.get() >= 3){// 三次失败状态 失败回调请求用户失败
+						}else if (!status.equals(200) && times.get() >= 3){// 三次失败状态 失败回调请求用户失败
 							bizBuyerOrder.setRequestStatus(RequestStatusEnum.CALLBACK_FAILURE.getType());
 							bizBuyerOrder.setFailureReason(JSON.toJSONString(R.resultEnumType(null, RequestStatusEnum.API_CALLBACK_FAILURE.getType())));
 							bizBuyerOrder.setCallbackTime(LocalDateTime.now());
