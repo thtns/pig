@@ -51,7 +51,7 @@ public enum RequestStatusEnum {
 	API_VIN_UNIDENTIFIABLE( 4003, "vin码无法识别."),
 
 	/*** 下单失败，请联系元素客服. */
-	API_ORDER_FAILURE( 4004, "下单失败，请联系元素客服."),
+	API_ORDER_FAILURE( 4004, "下单失败，请联系客服."),
 
 	/*** 回调商家失败. */
 	API_CALLBACK_FAILURE( 4005, "回调商家失败."),
