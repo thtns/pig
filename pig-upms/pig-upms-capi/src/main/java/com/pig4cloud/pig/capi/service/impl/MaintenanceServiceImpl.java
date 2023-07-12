@@ -40,6 +40,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 @RequiredArgsConstructor
 public class MaintenanceServiceImpl implements MaintenanceService {
 	final int TIME_OUT = 2000;
+	final int ROBOT_TIME_OUT = 5000;
 
 
 	/*** 机器人查询记录 **/
@@ -67,7 +68,7 @@ public class MaintenanceServiceImpl implements MaintenanceService {
 
 			if (Optional.ofNullable(bizRobotQueryRecord).isPresent()) {
 				log.info("~~~~ Step2.1: 本地存在 Vin：{} 机器人查询记录. 加载本地结果数据.....", vin);
-				localMysqlParsing(bizBuyerOrder, bizRobotQueryRecord);
+				localMysqlParsingNew(bizBuyerOrder, bizRobotQueryRecord);
 			} else {
 				log.info("~~~~ Step2.1: 本地不存在 Vin：{}  机器人查询记录. ", vin);
 				log.info("~~~~ Step2.2: 通过Vin：{} 和 BuyerId：{} 查询是否已下过的订单.... ", vin, buyerId);
@@ -108,7 +109,7 @@ public class MaintenanceServiceImpl implements MaintenanceService {
 	}
 
 	private void sendDelayedMessage(BizBuyerOrder bizBuyerOrder) {
-		long delayTime = System.currentTimeMillis() + (300 * 1000);
+		long delayTime = System.currentTimeMillis() + (180 * 1000);
 		producerUtil.sendTimeMsg(String.valueOf(bizBuyerOrder.getId()), delayTime);
 	}
 
@@ -195,6 +196,107 @@ public class MaintenanceServiceImpl implements MaintenanceService {
 		log.info("~~~~ Step4 本地数据解析结束, 商家数据赋值更新 ：" + JSON.toJSONString(bizBuyerOrder));
 	}
 
+	/***
+	 * 本地数据库数据解析
+	 * @param bizBuyerOrder
+	 * @param bizRobotQueryRecord
+	 * @return
+	 */
+	private void localMysqlParsingNew(BizBuyerOrder bizBuyerOrder, BizRobotQueryRecord bizRobotQueryRecord) {
+		String vin = bizBuyerOrder.getVin();
+		Long order_id = bizBuyerOrder.getId();
+		log.info("~~~~ Step3: 开始加载本地 Vin：{} 订单记录", vin);
+		BizBuyerOrder successOrder = bizBuyerOrderService.getSuccessMerchantOrderByVin(vin);
+		if (Objects.nonNull(successOrder)) {
+			log.info("~~~~ Step3.1: 存在本地 Vin：{} 订单记录, 更新订单品牌信息....", vin);
+			bizBuyerOrder.setBuyerId(successOrder.getBuyerId());
+			bizBuyerOrder.setBuyerName(successOrder.getCarBrandName());
+			bizBuyerOrder.setSupplierId(successOrder.getSupplierId());
+			bizBuyerOrder.setSupplierName(successOrder.getSupplierName());
+			bizBuyerOrder.setRobotId(successOrder.getRobotId());
+		}
+		//机器人记录赋值采购商订单成功结果
+		if (Objects.nonNull(bizRobotQueryRecord.getResult())) {
+			log.info("~~~~ Step3.2: 本地数据成功解析....同步到订单数据并回调给商户。");
+			bizBuyerOrder.setResult(bizRobotQueryRecord.getResult());
+			CompletableFuture.runAsync(() -> {
+				log.info("#### Step3.3: 异步解析开始");
+				try {
+					Thread.sleep(TIME_OUT);
+					AtomicInteger times = new AtomicInteger(1);
+					RetryUtil.executeWithRetry(() -> {
+						log.info("#### Step3.4.1: Vin：{} RetryUtil开始回调 第{}次", vin, times);
+						times.addAndGet(1);
+						RobotResponse robotResponse = JSON.parseObject(bizRobotQueryRecord.getResult(), RobotResponse.class);
+						log.info("#### Step3.4.2:  order_id: {}，回调采购商维修数据 : {}", order_id
+								, JSON.toJSONString(JSON.parseObject(bizRobotQueryRecord.getResult(), RobotResponse.class)));
+						String result = callBackManager.merchantCallBack(bizBuyerOrder, robotResponse);
+						JSONObject jsonObject = JSON.parseObject(result);
+						if (Boolean.TRUE.equals(jsonObject.get("success"))){// 成功回调, 则更新订单状态
+							bizBuyerOrder.setRequestStatus(RequestStatusEnum.CALLBACK_SUCCESS.getType());
+							bizBuyerOrder.setResult(JSON.toJSONString(robotResponse));
+							bizBuyerOrder.setCallbackTime(LocalDateTime.now());
+							bizBuyerOrderService.saveOrUpdate(bizBuyerOrder);
+						}else if (Boolean.FALSE.equals(jsonObject.get("success")) && times.get() >= 3){// 三次失败状态
+							bizBuyerOrder.setRequestStatus(RequestStatusEnum.CALLBACK_FAILURE.getType());
+							bizBuyerOrder.setFailureReason(JSON.toJSONString(jsonObject));
+							bizBuyerOrder.setCallbackTime(LocalDateTime.now());
+							bizBuyerOrderService.saveOrUpdate(bizBuyerOrder);
+						}
+						return null;
+					}, 3, 1000L, false);
+				} catch (Exception e) {
+					// 更新失败原因和失败状态： 回调失败
+					log.info("#### Step3.4.3: RetryUtil回调失败....");
+					bizBuyerOrder.setRequestStatus(RequestStatusEnum.CALLBACK_FAILURE.getType());
+					bizBuyerOrder.setFailureReason(JSON.toJSONString(R.resultEnumType(null, RequestStatusEnum.API_CALLBACK_FAILURE.getType())));
+					bizBuyerOrderService.saveOrUpdate(bizBuyerOrder);
+				}
+			});
+		}
+
+		//机器人记录赋值采购商订单失败原因
+		String failureReason = bizRobotQueryRecord.getFailureReason();
+		if (StringUtils.isNotBlank(failureReason)) {
+			log.info("~~~~ Step3.2: 本地数据失败解析....同步到订单数据并回调给商户。");
+			bizBuyerOrder.setFailureReason(failureReason);
+			CompletableFuture.runAsync(() -> {
+				log.info("#### Step3.3: 异步解析开始");
+				try {
+					Thread.sleep(TIME_OUT);
+					AtomicInteger times = new AtomicInteger(1);
+					RetryUtil.executeWithRetry(() -> {
+						log.info("#### Step3.4.1: Vin：{} RetryUtil开始回调 第{}次", vin, times);
+						times.addAndGet(1);
+						RobotResponse robotResponse = JSON.parseObject(bizRobotQueryRecord.getResult(), RobotResponse.class);
+						log.info("#### Step3.4.2:  order_id: {}，回调采购商维修数据 : {}", order_id
+								, JSON.toJSONString(JSON.parseObject(bizRobotQueryRecord.getResult(), RobotResponse.class)));
+						String result = callBackManager.merchantCallBackError(bizBuyerOrder);
+						JSONObject jsonObject = JSON.parseObject(result);
+						if (Boolean.TRUE.equals(jsonObject.get("success"))){// 成功回调, 则更新订单状态
+							bizBuyerOrder.setRequestStatus(RequestStatusEnum.CALLBACK_FAILURE.getType());
+							bizBuyerOrder.setFailureReason(failureReason);
+							bizBuyerOrder.setCallbackTime(LocalDateTime.now());
+							bizBuyerOrderService.saveOrUpdate(bizBuyerOrder);
+						}else if (Boolean.FALSE.equals(jsonObject.get("success")) && times.get() >= 3){// 三次失败状态 失败回调请求用户失败
+							bizBuyerOrder.setRequestStatus(RequestStatusEnum.CALLBACK_FAILURE.getType());
+							bizBuyerOrder.setFailureReason(JSON.toJSONString(R.resultEnumType(null, RequestStatusEnum.API_CALLBACK_FAILURE.getType())));
+							bizBuyerOrder.setCallbackTime(LocalDateTime.now());
+							bizBuyerOrderService.saveOrUpdate(bizBuyerOrder);
+						}
+						return null;
+					}, 3, 1000L, false);
+				} catch (Exception e) {
+					// 更新失败原因和失败状态： 回调失败
+					log.info("#### Step3.4.3: RetryUtil回调失败....");
+					bizBuyerOrder.setRequestStatus(RequestStatusEnum.CALLBACK_FAILURE.getType());
+					bizBuyerOrder.setFailureReason(JSON.toJSONString(R.resultEnumType(null, RequestStatusEnum.API_CALLBACK_FAILURE.getType())));
+					bizBuyerOrderService.saveOrUpdate(bizBuyerOrder);
+				}
+			});
+		}
+		log.info("~~~~ Step4 本地数据解析结束, 商家数据赋值更新 ：" + JSON.toJSONString(bizBuyerOrder));
+	}
 
 	/**
 	 * 机器人请求供应商
@@ -228,7 +330,7 @@ public class MaintenanceServiceImpl implements MaintenanceService {
 		List<RebotInfo> finalRobotList = robotList;
 		CompletableFuture.runAsync(() -> {
 			try {
-				Thread.sleep(5000);
+				Thread.sleep(ROBOT_TIME_OUT);
 			}catch (Exception e){
 				log.error(e.getMessage());
 			}
@@ -241,14 +343,11 @@ public class MaintenanceServiceImpl implements MaintenanceService {
 	}
 
 	private void syncRequestRobot(List<RebotInfo> robotList, BizBuyerOrder bizBuyerOrder) {
-		log.info(">>> 异步请求开始.");
-		log.info(">>> 未上限的供应商机器人个数：" + robotList.size());
+		log.info("syncRequestRobot >>> 异步请求开始.");
+		log.info("syncRequestRobot >>> 未上限的供应商机器人个数：" + robotList.size());
 		boolean queueStatus = true;
-		boolean requestRobotType = false; // 0表示请求过机器人 1表示请求过机器人
-		boolean requestType = false;      //默认0, 无机器人可用1, 2请求失败
+		//默认0, 无机器人可用1, 2请求失败
 		for (RebotInfo bizRobotInfo : robotList) {
-			requestRobotType = false;
-			requestType = false;
 			bizBuyerOrder.setSupplierId(bizRobotInfo.getSupplierId());              // 供应商id
 			bizBuyerOrder.setSupplierName(bizRobotInfo.getSupplierName());          // 供应商名称
 			bizBuyerOrder.setRobotId(bizRobotInfo.getId());
@@ -258,69 +357,63 @@ public class MaintenanceServiceImpl implements MaintenanceService {
 			// 队列验证
 			queueStatus = checkQueue(bizBuyerOrder);
 			if (!queueStatus) {
-				log.info(">>> 机器人被占用，请检查REDIS...");
-				requestRobotType = true;
+				log.info("syncRequestRobot >>> 机器人被占用，请检查REDIS...");
 				continue;
 			}
 
 			String[] robotProxies = bizRobotInfo.getRobotProxies().split(";");
 			for (String robotProxy : robotProxies) {
-				requestType = true;
-				if (robotRequest(bizBuyerOrder, bizRobotInfo, robotProxy)){
+				if (Boolean.TRUE.equals(robotRequest(bizBuyerOrder, bizRobotInfo, robotProxy))){
+					log.info(">>> 异步请求机器人服务成功. 等待回调");
 					return;
 				}
 			}
 		}
-//		if (queueStatus){// 无成功返回
-//			if (requestType){// 说明有发起过请求,请求失败了
-//				try {
-//					// 解锁
-//					bizBuyerOrder.setRequestStatus(RequestStatusEnum.API_TIME_NONSUPPORT.getType());
-//					bizBuyerOrder.setFailureReason(JSON.toJSONString(R.resultEnumType(null, RequestStatusEnum.API_TIME_NONSUPPORT.getType())));
-//					bizBuyerOrder.setCallbackTime(LocalDateTime.now());
-//					RetryUtil.executeWithRetry(() -> {
-//						log.info("#### 错误回调：此时间段不支持查询~~~");
-//						return merchantCallBackManager.merchantCallBackErrorWithCode(
-//								merchantOrderRecordDO,
-//								MaintenanceRequestStatusEnum.TIME_NO_SUPPORT.getStatus(),
-//								ApiResult.error(ApiResultCode.TIME_NONSUPPORT)
-//						);
-//					}, 3, 1000L, false);
-//				} catch (Exception e1) {
-//					bizBuyerOrder.setRequestStatus(RequestStatusEnum.CALLBACK_FAILURE.getType());
-//					bizBuyerOrder.setFailureReason(JSON.toJSONString(R.resultEnumType(null, RequestStatusEnum.API_TIME_NONSUPPORT.getType())));
-//					bizBuyerOrder.setCallbackTime(LocalDateTime.now());
-//				}
-//				bizBuyerOrderService.updateById(bizBuyerOrder);
-//			}else{
-//				if (requestRobotType){
-//
-//				}
-//			}
-//			if (requestType && !requestRobotType){// 说明无机器人可用
-//
-//			}else if ((!requestType)){
-//
-//			}else{
-//
-//			}
-//
-//		}
-//		if (!requestRobotFlag) {// 说明所有请求都是失败的
-//			log.info(">>> 异步请求机器人服务失败，准备解锁REDIS...");
-//			UnlockQueue(bizBuyerOrder);
-//			log.info(">>> 解锁REDIS 完成...");
-//			bizBuyerOrder.setRequestStatus(RequestStatusEnum.ORDER_FAILURE.getType()); //更新下单失败
-//			bizBuyerOrderService.updateById(bizBuyerOrder);
-//			log.info(">>> 更新订单状态 {} 完成...", RequestStatusEnum.ORDER_FAILURE.getDescription());
-//		}else{
-//			log.info(">>> 异步请求机器人服务成功. 等待回调");
-//		}
+
+		if (queueStatus){// 无成功返回
+			log.info("syncRequestRobot >>> 异步请求机器人失败, 下单失败...");
+			String vin = bizBuyerOrder.getVin();
+			Long order_id = bizBuyerOrder.getId();
+			String failureReason = JSON.toJSONString(R.resultEnumType(null, RequestStatusEnum.SERVER_QUERY_FAILURE.getType()));
+			bizBuyerOrder.setFailureReason(failureReason);
+			CompletableFuture.runAsync(() -> {
+				log.info("syncRequestRobot >>> 异步错误回调商户开始：");
+				try {
+					Thread.sleep(TIME_OUT);
+					AtomicInteger times = new AtomicInteger(1);
+					RetryUtil.executeWithRetry(() -> {
+						log.info("syncRequestRobot >>>  Vin：{} RetryUtil开始回调 第{}次", vin, times);
+						times.addAndGet(1);
+						log.error("syncRequestRobot >>> 回调数据信息：order_id: {}，回调采购商维修数据 : {}", order_id, failureReason);
+						String result = callBackManager.merchantCallBackError(bizBuyerOrder);
+						JSONObject jsonObject = JSON.parseObject(result);
+						if (Boolean.TRUE.equals(jsonObject.get("success"))){// 成功回调, 则更新订单状态
+							bizBuyerOrder.setRequestStatus(RequestStatusEnum.CALLBACK_FAILURE.getType());
+							bizBuyerOrder.setFailureReason(failureReason);
+							bizBuyerOrder.setCallbackTime(LocalDateTime.now());
+							bizBuyerOrderService.saveOrUpdate(bizBuyerOrder);
+						}else if (Boolean.FALSE.equals(jsonObject.get("success")) && times.get() >= 3){// 三次失败状态 失败回调请求用户失败
+							bizBuyerOrder.setRequestStatus(RequestStatusEnum.CALLBACK_FAILURE.getType());
+							bizBuyerOrder.setFailureReason(JSON.toJSONString(R.resultEnumType(null, RequestStatusEnum.API_CALLBACK_FAILURE.getType())));
+							bizBuyerOrder.setCallbackTime(LocalDateTime.now());
+							bizBuyerOrderService.saveOrUpdate(bizBuyerOrder);
+						}
+						return null;
+					}, 3, 1000L, false);
+				} catch (Exception e) {
+					// 更新失败原因和失败状态： 回调失败
+					log.error("syncRequestRobot >>> 错误回调商户异常 RetryUtil回调失败....{}", e.getMessage());
+					bizBuyerOrder.setRequestStatus(RequestStatusEnum.CALLBACK_FAILURE.getType());
+					bizBuyerOrder.setFailureReason(JSON.toJSONString(R.resultEnumType(null, RequestStatusEnum.SERVER_UNKNOWN_ERROR.getType())));
+					bizBuyerOrderService.saveOrUpdate(bizBuyerOrder);
+				}
+			});
+		}
 	}
 
 	private Boolean checkQueue(BizBuyerOrder bizBuyerOrder) {
 		//检查此品牌的机器人在redis是否标识可用。
-		String queueKey = RedisKeyDefine.QUEUE + bizBuyerOrder.getCarBrandId() + bizBuyerOrder.getSupplierId();
+		String queueKey = RedisKeyDefine.QUEUE + bizBuyerOrder.getCarBrandId()+ "-" + bizBuyerOrder.getSupplierId();
 		String queue = redisTemplate.opsForValue().get(queueKey);
 
 		if (Objects.isNull(queue) || queue.equals(RedisKeyDefine.ENABLE)) {
@@ -410,18 +503,19 @@ public class MaintenanceServiceImpl implements MaintenanceService {
 	private Boolean robotRequest(BizBuyerOrder bizBuyerOrder, RebotInfo bizRobotInfo, String robotProxy) {
 		log.info("#### 【异步】第一步：异步请求机器人~~~ {}", bizBuyerOrder.getVin());
 		String robotAccountPassword = bizRobotInfo.getRobotAccountPassword();
-		JSONObject object = JSONObject.parseObject(robotAccountPassword);
+		JSONObject object = JSON.parseObject(robotAccountPassword);
 		Map<String, Object> paramMap = new HashMap<>(object.size());
 		paramMap.putAll(object);
 
 		paramMap.put("vin", bizBuyerOrder.getVin());
+		paramMap.put("brand", bizBuyerOrder.getCarBrandName());
 		paramMap.put("host", bizRobotInfo.getHost());
 		if (StringUtils.isNotBlank(bizBuyerOrder.getEngineCode())) {
 			paramMap.put("engine_no", bizBuyerOrder.getEngineCode());
 		}
 
 		if (StringUtils.isNotBlank(robotProxy) && Objects.equals(bizRobotInfo.getNeedDynamicProxy(), BaseConstants.NEED_PROXY)) {
-			log.debug("机器人代理名称：" + bizRobotInfo.getRobotProxiesName());
+			log.info("机器人代理名称：" + bizRobotInfo.getRobotProxiesName());
 			paramMap.put("proxy", robotProxy);
 		} else {
 			paramMap.put("proxy", robotProxy);
@@ -438,13 +532,13 @@ public class MaintenanceServiceImpl implements MaintenanceService {
 					.contentType("application/json")
 					.execute().body();
 		} catch (Exception e) {
-			log.info("#### 【异步】{} 机器人请求异常, 异常信息:{}", bizBuyerOrder.getVin(), e.getMessage());
-			log.info("#### 【异步】{} 请求机器人结束", bizBuyerOrder.getVin());
+			log.error("#### 【异步】{} 机器人请求异常, 异常信息:{}", bizBuyerOrder.getVin(), e.getMessage());
+			log.error("#### 【异步】{} 请求机器人结束", bizBuyerOrder.getVin());
 			return Boolean.FALSE;
 		}
 		log.info("#### 【异步】{} 机器人查询数据：{}", bizBuyerOrder.getVin(), result);
 		log.info("#### 【异步】{} 请求机器人结束", bizBuyerOrder.getVin());
-		JSONObject jsonObject = JSONObject.parseObject(result);
+		JSONObject jsonObject = JSON.parseObject(result);
 		return Boolean.TRUE.equals(jsonObject.get("success"));
 	}
 
