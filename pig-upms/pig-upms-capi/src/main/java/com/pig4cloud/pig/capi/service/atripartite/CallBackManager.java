@@ -45,9 +45,9 @@ public class CallBackManager {
 	public String merchantCallBack(BizBuyerOrder bizBuyerOrder, RobotResponse robotResponse) {
 		// 如果回调明细为空，则回调查无记录
 		if (Objects.isNull(robotResponse)) {
-			return merchantCallBackError(bizBuyerOrder, RequestStatusEnum.CALLBACK_NO_RESULT, RequestStatusEnum.CALLBACK_NO_RESULT);
+			return merchantCallBackErrorWithCode(bizBuyerOrder, RequestStatusEnum.CALLBACK_NO_RESULT, RequestStatusEnum.CALLBACK_NO_RESULT);
 		}
-		log.info("####第三步（成功回调商家）：开始");
+		log.info("#### merchantCallBack（成功回调商家）：开始");
 		Map<String, Object> paramMap = new HashMap<>();
 		paramMap.put("order_id", bizBuyerOrder.getId());
 		paramMap.put("maintain_data", robotResponse);
@@ -56,7 +56,7 @@ public class CallBackManager {
 		resultMap.put("code", CommonConstants.SUCCESS);
 		resultMap.put("data", paramMap);
 
-		log.info("####第四步（成功回调商家）：给商家最终结果" + JSON.toJSONString(resultMap));
+		log.info("#### merchantCallBack（成功回调商家）：给商家最终结果：{}", JSON.toJSONString(resultMap));
 		return HttpRequest.post(bizBuyerOrder.getCallbackUrl()).body(JSON.toJSONString(resultMap)).contentType("application/json").execute().body();
 	}
 
@@ -68,7 +68,7 @@ public class CallBackManager {
 	 * @param failCode      错误编码
 	 * @return
 	 */
-	public String merchantCallBackError(BizBuyerOrder bizBuyerOrder, RequestStatusEnum statusCode, RequestStatusEnum failCode) {
+	public String merchantCallBackErrorWithCode(BizBuyerOrder bizBuyerOrder, RequestStatusEnum statusCode, RequestStatusEnum failCode) {
 		String failureReasonStr = JSON.toJSONString(R.resultEnumType(null, failCode.getType()));
 		//更新采购订单id
 		bizBuyerOrder.setRequestStatus(statusCode.getType());
@@ -76,7 +76,7 @@ public class CallBackManager {
 		bizBuyerOrder.setCallbackTime(LocalDateTime.now());
 		bizBuyerOrderService.saveOrUpdate(bizBuyerOrder);
 
-		log.info("异常回调订单信息 ：" + JSON.toJSONString(bizBuyerOrder));
+		log.info("#### merchantCallBackErrorWithCode 异常回调订单信息 ：" + JSON.toJSONString(bizBuyerOrder));
 		if (failCode.getType().equals(RequestStatusEnum.SERVER_NO_RESULT.getType())) {//机器人无记录的话
 			//调查无记录,存储本次查询
 			bizRobotQueryRecordService.save(
@@ -92,7 +92,7 @@ public class CallBackManager {
 							.querytime(LocalDateTime.now()).build()); // 当前时间
 		}
 
-		log.info("####第三步（失败回调商家）：开始");
+		log.info("#### merchantCallBackErrorWithCode（失败回调商家）：开始");
 		Map<String, Object> paramMap = new HashMap<>(16);
 		paramMap.put("order_id", bizBuyerOrder.getId());
 //		paramMap.put("maintain_data", null);
@@ -102,7 +102,22 @@ public class CallBackManager {
 		resultMap.put("msg", RequestStatusEnum.getDesc(failCode.getType()));
 		resultMap.put("data", paramMap);
 
-		log.info("####第四步（失败回调商家）：给商家最终结果" + JSON.toJSONString(resultMap));
+		log.info("#### merchantCallBackErrorWithCode（失败回调商家）：给商家最终结果：{}", JSON.toJSONString(resultMap));
+		return HttpRequest.post(bizBuyerOrder.getCallbackUrl()).body(JSON.toJSONString(resultMap)).contentType("application/json").execute().body();
+	}
+
+	public String merchantCallBackError(BizBuyerOrder bizBuyerOrder) {
+		log.info("#### merchantCallBackError 异常回调订单信息 ：" + JSON.toJSONString(bizBuyerOrder));
+		log.info("#### merchantCallBackError（失败回调商家）：开始");
+		Map<String, Object> paramMap = new HashMap<>(16);
+		paramMap.put("order_id", bizBuyerOrder.getId());
+
+		Map<String, Object> resultMap = new HashMap<>();
+		resultMap.put("code", RequestStatusEnum.API_ORDER_FAILURE.getType());
+		resultMap.put("msg", bizBuyerOrder.getFailureReason());
+		resultMap.put("data", paramMap);
+
+		log.info("#### merchantCallBackError（失败回调商家）：给商家最终结果" + JSON.toJSONString(resultMap));
 		return HttpRequest.post(bizBuyerOrder.getCallbackUrl()).body(JSON.toJSONString(resultMap)).contentType("application/json").execute().body();
 	}
 
