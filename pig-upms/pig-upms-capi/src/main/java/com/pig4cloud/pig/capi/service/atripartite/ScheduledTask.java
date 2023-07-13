@@ -26,7 +26,7 @@ public class ScheduledTask {
 
 	private final CallBackManager callBackManager;
 
-	@Scheduled(cron = "0 0/1 * * * ?")
+	@Scheduled(cron = "0 0/5 * * * ?")
 	public void rejectOrder() {
 		log.info("ScheduledTask: 【rejectOrder】 开始执行");
 		List<BizBuyerOrder> bizBuyerOrders = bizBuyerOrderService.getDalyOrder();
