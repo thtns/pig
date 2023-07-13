@@ -17,6 +17,7 @@
 package com.pig4cloud.pig.capi.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.pig4cloud.pig.capi.entity.BizBuyer;
 import com.pig4cloud.pig.capi.entity.BizBuyerOrder;
@@ -26,6 +27,9 @@ import com.pig4cloud.pig.capi.service.BizBuyerService;
 import com.pig4cloud.pig.common.core.constant.enums.capi.RequestStatusEnum;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 import static cn.hutool.core.date.DateUtil.today;
 
@@ -99,5 +103,19 @@ public class BizBuyerOrderServiceImpl extends ServiceImpl<BizBuyerOrderMapper, B
 				.orderByAsc(BizBuyerOrder::getRequestTime)
 				.last("LIMIT 1")
 				.one();
+	}
+
+	/**
+	 * 查询下单成功或在查询中的超时订单
+	 * 超时时间暂定为 10分钟
+	 * @return
+	 */
+	@Override
+	public List<BizBuyerOrder> getDalyOrder() {
+		LocalDateTime tenMinutesAgo = LocalDateTime.now().minusMinutes(10);
+		QueryWrapper<BizBuyerOrder> queryWrapper = new QueryWrapper<>();
+		queryWrapper.le("request_time", tenMinutesAgo)
+				.in("request_status", RequestStatusEnum.ORDER_SUCCESS.getType(), RequestStatusEnum.QUERYING.getType());
+		return this.list(queryWrapper);
 	}
 }
