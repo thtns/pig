@@ -73,7 +73,7 @@ public class BizCarBrand extends BaseEntity {
      * 类型 10:国产,20:合资
      */
     @Schema(description ="类型 10:国产,20:合资")
-    private Integer type;
+    private String type;
 
 
 }
