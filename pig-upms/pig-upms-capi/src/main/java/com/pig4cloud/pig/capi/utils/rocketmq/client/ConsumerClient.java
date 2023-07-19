@@ -4,7 +4,7 @@ import com.aliyun.openservices.ons.api.MessageListener;
 import com.aliyun.openservices.ons.api.PropertyKeyConst;
 import com.aliyun.openservices.ons.api.bean.ConsumerBean;
 import com.aliyun.openservices.ons.api.bean.Subscription;
-import com.pig4cloud.pig.capi.utils.rocketmq.consumer.DemoMessageListener;
+import com.pig4cloud.pig.capi.utils.rocketmq.consumer.OderMessageListener;
 import com.pig4cloud.pig.capi.utils.rocketmq.consumer.DalyMessageListener;
 import com.pig4cloud.pig.capi.utils.rocketmq.MqConfig;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,7 +23,7 @@ public class ConsumerClient {
     private MqConfig mqConfig;
 
     @Autowired
-    private DemoMessageListener messageListener;
+    private OderMessageListener messageListener;
 
 	@Autowired
     private DalyMessageListener dalyMessageListener;
@@ -36,6 +36,7 @@ public class ConsumerClient {
         properties.setProperty(PropertyKeyConst.GROUP_ID, mqConfig.getGroupId());
         //将消费者线程数固定为20个 20为默认值
         properties.setProperty(PropertyKeyConst.ConsumeThreadNums, "20");
+		properties.setProperty(PropertyKeyConst.MaxReconsumeTimes, "5");
         consumerBean.setProperties(properties);
         //订阅关系
         Map<Subscription, MessageListener> subscriptionTable = new HashMap<Subscription, MessageListener>();
