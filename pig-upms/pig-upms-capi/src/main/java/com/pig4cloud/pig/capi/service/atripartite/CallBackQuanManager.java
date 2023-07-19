@@ -3,6 +3,7 @@ package com.pig4cloud.pig.capi.service.atripartite;
 
 import com.pig4cloud.pig.capi.entity.BizBuyerOrder;
 import com.pig4cloud.pig.capi.service.BizBuyerOrderService;
+import com.pig4cloud.pig.capi.service.MainCoreService;
 import com.pig4cloud.pig.capi.service.MaintenanceService;
 import com.pig4cloud.pig.capi.service.apo.RedisKeyDefine;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +23,7 @@ public class CallBackQuanManager {
 
 	private final RedisTemplate<String, String> redisTemplate;
 
-	private final MaintenanceService maintenanceService;
+	private final MainCoreService mainCoreService;
 
 	private final BizBuyerOrderService bizBuyerOrderService;
 
@@ -41,9 +42,7 @@ public class CallBackQuanManager {
 		BizBuyerOrder newOrder = bizBuyerOrderService.getSameCarBrandOrder(bizBuyerOrder);
 		if (Objects.nonNull(newOrder)) {
 			log.info("~~~查询数据库中有数据");
-			CompletableFuture.runAsync(() ->
-				maintenanceService.processMaintenanceOrder(newOrder)
-			);
+			CompletableFuture.runAsync(() -> mainCoreService.processOrder(newOrder));
 		}
 	}
 }
