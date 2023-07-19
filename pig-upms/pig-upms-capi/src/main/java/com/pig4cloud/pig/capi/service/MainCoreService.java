@@ -5,5 +5,7 @@ import com.pig4cloud.pig.common.core.util.R;
 
 public interface MainCoreService {
 
-	public R<Object> placeOrder(BizBuyerOrder bizBuyerOrder);
+	public BizBuyerOrder placeOrder(BizBuyerOrder bizBuyerOrder);
+
+	public void processOrder(BizBuyerOrder bizBuyerOrder);
 }

@@ -5,31 +5,29 @@ import com.aliyun.openservices.ons.api.ConsumeContext;
 import com.aliyun.openservices.ons.api.Message;
 import com.aliyun.openservices.ons.api.MessageListener;
 import com.pig4cloud.pig.capi.entity.BizBuyerOrder;
+import com.pig4cloud.pig.capi.entity.BizRobotQueryRecord;
 import com.pig4cloud.pig.capi.service.BizBuyerOrderService;
 import com.pig4cloud.pig.capi.service.MainCoreService;
-import com.pig4cloud.pig.capi.service.MaintenanceService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-import java.util.Objects;
-
 @Component
 @Slf4j
 @RequiredArgsConstructor
-public class DalyMessageListener implements MessageListener {
+public class OderMessageListener implements MessageListener {
 
 	private final BizBuyerOrderService bizBuyerOrderService;
 
 	private final MainCoreService mainCoreService;
 
-	public Action consume(Message message, ConsumeContext consumeContext) {
-		log.info("接收到MQ详细信息：{}", message);
+	@Override
+	public Action consume(Message message, ConsumeContext context) {
+		String orderId = new String(message.getBody());
+		log.info("解析MQ-Body自定义内容：{}", orderId);
 		try {
-			String orderId = new String(message.getBody());
-			log.info("解析MQ-Body自定义内容：{}", orderId);
-			log.info("orderId ：{}", Long.parseLong(orderId));
-			BizBuyerOrder bizBuyerOrder = bizBuyerOrderService.getById(Long.parseLong(orderId));
+			Long bizBuyerOrderId = Long.parseLong(orderId);
+			BizBuyerOrder bizBuyerOrder = bizBuyerOrderService.getById(bizBuyerOrderId);
 			if (bizBuyerOrder != null) {
 				if(bizBuyerOrder.getRetryCount() < 5){
 					mainCoreService.processOrder(bizBuyerOrder);
@@ -37,10 +35,14 @@ public class DalyMessageListener implements MessageListener {
 			}else {
 				log.error("订单id {} 不存在, 请检查。消费订单信息完成！", orderId);
 			}
+		}catch (NumberFormatException e) {
+			log.error("无法解析订单id为Long类型：{}", orderId, e);
+			return Action.ReconsumeLater;
 		} catch (Exception e) {
-			log.error("消费MQ消息失败，msgId:" + message.getMsgID() + "，ExceptionMsg：" + e.getMessage());
+			//消费失败
 			return Action.ReconsumeLater;
 		}
 		return Action.CommitMessage;
 	}
+
 }
