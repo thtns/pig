@@ -25,6 +25,7 @@
 
   <resultMap id="bizBuyerOrderMap" type="com.pig4cloud.pig.admin.api.entity.BizBuyerOrder">
     <id property="id" column="id"/>
+    <result property="orderNo" column="order_no"/>
     <result property="buyerId" column="buyer_id"/>
     <result property="buyerName" column="buyer_name"/>
     <result property="supplierId" column="supplier_id"/>
@@ -39,6 +40,7 @@
     <result property="vin" column="vin"/>
     <result property="engineCode" column="engine_code"/>
     <result property="callbackUrl" column="callback_url"/>
+    <result property="orderType" column="order_type"/>
     <result property="requestStatus" column="request_status"/>
     <result property="failureReason" column="failure_reason"/>
     <result property="result" column="result"/>

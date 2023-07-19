@@ -47,6 +47,9 @@ public class BizBuyerOrder extends BaseEntity {
     @Schema(description ="主键id")
     private Long id;
 
+	@Schema(description ="三方订单编号")
+	private String orderNo;
+
     /**
      * 采购商Id
      */
@@ -130,6 +133,12 @@ public class BizBuyerOrder extends BaseEntity {
      */
     @Schema(description ="回调地址")
     private String callbackUrl;
+
+	/**
+	 * 订单类型
+	 */
+	@Schema(description ="订单类型用与区分订单商户")
+	private String orderType;
 
     /**
      * 结果状态码：1：下单成功，2：下单失败，3：回调成功，4：回调失败
