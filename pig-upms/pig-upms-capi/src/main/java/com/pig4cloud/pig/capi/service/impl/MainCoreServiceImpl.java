@@ -42,6 +42,7 @@ public class MainCoreServiceImpl implements MainCoreService {
 
 	private ExecutorService executorService = Executors.newFixedThreadPool(30); // 创建线程池
 
+	private final RedisTemplate<String, String> redisTemplate;
 
 	/*** 机器人查询记录 **/
 	private final BizRobotQueryRecordService bizRobotQueryRecordService;
@@ -50,10 +51,9 @@ public class MainCoreServiceImpl implements MainCoreService {
 	private final BizBuyerOrderService bizBuyerOrderService;
 
 
-	private final RedisTemplate<String, String> redisTemplate;
-
 	private final CallBackManager callBackManager;
 
+	/*** 消息队列 **/
 	private final ProducerUtil producerUtil;
 
 	/*** 品牌 **/

@@ -24,7 +24,7 @@ public class RedisOperationManager {
     /**
      * 2次限制
      */
-    private static final Integer COUNT = 2;
+    private static final Integer COUNT = 3;
 
 
     /**

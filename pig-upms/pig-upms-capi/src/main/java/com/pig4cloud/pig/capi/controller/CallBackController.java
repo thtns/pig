@@ -4,9 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.pig4cloud.pig.capi.entity.BizBuyerOrder;
 import com.pig4cloud.pig.capi.dto.request.RobotCallbackRequest;
 import com.pig4cloud.pig.capi.dto.request.RobotCallbcakErroRequest;
-import com.pig4cloud.pig.capi.service.BizBuyerOrderService;
-import com.pig4cloud.pig.capi.service.BizSupplierService;
-import com.pig4cloud.pig.capi.service.MaintenanceService;
+import com.pig4cloud.pig.capi.service.*;
 import com.pig4cloud.pig.capi.service.atripartite.CallBackManager;
 import com.pig4cloud.pig.capi.service.atripartite.CallBackQuanManager;
 import com.pig4cloud.pig.capi.service.atripartite.RedisOperationManager;
@@ -41,18 +39,10 @@ public class CallBackController {
 
 	private final RedisOperationManager redisOperationManager;
 
-	/**
-	 * 延迟队列回调
-	 */
-	@PostMapping("/callback")
-	public String callback(@RequestBody String body) {
-		log.info("@@@@@@@延迟队列回调开始，参数body：" + JSON.toJSONString(body));
-		BizBuyerOrder merchantOrderRecordDO = JSON.parseObject(body, BizBuyerOrder.class);
-//        merchantOrderRecordDO.insert();
-		maintenanceService.processMaintenanceOrder(merchantOrderRecordDO);
-		log.info("@@@@@@@延迟队列回调结束");
-		return "";
-	}
+	private final CallBackService callBackService;
+
+	private final MainCoreService mainCoreService;
+
 
 	/**
 	 * 机器人查询结果回调
@@ -62,6 +52,7 @@ public class CallBackController {
 		String ipAddr = RequestUtils.getIpAddress(request);
 		log.info("callback yes ：机器人成功回调开始，参数：" + JSON.toJSONString(rebotCallbackRequest));
 		log.info("callback yes ：机器人回调ip: {}", ipAddr);
+		// 成功记录保存,并回调请求商户,并清楚redis的机器人队列
 		maintenanceService.robotRequestCallBack(rebotCallbackRequest);
 
 		BizBuyerOrder bizBuyerOrder = bizBuyerOrderService.getById(rebotCallbackRequest.getOrderId());
@@ -106,7 +97,7 @@ public class CallBackController {
 		return R.ok();
 	}
 
-	public void callFailure(BizBuyerOrder bizBuyerOrder, Long supplierId, RobotCallbcakErroRequest robotError){
+	public void callFailure(BizBuyerOrder bizBuyerOrder, Long supplierId, RobotCallbcakErroRequest robotError) {
 		// 清楚机器人redis占用队列
 		callBackQuanManager.callBackQueueManage(bizBuyerOrder);
 		// 其它错误回调
@@ -129,5 +120,54 @@ public class CallBackController {
 			//重新发起请求
 			maintenanceService.processMaintenanceOrder(bizBuyerOrder);
 		}
+	}
+
+	@PostMapping("/success")
+	public void success(HttpServletRequest request, @RequestBody RobotCallbackRequest rebotCallbackRequest) {
+		String ipAddr = RequestUtils.getIpAddress(request);
+		log.info("callback yes ：机器人成功回调开始，参数：" + JSON.toJSONString(rebotCallbackRequest));
+		log.info("callback yes ：机器人回调ip: {}", ipAddr);
+		// 成功记录保存,并回调请求商户,并清楚redis的机器人队列
+		callBackService.success(rebotCallbackRequest);
+	}
+
+	@PostMapping("/fail")
+	public void fail(@RequestBody RobotCallbcakErroRequest robotError) throws Exception {
+		log.info("机器人失败回调开始，参数：" + JSON.toJSONString(robotError));
+		Long orderId = JSON.parseObject(JSON.toJSONString(robotError.getData())).getLong("orderId");
+		BizBuyerOrder bizBuyerOrder = bizBuyerOrderService.getById(orderId);
+		Long supplierId = bizBuyerOrder.getSupplierId();
+		if (robotError.getCode() == RequestStatusEnum.SERVER_NO_RESULT.getType()) { // 无记录则回调
+			callBackService.sendChaBoss(bizBuyerOrder.getOrderNo(), 3, null);// 无记录回调
+		} else {
+			if (robotError.getCode() == RequestStatusEnum.SERVER_LOGIN_FAILURE.getType() ||
+					robotError.getCode() == RequestStatusEnum.SERVER_QUERY_FULL_ERROR.getType() ||
+					robotError.getCode() == RequestStatusEnum.REBOT_PROXY_CONNECTION_ERROR.getType()) {
+				log.info("机器人错误回调，机器人出问题。下架供应商ID：" + supplierId);
+				bizSupplierService.shutDownSupplier(supplierId);
+				bizBuyerOrder.setRequestStatus(RequestStatusEnum.ORDER_FAILURE.getType());
+				bizBuyerOrderService.updateById(bizBuyerOrder);
+				mainCoreService.processOrder(bizBuyerOrder);
+			} else if (robotError.getCode() == RequestStatusEnum.SERVER_UNKNOWN_ERROR.getType()
+					|| robotError.getCode() == RequestStatusEnum.REBOT_SSL_ERROR.getType()
+					|| robotError.getCode() == RequestStatusEnum.REBOT_SYSTEM_CONNECTION_ERROR.getType()) {
+				if (Boolean.TRUE.equals(redisOperationManager.redisOperationUnknownErrorKey(supplierId))) {
+					log.info("机器人未知错误发生了3次，下架供应商ID：" + supplierId);
+					bizSupplierService.shutDownSupplier(supplierId);
+				}
+				//重新发起请求
+				mainCoreService.processOrder(bizBuyerOrder);
+			} else if (robotError.getCode() == RequestStatusEnum.REBOT_READ_TIMEOUT_ERROR.getType()) {
+				reDo(bizBuyerOrder);
+			} else {
+				reDo(bizBuyerOrder);
+			}
+		}
+	}
+
+	public void reDo(BizBuyerOrder bizBuyerOrder){
+		callBackQuanManager.callBackQueueManage(bizBuyerOrder);
+		//重新发起请求
+		mainCoreService.processOrder(bizBuyerOrder);
 	}
 }
