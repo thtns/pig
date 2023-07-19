@@ -1,4 +1,4 @@
-package com.pig4cloud.pig.capi.request.RebotCallbackParames;
+package com.pig4cloud.pig.capi.dto.request.RebotCallbackParames;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

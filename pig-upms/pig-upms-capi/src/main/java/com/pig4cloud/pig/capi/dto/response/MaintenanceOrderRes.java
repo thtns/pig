@@ -1,4 +1,4 @@
-package com.pig4cloud.pig.capi.response;
+package com.pig4cloud.pig.capi.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

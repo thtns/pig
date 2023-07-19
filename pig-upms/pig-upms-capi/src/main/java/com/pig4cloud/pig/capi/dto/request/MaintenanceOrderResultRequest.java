@@ -1,4 +1,4 @@
-package com.pig4cloud.pig.capi.request;
+package com.pig4cloud.pig.capi.dto.request;
 
 import lombok.Data;
 
