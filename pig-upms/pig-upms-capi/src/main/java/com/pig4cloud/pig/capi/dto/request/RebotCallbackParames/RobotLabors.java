@@ -9,7 +9,18 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class RobotLabors {
 
-    private String name;
+	/**
+	 * 子项类型(项目类型)
+	 */
+    private String itemType;
 
-    private String hour;
+	/**
+	 * 子项描述
+	 */
+    private String description;
+
+	/**
+	 * vin码 车架号
+	 */
+    private String vin;
 }

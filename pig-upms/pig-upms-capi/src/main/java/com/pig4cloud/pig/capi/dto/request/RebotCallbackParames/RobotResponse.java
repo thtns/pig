@@ -15,22 +15,19 @@ public class RobotResponse {
 	private String brand;
 
 	/**
+	 * 车系名称
+	 */
+	private String seriesName;
+
+	/**
      * 车型
      */
-    private String model;
-    /**
-     * 里程数
-     */
-    private String total_milage;
-    /**
-     * 记录最后时间
-     */
-    private String last_date;
+    private String modelName;
 
     /**
      * 维修详情
      */
-    private List<RobotMaintenanceInfo> details;
+    private List<RobotMaintenanceInfo> repairRecords;
 
 
 
