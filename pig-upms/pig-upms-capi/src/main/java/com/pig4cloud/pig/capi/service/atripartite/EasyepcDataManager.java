@@ -228,7 +228,7 @@ public class EasyepcDataManager {
 					bizVinParsing.setCreateBy("api管理员");
 					bizVinParsing.setCreateBy("api管理员");
 					bizVinParsingService.save(bizVinParsing);
-					return amBrandName;
+					return amMainBrandName;
 				}
 			}
 		}
