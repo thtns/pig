@@ -1,11 +1,9 @@
 package com.pig4cloud.pig.capi.controller;
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
 import com.pig4cloud.pig.capi.entity.BizBuyerOrder;
-import com.pig4cloud.pig.capi.entity.BizSupplier;
-import com.pig4cloud.pig.capi.request.RobotCallbackRequest;
-import com.pig4cloud.pig.capi.request.RobotCallbcakErroRequest;
+import com.pig4cloud.pig.capi.dto.request.RobotCallbackRequest;
+import com.pig4cloud.pig.capi.dto.request.RobotCallbcakErroRequest;
 import com.pig4cloud.pig.capi.service.BizBuyerOrderService;
 import com.pig4cloud.pig.capi.service.BizSupplierService;
 import com.pig4cloud.pig.capi.service.MaintenanceService;

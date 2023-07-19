@@ -5,24 +5,20 @@ import cn.hutool.http.HttpResponse;
 import com.alibaba.fastjson.JSON;
 import com.pig4cloud.pig.capi.entity.BizBuyerOrder;
 import com.pig4cloud.pig.capi.entity.BizRobotQueryRecord;
-import com.pig4cloud.pig.capi.request.RebotCallbackParames.RobotResponse;
+import com.pig4cloud.pig.capi.dto.request.RebotCallbackParames.RobotResponse;
 import com.pig4cloud.pig.capi.service.BizBuyerOrderService;
-import com.pig4cloud.pig.capi.service.BizCarBrandService;
 import com.pig4cloud.pig.capi.service.BizRobotQueryRecordService;
-import com.pig4cloud.pig.capi.service.apo.RedisKeyDefine;
 import com.pig4cloud.pig.common.core.constant.CommonConstants;
 import com.pig4cloud.pig.common.core.constant.enums.capi.RequestStatusEnum;
 import com.pig4cloud.pig.common.core.util.R;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.TimeUnit;
 
 
 @Slf4j

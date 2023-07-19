@@ -1,11 +1,10 @@
 package com.pig4cloud.pig.capi.service.impl;
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.pig4cloud.pig.capi.entity.BizBuyerOrder;
 import com.pig4cloud.pig.capi.entity.BizRobotQueryRecord;
-import com.pig4cloud.pig.capi.request.RebotCallbackParames.RobotResponse;
+import com.pig4cloud.pig.capi.dto.request.RebotCallbackParames.RobotResponse;
 import com.pig4cloud.pig.capi.service.*;
 import com.pig4cloud.pig.capi.service.atripartite.CallBackManager;
 import com.pig4cloud.pig.capi.utils.rocketmq.ProducerUtil;

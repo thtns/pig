@@ -1,7 +1,7 @@
 package com.pig4cloud.pig.capi.service;
 
 import com.pig4cloud.pig.capi.entity.BizBuyerOrder;
-import com.pig4cloud.pig.capi.request.RobotCallbackRequest;
+import com.pig4cloud.pig.capi.dto.request.RobotCallbackRequest;
 import com.pig4cloud.pig.common.core.util.R;
 
 public interface MaintenanceService  {
