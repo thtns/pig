@@ -4,7 +4,6 @@ import cn.hutool.http.HttpRequest;
 import cn.hutool.http.HttpResponse;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.chaboshi.web.mdp.builder.CBSBuilder;
 import com.pig4cloud.pig.capi.dto.request.RebotCallbackParames.RobotResponse;
 import com.pig4cloud.pig.capi.dto.request.RobotCallbackRequest;
 import com.pig4cloud.pig.capi.entity.BizBuyerOrder;
@@ -12,7 +11,8 @@ import com.pig4cloud.pig.capi.entity.BizRobotQueryRecord;
 import com.pig4cloud.pig.capi.service.BizBuyerOrderService;
 import com.pig4cloud.pig.capi.service.BizRobotQueryRecordService;
 import com.pig4cloud.pig.capi.service.CallBackService;
-import com.pig4cloud.pig.capi.service.atripartite.CallBackQuanManager;
+import com.pig4cloud.pig.capi.service.atripartite.chaboshi.CBSBuilder;
+import com.pig4cloud.pig.capi.service.atripartite.chaboshi.ChaBoosConfig;
 import com.pig4cloud.pig.common.core.constant.CommonConstants;
 import com.pig4cloud.pig.common.core.constant.enums.capi.BaseConstants;
 import com.pig4cloud.pig.common.core.constant.enums.capi.RequestStatusEnum;
@@ -35,10 +35,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 @RequiredArgsConstructor
 public class CallBackServiceImpl implements CallBackService {
 
-	private final String chaboshi_url = "/middleAgentApi/completeOrder";
-	private final String userId = "85";
-	private final String keySecret = "ceea05985af94f6aaf0beccf051bde7e";
-	private final boolean onLine = false;
+	private final ChaBoosConfig chaBoosConfig;
 
 	private final BizBuyerOrderService bizBuyerOrderService;
 
@@ -272,14 +269,14 @@ public class CallBackServiceImpl implements CallBackService {
 	 * @throws Exception
 	 */
 	public Integer sendChaBoss(String orderNo, int status, Object object) throws Exception {
-		CBSBuilder cbsBuilder = CBSBuilder.newCBSBuilder(userId, keySecret, onLine);
+		CBSBuilder cbsBuilder = CBSBuilder.newCBSBuilder(chaBoosConfig.getUserId(), chaBoosConfig.getKeySecret(), chaBoosConfig.isOnLine());
 		HashMap<String, Object> params = new HashMap<String, Object>();
 		params.put("orderno", orderNo);
 		if (object != null) {
 			params.put("content", JSON.toJSONString(object));
 		}
 		params.put("reportstatus", status);
-		String data = cbsBuilder.sendPost(chaboshi_url, params);
+		String data = cbsBuilder.sendPost(chaBoosConfig.getUrl(), params);
 		JSONObject obj = JSON.parseObject(data);
 		if (obj.getInteger("messageCode").equals(4010)) {
 			return 200;
