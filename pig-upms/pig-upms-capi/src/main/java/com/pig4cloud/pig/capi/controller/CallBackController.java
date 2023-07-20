@@ -72,8 +72,6 @@ public class CallBackController {
 			log.info("机器人错误回调，机器人出问题。下架供应商ID：" + supplierId);
 
 			bizSupplierService.shutDownSupplier(supplierId);
-			// 如果登錄失敗，先置成查詢失敗狀態
-			bizBuyerOrder.setRequestStatus(RequestStatusEnum.ORDER_FAILURE.getType());
 			//发送钉钉消息提醒
 			//更新bizBuyerOrder
 			bizBuyerOrderService.updateById(bizBuyerOrder);
@@ -138,14 +136,13 @@ public class CallBackController {
 		BizBuyerOrder bizBuyerOrder = bizBuyerOrderService.getById(orderId);
 		Long supplierId = bizBuyerOrder.getSupplierId();
 		if (robotError.getCode() == RequestStatusEnum.SERVER_NO_RESULT.getType()) { // 无记录则回调
-			callBackService.sendChaBoss(bizBuyerOrder.getOrderNo(), 3, null);// 无记录回调
+			callBackService.noData(bizBuyerOrder);// 无记录回调
 		} else {
 			if (robotError.getCode() == RequestStatusEnum.SERVER_LOGIN_FAILURE.getType() ||
 					robotError.getCode() == RequestStatusEnum.SERVER_QUERY_FULL_ERROR.getType() ||
 					robotError.getCode() == RequestStatusEnum.REBOT_PROXY_CONNECTION_ERROR.getType()) {
 				log.info("机器人错误回调，机器人出问题。下架供应商ID：" + supplierId);
 				bizSupplierService.shutDownSupplier(supplierId);
-				bizBuyerOrder.setRequestStatus(RequestStatusEnum.ORDER_FAILURE.getType());
 				bizBuyerOrderService.updateById(bizBuyerOrder);
 				mainCoreService.processOrder(bizBuyerOrder);
 			} else if (robotError.getCode() == RequestStatusEnum.SERVER_UNKNOWN_ERROR.getType()

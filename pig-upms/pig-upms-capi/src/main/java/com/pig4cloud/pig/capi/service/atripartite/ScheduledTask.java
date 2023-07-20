@@ -2,7 +2,9 @@ package com.pig4cloud.pig.capi.service.atripartite;
 
 import com.pig4cloud.pig.capi.entity.BizBuyerOrder;
 import com.pig4cloud.pig.capi.service.BizBuyerOrderService;
+import com.pig4cloud.pig.capi.service.CallBackService;
 import com.pig4cloud.pig.capi.service.MaintenanceService;
+import com.pig4cloud.pig.common.core.constant.enums.capi.BaseConstants;
 import com.pig4cloud.pig.common.core.constant.enums.capi.RequestStatusEnum;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,6 +28,8 @@ public class ScheduledTask {
 
 	private final CallBackManager callBackManager;
 
+	private final CallBackService callBackService;
+
 	@Scheduled(cron = "0 0/5 * * * ?")
 	public void rejectOrder() {
 		log.info("ScheduledTask: 【rejectOrder】 开始执行");
@@ -39,7 +43,7 @@ public class ScheduledTask {
 				.forEach(order -> {
 					int index = currentIndex.incrementAndGet();
 					log.info("ScheduledTask: 【rejectOrder】 order_id - {} 当前进度： {}/{}", order.getId(), index, totalSize);
-					callBackManager.merchantCallBackErrorWithCode(order, RequestStatusEnum.API_ORDER_LONG_TIME, RequestStatusEnum.API_ORDER_LONG_TIME);
+					callBackService.reject(order);// 无记录回调
 				});
 
 	}

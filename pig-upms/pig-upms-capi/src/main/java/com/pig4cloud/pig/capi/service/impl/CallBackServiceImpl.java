@@ -35,23 +35,42 @@ import java.util.concurrent.atomic.AtomicInteger;
 @RequiredArgsConstructor
 public class CallBackServiceImpl implements CallBackService {
 
+	private final String chaboshi_url = "/middleAgentApi/completeOrder";
+	private final String userId = "85";
+	private final String keySecret = "ceea05985af94f6aaf0beccf051bde7e";
+	private final boolean onLine = false;
+
 	private final BizBuyerOrderService bizBuyerOrderService;
 
 	private final BizRobotQueryRecordService bizRobotQueryRecordService;
 
 	private final CallBackQuanManager callBackQuanManager;
 
-	private final String chaboshi_url = "/middleAgentApi/completeOrder";
-
 
 	public void success(RobotCallbackRequest rebotCallbackRequest) {
 		BizBuyerOrder bizBuyerOrder = bizBuyerOrderService.getById(rebotCallbackRequest.getOrderId());
 		RobotResponse robotResponse = rebotCallbackRequest.getRobotResponse();// 机器人数据
 		saveRecord(bizBuyerOrder, robotResponse); // 保存查询记录
-		callbackMerchant(bizBuyerOrder, robotResponse); // 异步回调商户
+		successCallbackMerchant(bizBuyerOrder, robotResponse); // 异步回调商户 - 成功结果
 		callBackQuanManager.callBackQueueManage(bizBuyerOrder);// 移除机器人key
 	}
 
+	public void reject(BizBuyerOrder bizBuyerOrder){
+		rejectCallbackMerchant(bizBuyerOrder); // 异步回调商户 - 驳回
+	}
+
+	public void noData(BizBuyerOrder bizBuyerOrder){
+		saveRecord(bizBuyerOrder, null); // 保存查询记录
+		noDataCallbackMerchant(bizBuyerOrder); // 异步回调商户 - 无记录
+	}
+
+
+
+	/**
+	 * 保存查询记录
+	 * @param bizBuyerOrder
+	 * @param robotResponse
+	 */
 	public void saveRecord(BizBuyerOrder bizBuyerOrder, RobotResponse robotResponse) {
 		BizRobotQueryRecord bizRobotQueryRecord = BizRobotQueryRecord
 				.builder()
@@ -73,78 +92,193 @@ public class CallBackServiceImpl implements CallBackService {
 		log.info("callback yes ：vin {{}} robotRequestCallBack 保存机器人查询记录： {}", bizBuyerOrder.getVin(), JSON.toJSONString(JSON.toJSONString(robotResponse)));
 	}
 
-	public void callbackMerchant(BizBuyerOrder bizBuyerOrder, RobotResponse robotResponse) {
+	/***
+	 * 成功回调商户
+	 * @param bizBuyerOrder
+	 * @param robotResponse
+	 */
+	public void successCallbackMerchant(BizBuyerOrder bizBuyerOrder, RobotResponse robotResponse) {
 		CompletableFuture.runAsync(() -> {
-				log.info("callback yes ： 开始异步回调商家");
-				try {
-					AtomicInteger times = new AtomicInteger(1);
-					RetryUtil.executeWithRetry(() -> {
-						log.info("callback yes : RetryUtil开始回调 第{}次", times);
-						times.addAndGet(1);
-						log.info("callback yes :  order_no: {}，回调采购商维修数据 : {}", bizBuyerOrder.getId(), JSON.toJSONString(robotResponse));
+					log.info("successCallbackMerchant ： 开始异步回调商家");
+					// 标识有记录
+					bizBuyerOrder.setResult(JSON.toJSONString(robotResponse));
+					bizBuyerOrder.setAnyData(BaseConstants.ANY_DATA_TRUE);
+					try {
+						AtomicInteger times = new AtomicInteger(1);
+						RetryUtil.executeWithRetry(() -> {
+							log.info("successCallbackMerchant : RetryUtil开始回调 第{}次", times);
+							times.addAndGet(1);
+							log.info("successCallbackMerchant :  order_id: {}，回调采购商维修数据 : {}", bizBuyerOrder.getId(), JSON.toJSONString(robotResponse));
 
-						Integer status = merchantCallBack(bizBuyerOrder, robotResponse);
-						if (status.equals(200)) {// 成功回调, 则更新订单状态
-							bizBuyerOrder.setRequestStatus(RequestStatusEnum.CALLBACK_SUCCESS.getType());
-							bizBuyerOrder.setResult(JSON.toJSONString(robotResponse));
-							bizBuyerOrder.setCallbackTime(LocalDateTime.now());
-							bizBuyerOrderService.updateById(bizBuyerOrder);
-						} else if (!status.equals(200) && times.get() >= 3) {// 三次失败状态
-							bizBuyerOrder.setRequestStatus(RequestStatusEnum.CALLBACK_FAILURE.getType());
-							bizBuyerOrder.setFailureReason(JSON.toJSONString(R.resultEnumType(null, RequestStatusEnum.API_CALLBACK_FAILURE.getType())));
-							bizBuyerOrder.setCallbackTime(LocalDateTime.now());
-							bizBuyerOrderService.updateById(bizBuyerOrder);
-						}
-						log.info("vin {{}} robotRequestCallBack 更新订单状态： {}", bizBuyerOrder.getVin(), RequestStatusEnum.getStatusEnumByCode(bizBuyerOrder.getRequestStatus()));
-						return null;
-					}, 3, 3000L, false);
-				} catch (Exception e) {
-					// 更新失败原因和失败状态： 回调失败
-					log.error("callback yes : RetryUtil回调商户错误....");
-					String failureReason = JSON.toJSONString(R.resultEnumType(null, RequestStatusEnum.CALLBACK_FAILURE.getType()));
-					log.info("vin {{}} robotRequestCallBack 更新订单错误原因： {}", bizBuyerOrder.getVin(), failureReason); // 不修改状态,等待10分钟回调驳回
-					bizBuyerOrder.setFailureReason(failureReason);
-					bizBuyerOrderService.updateById(bizBuyerOrder);
+							Integer status = anyDataMerchantCallBack(bizBuyerOrder, robotResponse);// 有数据回调
+							if (status.equals(200)) {// 成功回调, 则更新订单状态
+								bizBuyerOrder.setRequestStatus(RequestStatusEnum.CALLBACK_SUCCESS.getType());
+								bizBuyerOrder.setCallbackTime(LocalDateTime.now());
+								bizBuyerOrderService.updateById(bizBuyerOrder);
+							} else if (!status.equals(200) && times.get() >= 3) {// 三次失败状态
+								bizBuyerOrder.setRequestStatus(RequestStatusEnum.CALLBACK_FAILURE.getType());
+								bizBuyerOrder.setFailureReason(JSON.toJSONString(R.resultEnumType(null, RequestStatusEnum.API_CALLBACK_FAILURE.getType())));
+								bizBuyerOrder.setCallbackTime(LocalDateTime.now());
+								bizBuyerOrderService.updateById(bizBuyerOrder);
+							}
+							log.info("successCallbackMerchant vin {{}} robotRequestCallBack 更新订单状态： {}", bizBuyerOrder.getVin(), RequestStatusEnum.getStatusEnumByCode(bizBuyerOrder.getRequestStatus()));
+							return null;
+						}, 3, 3000L, false);
+					} catch (Exception e) {
+						// 更新失败原因和失败状态： 回调失败
+						log.error("successCallbackMerchant : RetryUtil回调商户错误....");
+						String failureReason = JSON.toJSONString(R.resultEnumType(null, RequestStatusEnum.CALLBACK_FAILURE.getType()));
+						log.info("successCallbackMerchant vin {{}} robotRequestCallBack 更新订单错误原因： {}", bizBuyerOrder.getVin(), failureReason); // 不修改状态,等待10分钟回调驳回
+						bizBuyerOrder.setRequestStatus(RequestStatusEnum.CALLBACK_FAILURE.getType());
+						bizBuyerOrder.setFailureReason(failureReason);
+						bizBuyerOrderService.updateById(bizBuyerOrder);
+					}
 				}
-			}
 		);
 	}
 
 	/***
-	 * 给商家做回调请求
+	 * 驳回订单回调商户
+	 * @param bizBuyerOrder
+	 */
+	public void rejectCallbackMerchant(BizBuyerOrder bizBuyerOrder) {
+		CompletableFuture.runAsync(() -> {
+					log.info("rejectCallbackMerchant ： 开始异步回调商家 - 驳回");
+					bizBuyerOrder.setAnyData(BaseConstants.ANY_DATA_FALSE);
+					bizBuyerOrder.setCallbackTime(LocalDateTime.now());
+					try {
+						AtomicInteger times = new AtomicInteger(1);
+						RetryUtil.executeWithRetry(() -> {
+							log.info("rejectCallbackMerchant : RetryUtil开始回调 第{}次", times);
+							times.addAndGet(1);
+							log.info("rejectCallbackMerchant :  order_id: {}", bizBuyerOrder.getId());
+							Integer status = rejectMerchantCallBack(bizBuyerOrder);
+							if (status.equals(200)) {// 成功回调, 则更新订单状态
+								bizBuyerOrder.setRequestStatus(RequestStatusEnum.CALLBACK_REJECT.getType());
+								bizBuyerOrderService.updateById(bizBuyerOrder);
+							} else if (!status.equals(200) && times.get() >= 3) {// 三次失败状态
+								bizBuyerOrder.setRequestStatus(RequestStatusEnum.CALLBACK_FAILURE.getType());
+								bizBuyerOrder.setFailureReason(JSON.toJSONString(R.resultEnumType(null, RequestStatusEnum.API_CALLBACK_FAILURE.getType())));
+								bizBuyerOrderService.updateById(bizBuyerOrder);
+							}
+							log.info("rejectCallbackMerchant vin {{}} robotRequestCallBack 更新订单状态： {}", bizBuyerOrder.getVin(), RequestStatusEnum.getStatusEnumByCode(bizBuyerOrder.getRequestStatus()));
+							return null;
+						}, 3, 3000L, false);
+					} catch (Exception e) {
+						// 更新失败原因和失败状态： 回调失败
+						log.error("rejectCallbackMerchant : RetryUtil回调商户错误....");
+						String failureReason = JSON.toJSONString(R.resultEnumType(null, RequestStatusEnum.CALLBACK_FAILURE.getType()));
+						log.info("rejectCallbackMerchant vin {{}} robotRequestCallBack 更新订单错误原因： {}", bizBuyerOrder.getVin(), failureReason); // 不修改状态,等待10分钟回调驳回
+						bizBuyerOrder.setRequestStatus(RequestStatusEnum.CALLBACK_FAILURE.getType());
+						bizBuyerOrder.setFailureReason(failureReason);
+						bizBuyerOrderService.updateById(bizBuyerOrder);
+					}
+				}
+		);
+	}
+
+	/***
+	 * 无记录回调商户
+	 * @param bizBuyerOrder
+	 */
+	public void noDataCallbackMerchant(BizBuyerOrder bizBuyerOrder) {
+		CompletableFuture.runAsync(() -> {
+					log.info("noDataCallbackMerchant ： 开始异步回调商家 - 无记录");
+					bizBuyerOrder.setAnyData(BaseConstants.ANY_DATA_FALSE);
+					try {
+						AtomicInteger times = new AtomicInteger(1);
+						RetryUtil.executeWithRetry(() -> {
+							log.info("noDataCallbackMerchant : RetryUtil开始回调 第{}次", times);
+							times.addAndGet(1);
+							log.info("noDataCallbackMerchant :  order_id: {}", bizBuyerOrder.getId());
+							Integer status = noDataMerchantCallBack(bizBuyerOrder);
+							if (status.equals(200)) {// 成功回调, 则更新订单状态
+								bizBuyerOrder.setRequestStatus(RequestStatusEnum.CALLBACK_SUCCESS.getType());
+								bizBuyerOrder.setCallbackTime(LocalDateTime.now());
+								bizBuyerOrderService.updateById(bizBuyerOrder);
+							} else if (!status.equals(200) && times.get() >= 3) {// 三次失败状态
+								bizBuyerOrder.setRequestStatus(RequestStatusEnum.CALLBACK_FAILURE.getType());
+								bizBuyerOrder.setFailureReason(JSON.toJSONString(R.resultEnumType(null, RequestStatusEnum.API_CALLBACK_FAILURE.getType())));
+								bizBuyerOrder.setCallbackTime(LocalDateTime.now());
+								bizBuyerOrderService.updateById(bizBuyerOrder);
+							}
+							log.info("noDataCallbackMerchant vin {{}} robotRequestCallBack 更新订单状态： {}", bizBuyerOrder.getVin(), RequestStatusEnum.getStatusEnumByCode(bizBuyerOrder.getRequestStatus()));
+							return null;
+						}, 3, 3000L, false);
+					} catch (Exception e) {
+						// 更新失败原因和失败状态： 回调失败
+						log.error("noDataCallbackMerchant : RetryUtil回调商户错误....");
+						String failureReason = JSON.toJSONString(R.resultEnumType(null, RequestStatusEnum.CALLBACK_FAILURE.getType()));
+						log.info("noDataCallbackMerchant vin {{}} robotRequestCallBack 更新订单错误原因： {}", bizBuyerOrder.getVin(), failureReason); // 不修改状态,等待10分钟回调驳回
+						bizBuyerOrder.setRequestStatus(RequestStatusEnum.CALLBACK_FAILURE.getType());
+						bizBuyerOrder.setFailureReason(failureReason);
+						bizBuyerOrderService.updateById(bizBuyerOrder);
+					}
+				}
+		);
+	}
+
+
+
+	/***
+	 * 成功，有记录给商家做回调请求
 	 * @param bizBuyerOrder
 	 * @param robotResponse
 	 */
-	public Integer merchantCallBack(BizBuyerOrder bizBuyerOrder, RobotResponse robotResponse) throws Exception {
+	public Integer anyDataMerchantCallBack(BizBuyerOrder bizBuyerOrder, RobotResponse robotResponse) throws Exception {
 		// 这里只有成功有记录的
+		int status = RequestStatusEnum.ORDER_REPORT_STATUS_ZONE.getType();
 		if (bizBuyerOrder.getOrderType().equals(BaseConstants.CHA_BO_SHI)) {// 查博士
-			return sendChaBoss(bizBuyerOrder.getOrderNo(), 0, robotResponse);
+			return sendChaBoss(bizBuyerOrder.getOrderNo(), status, robotResponse);
 		} else {
-			log.info("#### merchantCallBack（成功回调商家）：开始");
-			Map<String, Object> paramMap = new HashMap<>();
-			paramMap.put("order_id", bizBuyerOrder.getId());
-			paramMap.put("maintain_data", robotResponse);
-
-			Map<String, Object> resultMap = new HashMap<>();
-			resultMap.put("code", CommonConstants.SUCCESS);
-			resultMap.put("data", paramMap);
-
-			log.info("#### merchantCallBack（成功回调商家）：给商家最终结果：{}", JSON.toJSONString(resultMap));
-			HttpResponse result = HttpRequest.post(bizBuyerOrder.getCallbackUrl()).body(JSON.toJSONString(resultMap)).contentType("application/json").execute();
-			Integer status = result.getStatus();
-			String content = result.body();
-			log.info("回调商户接口返回状态：{}, 返回内容：{}", status, content);
-			return status;
+			return sendMerchant(bizBuyerOrder, status, robotResponse);
 		}
 	}
 
+	/***
+	 * 驳回订单给商家做回调请求
+	 * @param bizBuyerOrder
+	 */
+	public Integer rejectMerchantCallBack(BizBuyerOrder bizBuyerOrder) throws Exception {
+		// 这里只有驳回的
+		int status = RequestStatusEnum.ORDER_REPORT_STATUS_ONE.getType();
+		if (bizBuyerOrder.getOrderType().equals(BaseConstants.CHA_BO_SHI)) {// 查博士
+			return sendChaBoss(bizBuyerOrder.getOrderNo(), status, null);
+		} else {
+			return sendMerchant(bizBuyerOrder, status,null);
+		}
+	}
+
+	/***
+	 * 无记录给商家做回调请求
+	 * @param bizBuyerOrder
+	 */
+	public Integer noDataMerchantCallBack(BizBuyerOrder bizBuyerOrder) throws Exception {
+		// 这里只有无记录的
+		int status = RequestStatusEnum.ORDER_REPORT_STATUS_TWO.getType();
+		if (bizBuyerOrder.getOrderType().equals(BaseConstants.CHA_BO_SHI)) {// 查博士
+			return sendChaBoss(bizBuyerOrder.getOrderNo(), status, null);
+		} else {
+			return sendMerchant(bizBuyerOrder, status,null);
+		}
+	}
+
+
+
+	/**
+	 * 提交订单数据查博士
+	 *
+	 * @param orderNo
+	 * @param status
+	 * @param object
+	 * @return
+	 * @throws Exception
+	 */
 	public Integer sendChaBoss(String orderNo, int status, Object object) throws Exception {
-		String userId = "85";
-		String keySecret = "ceea05985af94f6aaf0beccf051bde7e";
-		CBSBuilder cbsBuilder = CBSBuilder.newCBSBuilder(userId, keySecret, false);
+		CBSBuilder cbsBuilder = CBSBuilder.newCBSBuilder(userId, keySecret, onLine);
 		HashMap<String, Object> params = new HashMap<String, Object>();
 		params.put("orderno", orderNo);
-		if (object != null){
+		if (object != null) {
 			params.put("content", JSON.toJSONString(object));
 		}
 		params.put("reportstatus", status);
@@ -156,4 +290,30 @@ public class CallBackServiceImpl implements CallBackService {
 			return 0;
 		}
 	}
+
+	/**
+	 * 提交订单数据商家
+	 *
+	 * @param bizBuyerOrder
+	 * @return
+	 */
+	public Integer sendMerchant(BizBuyerOrder bizBuyerOrder, int orderStatus, RobotResponse robotResponse) {
+		log.info("#### merchantCallBack（回调商家）：开始");
+		Map<String, Object> paramMap = new HashMap<>();
+		paramMap.put("order_id", bizBuyerOrder.getId());
+		paramMap.put("order_status", orderStatus);
+		paramMap.put("maintain_data", robotResponse);
+
+		Map<String, Object> resultMap = new HashMap<>();
+		resultMap.put("code", CommonConstants.SUCCESS);
+		resultMap.put("data", paramMap);
+
+		log.info("#### merchantCallBack（成功回调商家）：给商家最终结果：{}", JSON.toJSONString(resultMap));
+		HttpResponse result = HttpRequest.post(bizBuyerOrder.getCallbackUrl()).body(JSON.toJSONString(resultMap)).contentType("application/json").execute();
+		Integer status = result.getStatus();
+		String content = result.body();
+		log.info("回调商户接口返回状态：{}, 返回内容：{}", status, content);
+		return status;
+	}
+
 }
