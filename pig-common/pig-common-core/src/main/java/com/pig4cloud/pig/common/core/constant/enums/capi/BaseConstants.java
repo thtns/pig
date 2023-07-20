@@ -16,5 +16,14 @@ public interface BaseConstants {
 	Integer ROBOT_QUERY_STATUS_SUCCESS = 1;
 	Integer ROBOT_QUERY_STATUS_NO_RESULT= 2;
 
+	/**
+	 * order_type 查博士
+	 */
 	String CHA_BO_SHI = "chaboshi";
+
+	/*** 订单是否有记录*/
+	String ANY_DATA_TRUE = "true";
+
+	/*** 订单是否有记录*/
+	String ANY_DATA_FALSE = "false";
 }
