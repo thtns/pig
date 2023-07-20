@@ -1,5 +1,6 @@
 package com.pig4cloud.pig.capi.service;
 
+import com.pig4cloud.pig.capi.dto.request.RebotCallbackParames.RobotResponse;
 import com.pig4cloud.pig.capi.dto.request.RobotCallbackRequest;
 import com.pig4cloud.pig.capi.entity.BizBuyerOrder;
 
@@ -25,4 +26,11 @@ public interface CallBackService {
 
 
 	public Integer sendChaBoss(String orderNo, int status, Object object) throws Exception;
+
+	/**
+	 * 有数据商户回调
+	 * @param bizBuyerOrder 订单
+	 * @param robotResponse 返回data
+	 */
+	public Integer anyDataMerchantCallBack(BizBuyerOrder bizBuyerOrder, RobotResponse robotResponse) throws Exception;
 }

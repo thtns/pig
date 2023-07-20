@@ -44,15 +44,12 @@ public class CallBackServiceImpl implements CallBackService {
 
 	private final BizRobotQueryRecordService bizRobotQueryRecordService;
 
-	private final CallBackQuanManager callBackQuanManager;
-
 
 	public void success(RobotCallbackRequest rebotCallbackRequest) {
 		BizBuyerOrder bizBuyerOrder = bizBuyerOrderService.getById(rebotCallbackRequest.getOrderId());
 		RobotResponse robotResponse = rebotCallbackRequest.getRobotResponse();// 机器人数据
 		saveRecord(bizBuyerOrder, robotResponse); // 保存查询记录
 		successCallbackMerchant(bizBuyerOrder, robotResponse); // 异步回调商户 - 成功结果
-		callBackQuanManager.callBackQueueManage(bizBuyerOrder);// 移除机器人key
 	}
 
 	public void reject(BizBuyerOrder bizBuyerOrder){
@@ -84,12 +81,12 @@ public class CallBackServiceImpl implements CallBackService {
 				.querytime(LocalDateTime.now())
 				.build();
 		if (Objects.isNull(robotResponse)) {
-			log.info("callback yes ：机器人查询无记录,修改查询结果为无记录...");
+			log.info("callback success ：机器人查询无记录,修改查询结果为无记录...");
 			bizRobotQueryRecord.setResultStatus(BaseConstants.ROBOT_QUERY_STATUS_NO_RESULT);
 		}
 		//保存机器人请求成功结果
 		bizRobotQueryRecordService.save(bizRobotQueryRecord);
-		log.info("callback yes ：vin {{}} robotRequestCallBack 保存机器人查询记录： {}", bizBuyerOrder.getVin(), JSON.toJSONString(JSON.toJSONString(robotResponse)));
+		log.info("callback success ：vin 【{}】 robotRequestCallBack 保存机器人查询记录： {}", bizBuyerOrder.getVin(), JSON.toJSONString(JSON.toJSONString(robotResponse)));
 	}
 
 	/***
@@ -130,7 +127,7 @@ public class CallBackServiceImpl implements CallBackService {
 						String failureReason = JSON.toJSONString(R.resultEnumType(null, RequestStatusEnum.CALLBACK_FAILURE.getType()));
 						log.info("successCallbackMerchant vin {{}} robotRequestCallBack 更新订单错误原因： {}", bizBuyerOrder.getVin(), failureReason); // 不修改状态,等待10分钟回调驳回
 						bizBuyerOrder.setRequestStatus(RequestStatusEnum.CALLBACK_FAILURE.getType());
-						bizBuyerOrder.setFailureReason(failureReason);
+						bizBuyerOrder.setFailureReason(RequestStatusEnum.CALLBACK_FAILURE.getDescription());
 						bizBuyerOrderService.updateById(bizBuyerOrder);
 					}
 				}
