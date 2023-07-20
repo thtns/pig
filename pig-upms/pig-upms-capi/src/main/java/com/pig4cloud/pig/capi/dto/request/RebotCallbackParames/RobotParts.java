@@ -16,7 +16,7 @@ public class RobotParts {
 	/**
 	 * 数量
 	 */
-    private String count;
+    private Integer count;
 
 	/**
 	 * 价格
