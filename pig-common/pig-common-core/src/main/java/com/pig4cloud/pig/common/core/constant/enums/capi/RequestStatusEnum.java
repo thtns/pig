@@ -1,10 +1,7 @@
 package com.pig4cloud.pig.common.core.constant.enums.capi;
 
-import lombok.Data;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-
-import java.util.Arrays;
 
 /**
  * @author Admin
@@ -13,7 +10,7 @@ import java.util.Arrays;
 @Getter
 @RequiredArgsConstructor
 public enum RequestStatusEnum {
-
+	/* ================================订单状态================================*/
 	/*** 下单失败*/
 	ORDER_FAILURE(-100, "下单失败"),
 
@@ -35,9 +32,10 @@ public enum RequestStatusEnum {
 	/*** 查询无记录. */
 	CALLBACK_NO_RESULT(105, "查询无记录."),
 
+	/*** 超时驳回. */
+	CALLBACK_REJECT(106, "订单超时驳回."),
 
-//    PARSE_VIN_FAILURE(5, "VIN码解析失败"),
-//    BRAND_UPPER_LIMIT(6, "品牌查询已上限"),
+	/* ================================系统状态================================*/
 	/*** 此品牌暂不支持查询 */
 	API_BRAND_NONSUPPORT(4001, "此品牌暂不支持查询."),
 
@@ -97,9 +95,15 @@ public enum RequestStatusEnum {
 
 	/*** 您的IP不是白名单. */
 	IP_ERROR(1901, "您的IP不是白名单."),
+
+	/* ================================回调商家状态================================*/
+	ORDER_REPORT_STATUS_ZONE(0, "成功上报给商户."),
+
+	ORDER_REPORT_STATUS_ONE(1, "驳回订单"),
+
+	ORDER_REPORT_STATUS_TWO(2, "上报无记录"),
+
 	;
-
-
 	/**
 	 * 类型
 	 */
