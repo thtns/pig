@@ -42,6 +42,7 @@
     <result property="callbackUrl" column="callback_url"/>
     <result property="orderType" column="order_type"/>
     <result property="requestStatus" column="request_status"/>
+    <result property="anyData" column="any_data"/>
     <result property="failureReason" column="failure_reason"/>
     <result property="result" column="result"/>
     <result property="callbackTime" column="callback_time"/>
