@@ -25,18 +25,22 @@ public class OderMessageListener implements MessageListener {
 	public Action consume(Message message, ConsumeContext context) {
 		String orderId = new String(message.getBody());
 		log.info("解析MQ-Body自定义内容：{}", orderId);
+		BizBuyerOrder bizBuyerOrder = null;
 		try {
 			Long bizBuyerOrderId = Long.parseLong(orderId);
-			BizBuyerOrder bizBuyerOrder = bizBuyerOrderService.getById(bizBuyerOrderId);
+			bizBuyerOrder = bizBuyerOrderService.getById(bizBuyerOrderId);
 			if (bizBuyerOrder != null) {
-				if(bizBuyerOrder.getRetryCount() < 5){
+				if(bizBuyerOrder.getRetryCount() < 3){
 					mainCoreService.processOrder(bizBuyerOrder);
+				}else{
+					log.error("订单id {} 达到最大重试次数！消费订单信息完成！", orderId);
 				}
 			}else {
 				log.error("订单id {} 不存在, 请检查。消费订单信息完成！", orderId);
 			}
 		}catch (NumberFormatException e) {
 			log.error("无法解析订单id为Long类型：{}", orderId, e);
+			bizBuyerOrderService.updateById(bizBuyerOrder);
 			return Action.ReconsumeLater;
 		} catch (Exception e) {
 			//消费失败
