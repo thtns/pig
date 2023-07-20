@@ -178,7 +178,7 @@ public class MainCoreServiceImpl implements MainCoreService {
 		}
 	}
 
-	public void robot_request(BizBuyerOrder bizBuyerOrder){
+	public void robot_request(BizBuyerOrder bizBuyerOrder) {
 		// 采购商订单限制,暂时不不限制(会在后台设置大限量)
 		boolean buyerFlag = bizBuyerOrderService.checkBuyerOrderLimit(bizBuyerOrder);
 		if (!buyerFlag) {
@@ -189,7 +189,7 @@ public class MainCoreServiceImpl implements MainCoreService {
 		}
 
 		String brandName = bizBuyerOrder.getCarBrandName();// 品牌名称
-		Long bizCarBrandId = bizBuyerOrder.getCarBrandId();	// 品牌id
+		Long bizCarBrandId = bizBuyerOrder.getCarBrandId();    // 品牌id
 		log.info("robot_request的品牌名称: 【{}】.", brandName);
 
 		// 根据品牌获取供应商
@@ -264,7 +264,7 @@ public class MainCoreServiceImpl implements MainCoreService {
 			bizBuyerOrderService.updateById(bizBuyerOrder);
 			// 这里添加消息任务 通过消息队列来消费重试
 			producerUtil.sendMsg(String.valueOf(bizBuyerOrder.getId()));
-			return ;
+			return;
 		}
 
 		//异步请求机器人
@@ -300,14 +300,14 @@ public class MainCoreServiceImpl implements MainCoreService {
 
 			String[] robotProxies = bizRobotInfo.getRobotProxies().split(";");
 			for (String robotProxy : robotProxies) {
-				if (Boolean.TRUE.equals(robotRequest(bizBuyerOrder, bizRobotInfo, robotProxy))){
+				if (Boolean.TRUE.equals(robotRequest(bizBuyerOrder, bizRobotInfo, robotProxy))) {
 					log.info(">>> 异步请求机器人服务成功. 等待回调");
 					bizBuyerOrderService.updateById(bizBuyerOrder);    // 更新订单信息
 					return;
 				}
 			}
 		}
-		if (queueStatus){// 无成功返回
+		if (queueStatus) {// 无成功返回
 			log.info("syncRequestRobot >>> 异步请求机器人失败, 下单失败...");
 			bizBuyerOrderService.updateById(bizBuyerOrder);    // 更新订单信息
 			// 发送延迟一分钟的消息队列
@@ -318,7 +318,7 @@ public class MainCoreServiceImpl implements MainCoreService {
 
 	private Boolean checkQueue(BizBuyerOrder bizBuyerOrder) {
 		//检查此品牌的机器人在redis是否标识可用。
-		String queueKey = RedisKeyDefine.QUEUE + bizBuyerOrder.getCarBrandId()+ "-" + bizBuyerOrder.getSupplierId();
+		String queueKey = RedisKeyDefine.QUEUE + bizBuyerOrder.getCarBrandId() + "-" + bizBuyerOrder.getSupplierId();
 		String queue = redisTemplate.opsForValue().get(queueKey);
 
 		if (Objects.isNull(queue) || queue.equals(RedisKeyDefine.ENABLE)) {
@@ -414,16 +414,19 @@ public class MainCoreServiceImpl implements MainCoreService {
 						log.info("#### Step3.4.2:  order_id: {}，回调采购商维修数据 : {}", order_id
 								, JSON.toJSONString(JSON.parseObject(result, RobotResponse.class)));
 						Integer status = callBackService.anyDataMerchantCallBack(bizBuyerOrder, robotResponse);
+						log.info("#### Step3.4.3:  order_id: {}，回调采购商返回状态 :status is  【{}】", order_id, status);
 						if (status.equals(200)) {// 成功回调, 则更新订单状态
 							bizBuyerOrder.setRequestStatus(RequestStatusEnum.CALLBACK_SUCCESS.getType());
 							bizBuyerOrder.setResult(JSON.toJSONString(robotResponse));
 							bizBuyerOrder.setCallbackTime(LocalDateTime.now());
-							bizBuyerOrderService.saveOrUpdate(bizBuyerOrder);
+							bizBuyerOrderService.updateById(bizBuyerOrder);
 						} else if (status.equals(200) && times.get() >= 3) {// 三次失败状态
 							bizBuyerOrder.setRequestStatus(RequestStatusEnum.CALLBACK_FAILURE.getType());
 							bizBuyerOrder.setFailureReason(JSON.toJSONString(R.resultEnumType(null, RequestStatusEnum.API_CALLBACK_FAILURE.getType())));
 							bizBuyerOrder.setCallbackTime(LocalDateTime.now());
-							bizBuyerOrderService.saveOrUpdate(bizBuyerOrder);
+							bizBuyerOrderService.updateById(bizBuyerOrder);
+						} else if (!status.equals(200)) {
+							throw new RuntimeException("返回状态码不正确，重试！");
 						}
 						return null;
 					}, 3, 3000L, false);
@@ -432,7 +435,7 @@ public class MainCoreServiceImpl implements MainCoreService {
 					log.info("#### Step3.4.3: RetryUtil回调失败....");
 					bizBuyerOrder.setRequestStatus(RequestStatusEnum.CALLBACK_FAILURE.getType());
 					bizBuyerOrder.setFailureReason(JSON.toJSONString(R.resultEnumType(null, RequestStatusEnum.API_CALLBACK_FAILURE.getType())));
-					bizBuyerOrderService.saveOrUpdate(bizBuyerOrder);
+					bizBuyerOrderService.updateById(bizBuyerOrder);
 				}
 			});
 		}

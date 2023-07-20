@@ -49,19 +49,19 @@ public class CallBackServiceImpl implements CallBackService {
 		successCallbackMerchant(bizBuyerOrder, robotResponse); // 异步回调商户 - 成功结果
 	}
 
-	public void reject(BizBuyerOrder bizBuyerOrder){
+	public void reject(BizBuyerOrder bizBuyerOrder) {
 		rejectCallbackMerchant(bizBuyerOrder); // 异步回调商户 - 驳回
 	}
 
-	public void noData(BizBuyerOrder bizBuyerOrder){
+	public void noData(BizBuyerOrder bizBuyerOrder) {
 		saveRecord(bizBuyerOrder, null); // 保存查询记录
 		noDataCallbackMerchant(bizBuyerOrder); // 异步回调商户 - 无记录
 	}
 
 
-
 	/**
 	 * 保存查询记录
+	 *
 	 * @param bizBuyerOrder
 	 * @param robotResponse
 	 */
@@ -213,13 +213,13 @@ public class CallBackServiceImpl implements CallBackService {
 	}
 
 
-
 	/***
 	 * 成功，有记录给商家做回调请求
 	 * @param bizBuyerOrder
 	 * @param robotResponse
 	 */
 	public Integer anyDataMerchantCallBack(BizBuyerOrder bizBuyerOrder, RobotResponse robotResponse) throws Exception {
+		log.info("#### 上传记录 anyDataMerchantCallBack 开始执行...");
 		// 这里只有成功有记录的
 		int status = RequestStatusEnum.ORDER_REPORT_STATUS_ZONE.getType();
 		if (bizBuyerOrder.getOrderType().equals(BaseConstants.CHA_BO_SHI)) {// 查博士
@@ -234,12 +234,13 @@ public class CallBackServiceImpl implements CallBackService {
 	 * @param bizBuyerOrder
 	 */
 	public Integer rejectMerchantCallBack(BizBuyerOrder bizBuyerOrder) throws Exception {
+		log.info("#### 驳回 rejectMerchantCallBack 开始执行...");
 		// 这里只有驳回的
 		int status = RequestStatusEnum.ORDER_REPORT_STATUS_ONE.getType();
 		if (bizBuyerOrder.getOrderType().equals(BaseConstants.CHA_BO_SHI)) {// 查博士
 			return sendChaBoss(bizBuyerOrder.getOrderNo(), status, null);
 		} else {
-			return sendMerchant(bizBuyerOrder, status,null);
+			return sendMerchant(bizBuyerOrder, status, null);
 		}
 	}
 
@@ -248,15 +249,15 @@ public class CallBackServiceImpl implements CallBackService {
 	 * @param bizBuyerOrder
 	 */
 	public Integer noDataMerchantCallBack(BizBuyerOrder bizBuyerOrder) throws Exception {
+		log.info("#### 无记录 noDataMerchantCallBack 开始执行...");
 		// 这里只有无记录的
 		int status = RequestStatusEnum.ORDER_REPORT_STATUS_TWO.getType();
 		if (bizBuyerOrder.getOrderType().equals(BaseConstants.CHA_BO_SHI)) {// 查博士
 			return sendChaBoss(bizBuyerOrder.getOrderNo(), status, null);
 		} else {
-			return sendMerchant(bizBuyerOrder, status,null);
+			return sendMerchant(bizBuyerOrder, status, null);
 		}
 	}
-
 
 
 	/**
@@ -269,6 +270,7 @@ public class CallBackServiceImpl implements CallBackService {
 	 * @throws Exception
 	 */
 	public Integer sendChaBoss(String orderNo, int status, Object object) throws Exception {
+		log.info("#### sendChaBoss 开始执行... orderNo： 【{}】, status： 【{}】 object： 【{}】 ", orderNo, status, JSON.toJSONString(object));
 		CBSBuilder cbsBuilder = CBSBuilder.newCBSBuilder(chaBoosConfig.getUserId(), chaBoosConfig.getKeySecret(), chaBoosConfig.isOnLine());
 		HashMap<String, Object> params = new HashMap<String, Object>();
 		params.put("orderno", orderNo);
@@ -278,11 +280,23 @@ public class CallBackServiceImpl implements CallBackService {
 		params.put("reportstatus", status);
 		String data = cbsBuilder.sendPost(chaBoosConfig.getUrl(), params);
 		JSONObject obj = JSON.parseObject(data);
-		if (obj.getInteger("messageCode").equals(4010)) {
-			return 200;
-		} else {
-			return 0;
+		Integer messageCode = obj.getInteger("messageCode");
+		log.info("#### sendChaBoss 执行结束... messageCode： 【{}】", messageCode);
+		Integer result_code = 0;
+		if (RequestStatusEnum.ORDER_REPORT_STATUS_ZONE.getType().equals(status)) {
+			if (messageCode.equals(4010)) {
+				result_code = 200;
+			}
+		} else if (RequestStatusEnum.ORDER_REPORT_STATUS_ONE.getType().equals(status)) {
+			if (messageCode.equals(4011)) {
+				result_code = 200;
+			}
+		} else if (RequestStatusEnum.ORDER_REPORT_STATUS_TWO.getType().equals(status)) {
+			if (messageCode.equals(4012)) {
+				result_code = 200;
+			}
 		}
+		return result_code;
 	}
 
 	/**
