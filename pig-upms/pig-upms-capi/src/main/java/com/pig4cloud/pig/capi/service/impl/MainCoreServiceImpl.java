@@ -401,18 +401,18 @@ public class MainCoreServiceImpl implements MainCoreService {
 		//机器人记录赋值采购商订单成功结果
 		if (Objects.nonNull(bizRobotQueryRecord.getResult())) {
 			log.info("~~~~ Step3.2: 本地数据成功解析....同步到订单数据并回调给商户。");
-			bizBuyerOrder.setResult(bizRobotQueryRecord.getResult());
+			String result = bizRobotQueryRecord.getResult();
+			bizBuyerOrder.setResult(result);
 			CompletableFuture.runAsync(() -> {
 				log.info("#### Step3.3: 异步解析开始");
 				try {
-					Thread.sleep(TIME_OUT);
 					AtomicInteger times = new AtomicInteger(1);
 					RetryUtil.executeWithRetry(() -> {
 						log.info("#### Step3.4.1: Vin：{} RetryUtil开始回调 第{}次", vin, times);
 						times.addAndGet(1);
-						RobotResponse robotResponse = JSON.parseObject(bizRobotQueryRecord.getResult(), RobotResponse.class);
+						RobotResponse robotResponse = JSON.parseObject(result, RobotResponse.class);
 						log.info("#### Step3.4.2:  order_id: {}，回调采购商维修数据 : {}", order_id
-								, JSON.toJSONString(JSON.parseObject(bizRobotQueryRecord.getResult(), RobotResponse.class)));
+								, JSON.toJSONString(JSON.parseObject(result, RobotResponse.class)));
 						Integer status = callBackService.anyDataMerchantCallBack(bizBuyerOrder, robotResponse);
 						if (status.equals(200)) {// 成功回调, 则更新订单状态
 							bizBuyerOrder.setRequestStatus(RequestStatusEnum.CALLBACK_SUCCESS.getType());
@@ -426,7 +426,7 @@ public class MainCoreServiceImpl implements MainCoreService {
 							bizBuyerOrderService.saveOrUpdate(bizBuyerOrder);
 						}
 						return null;
-					}, 3, 1000L, false);
+					}, 3, 3000L, false);
 				} catch (Exception e) {
 					// 更新失败原因和失败状态： 回调失败
 					log.info("#### Step3.4.3: RetryUtil回调失败....");
@@ -436,44 +436,5 @@ public class MainCoreServiceImpl implements MainCoreService {
 				}
 			});
 		}
-
-		//机器人记录赋值采购商订单失败原因
-		String failureReason = bizRobotQueryRecord.getFailureReason();
-		if (StringUtils.isNotBlank(failureReason)) {
-			log.info("~~~~ Step3.2: 本地数据失败解析....同步到订单数据并回调给商户。");
-			bizBuyerOrder.setFailureReason(failureReason);
-			CompletableFuture.runAsync(() -> {
-				log.info("#### Step3.3: 错误回调开始");
-				try {
-					Thread.sleep(TIME_OUT);
-					AtomicInteger times = new AtomicInteger(1);
-					RetryUtil.executeWithRetry(() -> {
-						log.info("#### Step3.4.1: Vin：{} RetryUtil开始回调 第{}次", vin, times);
-						times.addAndGet(1);
-						log.error("#### Step3.4.2:  order_id: {}，回调采购商维修数据 : {}", order_id, failureReason);
-						Integer status = callBackManager.merchantCallBackError(bizBuyerOrder);
-						if (status.equals(200)) {// 成功回调, 则更新订单状态
-							bizBuyerOrder.setRequestStatus(RequestStatusEnum.CALLBACK_FAILURE.getType());
-							bizBuyerOrder.setFailureReason(failureReason);
-							bizBuyerOrder.setCallbackTime(LocalDateTime.now());
-							bizBuyerOrderService.saveOrUpdate(bizBuyerOrder);
-						} else if (!status.equals(200) && times.get() >= 3) {// 三次失败状态 失败回调请求用户失败
-							bizBuyerOrder.setRequestStatus(RequestStatusEnum.CALLBACK_FAILURE.getType());
-							bizBuyerOrder.setFailureReason(JSON.toJSONString(R.resultEnumType(null, RequestStatusEnum.API_CALLBACK_FAILURE.getType())));
-							bizBuyerOrder.setCallbackTime(LocalDateTime.now());
-							bizBuyerOrderService.saveOrUpdate(bizBuyerOrder);
-						}
-						return null;
-					}, 3, 1000L, false);
-				} catch (Exception e) {
-					// 更新失败原因和失败状态： 回调失败
-					log.info("#### Step3.4.3: RetryUtil回调失败....");
-					bizBuyerOrder.setRequestStatus(RequestStatusEnum.CALLBACK_FAILURE.getType());
-					bizBuyerOrder.setFailureReason(JSON.toJSONString(R.resultEnumType(null, RequestStatusEnum.API_CALLBACK_FAILURE.getType())));
-					bizBuyerOrderService.saveOrUpdate(bizBuyerOrder);
-				}
-			});
-		}
-		log.info("~~~~ Step4 本地数据解析结束, 商家数据赋值更新 ：" + JSON.toJSONString(bizBuyerOrder));
 	}
 }
