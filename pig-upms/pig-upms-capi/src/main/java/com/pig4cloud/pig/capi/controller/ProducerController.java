@@ -11,6 +11,24 @@ public class ProducerController {
 
 	@Autowired
 	ProducerUtil producerUtil;
+
+	/**
+	 * rocketmq demo
+	 */
+	@RequestMapping(value = {"/upOrder"}, method = RequestMethod.GET)
+	public String upOrder(String orderId) {
+		producerUtil.sendMsg(orderId);
+//		producerUtil.sendTimeMsg("1573858210", System.currentTimeMillis() + 30 * 1000);
+		return "请求成功！";
+	}
+
+	@RequestMapping(value = {"/timeTest"}, method = RequestMethod.GET)
+	public String timeTest() {
+		producerUtil.sendTimeMsg("1573858210", System.currentTimeMillis() + 3 * 1000);
+		return "请求成功！";
+	}
+
+
     /**
      * rocketmq demo
      */
