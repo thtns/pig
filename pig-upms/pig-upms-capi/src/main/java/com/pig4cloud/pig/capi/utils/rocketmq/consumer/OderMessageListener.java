@@ -30,7 +30,7 @@ public class OderMessageListener implements MessageListener {
 			Long bizBuyerOrderId = Long.parseLong(orderId);
 			bizBuyerOrder = bizBuyerOrderService.getById(bizBuyerOrderId);
 			if (bizBuyerOrder != null) {
-				if(bizBuyerOrder.getRetryCount() < 3){
+				if(bizBuyerOrder.getRetryCount() < 2){
 					mainCoreService.processOrder(bizBuyerOrder);
 				}else{
 					log.error("订单id {} 达到最大重试次数！消费订单信息完成！", orderId);

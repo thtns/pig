@@ -71,6 +71,9 @@ public class MainCoreServiceImpl implements MainCoreService {
 	/*** 机器人 **/
 	private final BizRobotService bizRobotService;
 
+	/*** 成功回调 **/
+	private final CallBackService callBackService;
+
 	/**
 	 * @param bizBuyerOrder
 	 * @return
@@ -170,6 +173,7 @@ public class MainCoreServiceImpl implements MainCoreService {
 		} catch (RuntimeException e) {
 			log.error("处理订单异常: {}", e.getMessage());
 			// 这里添加消息任务 通过消息队列来消费重试
+			bizBuyerOrderService.updateById(bizBuyerOrder);
 			producerUtil.sendMsg(String.valueOf(bizBuyerOrder.getId()));
 		}
 	}
@@ -409,7 +413,7 @@ public class MainCoreServiceImpl implements MainCoreService {
 						RobotResponse robotResponse = JSON.parseObject(bizRobotQueryRecord.getResult(), RobotResponse.class);
 						log.info("#### Step3.4.2:  order_id: {}，回调采购商维修数据 : {}", order_id
 								, JSON.toJSONString(JSON.parseObject(bizRobotQueryRecord.getResult(), RobotResponse.class)));
-						Integer status = callBackManager.merchantCallBack(bizBuyerOrder, robotResponse);
+						Integer status = callBackService.anyDataMerchantCallBack(bizBuyerOrder, robotResponse);
 						if (status.equals(200)) {// 成功回调, 则更新订单状态
 							bizBuyerOrder.setRequestStatus(RequestStatusEnum.CALLBACK_SUCCESS.getType());
 							bizBuyerOrder.setResult(JSON.toJSONString(robotResponse));
