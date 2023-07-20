@@ -23,8 +23,8 @@ public class ProducerController {
 	}
 
 	@RequestMapping(value = {"/timeTest"}, method = RequestMethod.GET)
-	public String timeTest() {
-		producerUtil.sendTimeMsg("1573858210", System.currentTimeMillis() + 3 * 1000);
+	public String timeTest(String orderId) {
+		producerUtil.sendTimeMsg(orderId, System.currentTimeMillis() + 3 * 1000);
 		return "请求成功！";
 	}
 
