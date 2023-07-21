@@ -1,10 +1,12 @@
 package com.pig4cloud.pig.capi.dto.request.RebotCallbackParames;
 
+import com.alibaba.fastjson.annotation.JSONType;
 import lombok.Data;
 
 import java.util.List;
 
 @Data
+@JSONType(orders = {"vin","brand","seriesName","modelName","repairRecords"})
 public class RobotResponse {
 
     private String vin;

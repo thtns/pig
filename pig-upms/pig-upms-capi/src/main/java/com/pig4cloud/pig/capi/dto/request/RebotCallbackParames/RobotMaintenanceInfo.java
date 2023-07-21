@@ -1,5 +1,6 @@
 package com.pig4cloud.pig.capi.dto.request.RebotCallbackParames;
 
+import com.alibaba.fastjson.annotation.JSONType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -10,6 +11,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@JSONType(orders = {"vin","repairType","material","repairBeginDate","repairFinishDate","mileage","troubleDescription","troubleReason","recordItems","laborItems","laborStr","partStr"},ignores = {"laborItems","laborStr","partStr"})
 public class RobotMaintenanceInfo {
 
 	/**
