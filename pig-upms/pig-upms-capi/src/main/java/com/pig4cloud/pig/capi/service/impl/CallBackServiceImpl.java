@@ -99,7 +99,7 @@ public class CallBackServiceImpl implements CallBackService {
 					bizBuyerOrder.setAnyData(BaseConstants.ANY_DATA_TRUE);
 					try {
 						AtomicInteger times = new AtomicInteger(1);
-						RetryUtil.executeWithRetry(() -> {
+//						RetryUtil.executeWithRetry(() -> {
 							log.info("successCallbackMerchant : RetryUtil开始回调 第{}次", times);
 							times.addAndGet(1);
 							log.info("successCallbackMerchant :  order_id: {}，回调采购商维修数据 : {}", bizBuyerOrder.getId(), JSON.toJSONString(robotResponse));
@@ -109,15 +109,15 @@ public class CallBackServiceImpl implements CallBackService {
 								bizBuyerOrder.setRequestStatus(RequestStatusEnum.CALLBACK_SUCCESS.getType());
 								bizBuyerOrder.setCallbackTime(LocalDateTime.now());
 								bizBuyerOrderService.updateById(bizBuyerOrder);
-							} else if (!status.equals(200) && times.get() >= 3) {// 三次失败状态
+							} else {// 三次失败状态
 								bizBuyerOrder.setRequestStatus(RequestStatusEnum.CALLBACK_FAILURE.getType());
 								bizBuyerOrder.setFailureReason(JSON.toJSONString(R.resultEnumType(null, RequestStatusEnum.API_CALLBACK_FAILURE.getType())));
 								bizBuyerOrder.setCallbackTime(LocalDateTime.now());
 								bizBuyerOrderService.updateById(bizBuyerOrder);
 							}
 							log.info("successCallbackMerchant vin {{}} robotRequestCallBack 更新订单状态： {}", bizBuyerOrder.getVin(), RequestStatusEnum.getStatusEnumByCode(bizBuyerOrder.getRequestStatus()));
-							return null;
-						}, 3, 3000L, false);
+//							return null;
+//						}, 3, 3000L, false);
 					} catch (Exception e) {
 						// 更新失败原因和失败状态： 回调失败
 						log.error("successCallbackMerchant : RetryUtil回调商户错误....");
@@ -142,7 +142,7 @@ public class CallBackServiceImpl implements CallBackService {
 					bizBuyerOrder.setCallbackTime(LocalDateTime.now());
 					try {
 						AtomicInteger times = new AtomicInteger(1);
-						RetryUtil.executeWithRetry(() -> {
+//						RetryUtil.executeWithRetry(() -> {
 							log.info("rejectCallbackMerchant : RetryUtil开始回调 第{}次", times);
 							times.addAndGet(1);
 							log.info("rejectCallbackMerchant :  order_id: {}", bizBuyerOrder.getId());
@@ -150,14 +150,14 @@ public class CallBackServiceImpl implements CallBackService {
 							if (status.equals(200)) {// 成功回调, 则更新订单状态
 								bizBuyerOrder.setRequestStatus(RequestStatusEnum.CALLBACK_REJECT.getType());
 								bizBuyerOrderService.updateById(bizBuyerOrder);
-							} else if (!status.equals(200) && times.get() >= 3) {// 三次失败状态
+							} else{// 三次失败状态
 								bizBuyerOrder.setRequestStatus(RequestStatusEnum.CALLBACK_FAILURE.getType());
 								bizBuyerOrder.setFailureReason(JSON.toJSONString(R.resultEnumType(null, RequestStatusEnum.API_CALLBACK_FAILURE.getType())));
 								bizBuyerOrderService.updateById(bizBuyerOrder);
 							}
 							log.info("rejectCallbackMerchant vin {{}} robotRequestCallBack 更新订单状态： {}", bizBuyerOrder.getVin(), RequestStatusEnum.getStatusEnumByCode(bizBuyerOrder.getRequestStatus()));
-							return null;
-						}, 3, 3000L, false);
+//							return null;
+//						}, 3, 3000L, false);
 					} catch (Exception e) {
 						// 更新失败原因和失败状态： 回调失败
 						log.error("rejectCallbackMerchant : RetryUtil回调商户错误....");
@@ -181,7 +181,7 @@ public class CallBackServiceImpl implements CallBackService {
 					bizBuyerOrder.setAnyData(BaseConstants.ANY_DATA_FALSE);
 					try {
 						AtomicInteger times = new AtomicInteger(1);
-						RetryUtil.executeWithRetry(() -> {
+//						RetryUtil.executeWithRetry(() -> {
 							log.info("noDataCallbackMerchant : RetryUtil开始回调 第{}次", times);
 							times.addAndGet(1);
 							log.info("noDataCallbackMerchant :  order_id: {}", bizBuyerOrder.getId());
@@ -190,15 +190,15 @@ public class CallBackServiceImpl implements CallBackService {
 								bizBuyerOrder.setRequestStatus(RequestStatusEnum.CALLBACK_SUCCESS.getType());
 								bizBuyerOrder.setCallbackTime(LocalDateTime.now());
 								bizBuyerOrderService.updateById(bizBuyerOrder);
-							} else if (!status.equals(200) && times.get() >= 3) {// 三次失败状态
+							} else{// 三次失败状态
 								bizBuyerOrder.setRequestStatus(RequestStatusEnum.CALLBACK_FAILURE.getType());
 								bizBuyerOrder.setFailureReason(JSON.toJSONString(R.resultEnumType(null, RequestStatusEnum.API_CALLBACK_FAILURE.getType())));
 								bizBuyerOrder.setCallbackTime(LocalDateTime.now());
 								bizBuyerOrderService.updateById(bizBuyerOrder);
 							}
 							log.info("noDataCallbackMerchant vin {{}} robotRequestCallBack 更新订单状态： {}", bizBuyerOrder.getVin(), RequestStatusEnum.getStatusEnumByCode(bizBuyerOrder.getRequestStatus()));
-							return null;
-						}, 3, 3000L, false);
+//							return null;
+//						}, 3, 3000L, false);
 					} catch (Exception e) {
 						// 更新失败原因和失败状态： 回调失败
 						log.error("noDataCallbackMerchant : RetryUtil回调商户错误....");
