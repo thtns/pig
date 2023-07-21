@@ -40,7 +40,7 @@ public class RobotMaintenanceInfo {
     /**
      * 里程数
      */
-    private String mileage;
+    private Integer mileage;
 
     /**
      * 故障描述
