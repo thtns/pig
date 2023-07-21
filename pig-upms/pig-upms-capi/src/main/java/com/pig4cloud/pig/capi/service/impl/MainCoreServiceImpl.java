@@ -14,6 +14,7 @@ import com.pig4cloud.pig.capi.service.atripartite.EasyepcDataManager;
 import com.pig4cloud.pig.capi.utils.rocketmq.ProducerUtil;
 import com.pig4cloud.pig.common.core.constant.enums.capi.BaseConstants;
 import com.pig4cloud.pig.common.core.constant.enums.capi.RequestStatusEnum;
+import com.pig4cloud.pig.common.core.util.DateTimeUitils;
 import com.pig4cloud.pig.common.core.util.R;
 import com.pig4cloud.pig.common.core.util.RetryUtil;
 import lombok.RequiredArgsConstructor;
@@ -407,7 +408,7 @@ public class MainCoreServiceImpl implements MainCoreService {
 				log.info("#### Step3.3: 异步解析开始");
 				try {
 					AtomicInteger times = new AtomicInteger(1);
-					RetryUtil.executeWithRetry(() -> {
+//					RetryUtil.executeWithRetry(() -> {
 						log.info("#### Step3.4.1: Vin：{} RetryUtil开始回调 第{}次", vin, times);
 						times.addAndGet(1);
 						RobotResponse robotResponse = JSON.parseObject(result, RobotResponse.class);
@@ -416,28 +417,31 @@ public class MainCoreServiceImpl implements MainCoreService {
 						Integer status = callBackService.anyDataMerchantCallBack(bizBuyerOrder, robotResponse);
 						log.info("#### Step3.4.3:  order_id: {}，回调采购商返回状态 :status is  【{}】", order_id, status);
 						if (status.equals(200)) {// 成功回调, 则更新订单状态
-							bizBuyerOrder.setRequestStatus(RequestStatusEnum.CALLBACK_SUCCESS.getType());
-							bizBuyerOrder.setResult(JSON.toJSONString(robotResponse));
-							bizBuyerOrder.setCallbackTime(LocalDateTime.now());
-							bizBuyerOrderService.updateById(bizBuyerOrder);
+							updateOrderStatus(bizBuyerOrder, RequestStatusEnum.CALLBACK_SUCCESS, null);
 						} else if (status.equals(200) && times.get() >= 3) {// 三次失败状态
-							bizBuyerOrder.setRequestStatus(RequestStatusEnum.CALLBACK_FAILURE.getType());
-							bizBuyerOrder.setFailureReason(JSON.toJSONString(R.resultEnumType(null, RequestStatusEnum.API_CALLBACK_FAILURE.getType())));
-							bizBuyerOrder.setCallbackTime(LocalDateTime.now());
-							bizBuyerOrderService.updateById(bizBuyerOrder);
+							String failureReason = JSON.toJSONString(R.resultEnumType(null, RequestStatusEnum.API_CALLBACK_FAILURE.getType()));
+							updateOrderStatus(bizBuyerOrder, RequestStatusEnum.CALLBACK_FAILURE, failureReason);
 						} else if (!status.equals(200)) {
 							throw new RuntimeException("返回状态码不正确，重试！");
 						}
-						return null;
-					}, 3, 3000L, false);
+//						return null;
+//					}, 3, 3000L, false);
 				} catch (Exception e) {
 					// 更新失败原因和失败状态： 回调失败
 					log.info("#### Step3.4.3: RetryUtil回调失败....");
-					bizBuyerOrder.setRequestStatus(RequestStatusEnum.CALLBACK_FAILURE.getType());
-					bizBuyerOrder.setFailureReason(JSON.toJSONString(R.resultEnumType(null, RequestStatusEnum.API_CALLBACK_FAILURE.getType())));
-					bizBuyerOrderService.updateById(bizBuyerOrder);
+					String failureReason = JSON.toJSONString(R.resultEnumType(null, RequestStatusEnum.API_CALLBACK_FAILURE.getType()));
+					updateOrderStatus(bizBuyerOrder, RequestStatusEnum.CALLBACK_FAILURE, failureReason);
 				}
 			});
 		}
+	}
+
+	private void updateOrderStatus(BizBuyerOrder bizBuyerOrder, RequestStatusEnum status, String failureReason) {
+		bizBuyerOrder.setRequestStatus(status.getType());
+		bizBuyerOrder.setFailureReason(failureReason);
+		LocalDateTime nowDateTime = LocalDateTime.now();
+		bizBuyerOrder.setCallbackTime(nowDateTime);
+		bizBuyerOrder.setSpendTime(DateTimeUitils.localDateTimeBetweenSeconds(bizBuyerOrder.getRequestTime(), nowDateTime));
+		bizBuyerOrderService.updateById(bizBuyerOrder);
 	}
 }
