@@ -166,7 +166,7 @@ public class MainCoreServiceImpl implements MainCoreService {
 			bizBuyerOrder.setRetryCount(bizBuyerOrder.getRetryCount() + 1); // 重试次数累加
 			String vin = bizBuyerOrder.getVin();
 			BizRobotQueryRecord bizRobotQueryRecord = bizRobotQueryRecordService.getQueryRecordByVin(vin);
-			if (Optional.ofNullable(bizRobotQueryRecord).isPresent()) {
+			if (Optional.ofNullable(bizRobotQueryRecord).isPresent() && !bizRobotQueryRecord.getResult().equals("null") && !bizRobotQueryRecord.getResult().equals("")) {
 				localMysqlParsing(bizBuyerOrder, bizRobotQueryRecord);
 			} else {
 				robot_request(bizBuyerOrder);
