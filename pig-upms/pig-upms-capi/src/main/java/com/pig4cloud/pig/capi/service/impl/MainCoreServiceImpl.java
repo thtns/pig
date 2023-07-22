@@ -207,15 +207,28 @@ public class MainCoreServiceImpl implements MainCoreService {
 		LinkedHashMap<Integer, List<BizSupplier>> supplierMap = bizSuppliers.stream().
 				collect(Collectors.groupingBy(BizSupplier::getWeight, LinkedHashMap::new, Collectors.toList()));
 
-		// 打乱排序, 虽然打乱但是权重依然有序
+		// 打乱排序, 虽然打乱但是权重依然有序 当权重相同时,也会打乱权重
 		List<BizSupplier> supplierList = supplierMap.entrySet().stream()
 				.flatMap(entry -> {
 					int weight = entry.getKey();
 					List<BizSupplier> suppliers = entry.getValue();
-					Collections.shuffle(suppliers); // 对供应商列表洗牌
-					return suppliers.stream().map(supplier -> new AbstractMap.SimpleEntry<>(weight, supplier));
+					List<AbstractMap.SimpleEntry<Integer, BizSupplier>> weightedSuppliers = suppliers.stream()
+							.map(supplier -> new AbstractMap.SimpleEntry<>(weight, supplier))
+							.collect(Collectors.toList());
+
+					// Shuffle the weighted suppliers when weights are the same
+					if (weightedSuppliers.size() > 1) {
+						int firstWeight = weightedSuppliers.get(0).getKey();
+						boolean allSameWeight = weightedSuppliers.stream().allMatch(weientry -> weientry.getKey() == firstWeight);
+
+						if (allSameWeight) {
+							Collections.shuffle(weightedSuppliers);
+						}
+					}
+
+					return weightedSuppliers.stream();
 				})
-				.sorted(Comparator.comparingDouble(AbstractMap.SimpleEntry::getKey)) // 按权重加随机数顺序排序
+				.sorted(Comparator.comparingInt(AbstractMap.SimpleEntry::getKey))
 				.map(AbstractMap.SimpleEntry::getValue)
 				.collect(Collectors.toList());
 
