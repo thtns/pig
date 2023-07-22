@@ -215,7 +215,7 @@ public class MainCoreServiceImpl implements MainCoreService {
 					Collections.shuffle(suppliers); // 对供应商列表洗牌
 					return suppliers.stream().map(supplier -> new AbstractMap.SimpleEntry<>(weight, supplier));
 				})
-				.sorted(Comparator.comparingInt(AbstractMap.SimpleEntry::getKey)) // 按权重顺序排序
+				.sorted(Comparator.comparingDouble(AbstractMap.SimpleEntry::getKey)) // 按权重加随机数顺序排序
 				.map(AbstractMap.SimpleEntry::getValue)
 				.collect(Collectors.toList());
 
