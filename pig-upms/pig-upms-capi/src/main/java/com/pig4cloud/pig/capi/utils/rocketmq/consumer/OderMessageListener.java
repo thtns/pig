@@ -6,6 +6,7 @@ import com.aliyun.openservices.ons.api.Message;
 import com.aliyun.openservices.ons.api.MessageListener;
 import com.pig4cloud.pig.capi.entity.BizBuyerOrder;
 import com.pig4cloud.pig.capi.entity.BizRobotQueryRecord;
+import com.pig4cloud.pig.capi.nacosConf.BaseConfig;
 import com.pig4cloud.pig.capi.service.BizBuyerOrderService;
 import com.pig4cloud.pig.capi.service.MainCoreService;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +22,8 @@ public class OderMessageListener implements MessageListener {
 
 	private final MainCoreService mainCoreService;
 
+	private final BaseConfig baseConfig;
+
 	@Override
 	public Action consume(Message message, ConsumeContext context) {
 		String orderId = new String(message.getBody());
@@ -30,10 +33,10 @@ public class OderMessageListener implements MessageListener {
 			Long bizBuyerOrderId = Long.parseLong(orderId);
 			bizBuyerOrder = bizBuyerOrderService.getById(bizBuyerOrderId);
 			if (bizBuyerOrder != null) {
-				if(bizBuyerOrder.getRetryCount() < 2){
+				if(bizBuyerOrder.getRetryCount() < baseConfig.getOrderTryTimes()){
 					mainCoreService.processOrder(bizBuyerOrder);
 				}else{
-					log.error("订单id {} 达到最大重试次数！消费订单信息完成！", orderId);
+					log.error("订单id {} 达到最大重试 {} 次数！消费订单信息完成！", orderId, baseConfig.getOrderTryTimes());
 				}
 			}else {
 				log.error("订单id {} 不存在, 请检查。消费订单信息完成！", orderId);

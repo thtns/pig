@@ -14,6 +14,9 @@ public class BaseConfig {
 	/*** 订单驳回间隔*/
 	private int timeDaly;
 
+	/*** 订单重试次数*/
+	private int orderTryTimes;
+
 
 
 }

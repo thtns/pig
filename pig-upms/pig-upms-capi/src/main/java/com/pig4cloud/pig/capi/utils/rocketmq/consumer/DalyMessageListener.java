@@ -5,6 +5,7 @@ import com.aliyun.openservices.ons.api.ConsumeContext;
 import com.aliyun.openservices.ons.api.Message;
 import com.aliyun.openservices.ons.api.MessageListener;
 import com.pig4cloud.pig.capi.entity.BizBuyerOrder;
+import com.pig4cloud.pig.capi.nacosConf.BaseConfig;
 import com.pig4cloud.pig.capi.service.BizBuyerOrderService;
 import com.pig4cloud.pig.capi.service.MainCoreService;
 import com.pig4cloud.pig.capi.service.MaintenanceService;
@@ -23,6 +24,9 @@ public class DalyMessageListener implements MessageListener {
 
 	private final MainCoreService mainCoreService;
 
+	private final BaseConfig baseConfig;
+
+
 	public Action consume(Message message, ConsumeContext consumeContext) {
 		log.info("接收到MQ详细信息：{}", message);
 		try {
@@ -31,8 +35,10 @@ public class DalyMessageListener implements MessageListener {
 			log.info("orderId ：{}", Long.parseLong(orderId));
 			BizBuyerOrder bizBuyerOrder = bizBuyerOrderService.getById(Long.parseLong(orderId));
 			if (bizBuyerOrder != null) {
-				if(bizBuyerOrder.getRetryCount() < 5){
+				if(bizBuyerOrder.getRetryCount() < baseConfig.getOrderTryTimes()){
 					mainCoreService.processOrder(bizBuyerOrder);
+				}else{
+					log.error("订单id {} 达到最大重试 {} 次数！消费订单信息完成！", orderId, baseConfig.getOrderTryTimes());
 				}
 			}else {
 				log.error("订单id {} 不存在, 请检查。消费订单信息完成！", orderId);
