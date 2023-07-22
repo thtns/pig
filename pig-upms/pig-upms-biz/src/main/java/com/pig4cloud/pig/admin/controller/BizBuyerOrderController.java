@@ -17,6 +17,7 @@
 
 package com.pig4cloud.pig.admin.controller;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.pig4cloud.pig.admin.api.entity.BizBuyerOrder;
@@ -58,7 +59,31 @@ public class BizBuyerOrderController {
     @GetMapping("/page" )
     @PreAuthorize("@pms.hasPermission('admin_bizbuyerorder_get')" )
     public R getBizBuyerOrderPage(Page page, BizBuyerOrder bizBuyerOrder) {
-        return R.ok(bizBuyerOrderService.page(page, Wrappers.query(bizBuyerOrder)));
+		QueryWrapper<BizBuyerOrder> queryWrapper = new QueryWrapper<>();
+		// 构建查询条件
+		if (bizBuyerOrder.getCarBrandName() != null) {
+			queryWrapper.like("car_brand_name", bizBuyerOrder.getCarBrandName());
+		}
+		if (bizBuyerOrder.getVin() != null) {
+			queryWrapper.like("vin", bizBuyerOrder.getVin());
+		}
+
+		if (bizBuyerOrder.getRequestStatus() != null) {
+			queryWrapper.eq("request_status", bizBuyerOrder.getRequestStatus());
+		}
+
+		if (bizBuyerOrder.getAnyData() != null) {
+			queryWrapper.eq("any_data", bizBuyerOrder.getAnyData());
+		}
+
+		// 时间段查询
+		if (bizBuyerOrder.getRequestTime() != null && bizBuyerOrder.getCallbackTime() != null) {
+			queryWrapper.between("request_time", bizBuyerOrder.getRequestTime(), bizBuyerOrder.getCallbackTime());
+		}
+
+		queryWrapper.orderByDesc("request_time");
+
+        return R.ok(bizBuyerOrderService.page(page, queryWrapper));
     }
 
 
