@@ -137,28 +137,32 @@ public class CallBackController {
 		Long orderId = JSON.parseObject(JSON.toJSONString(robotError.getData())).getLong("orderId");
 		BizBuyerOrder bizBuyerOrder = bizBuyerOrderService.getById(orderId);
 		Long supplierId = bizBuyerOrder.getSupplierId();
+		String supplierName = bizBuyerOrder.getSupplierName();
 		if (robotError.getCode() == RequestStatusEnum.SERVER_NO_RESULT.getType()) { // 无记录则回调
 			callBackService.noData(bizBuyerOrder);// 无记录回调
 		} else {
+
 			if (robotError.getCode() == RequestStatusEnum.SERVER_LOGIN_FAILURE.getType() ||
-					robotError.getCode() == RequestStatusEnum.SERVER_QUERY_FULL_ERROR.getType() ||
 					robotError.getCode() == RequestStatusEnum.REBOT_PROXY_CONNECTION_ERROR.getType()) {
-				log.info("机器人错误回调，机器人出问题。下架供应商ID：" + supplierId);
+				log.info("机器人错误回调，机器人出问题。下架供应商ID：{}, 供应商名称： {}" ,supplierId, supplierName);
 				bizSupplierService.shutDownSupplier(supplierId);
-				bizBuyerOrderService.updateById(bizBuyerOrder);
 				mainCoreService.processOrder(bizBuyerOrder);
 			} else if (robotError.getCode() == RequestStatusEnum.SERVER_UNKNOWN_ERROR.getType()
 					|| robotError.getCode() == RequestStatusEnum.REBOT_SSL_ERROR.getType()
 					|| robotError.getCode() == RequestStatusEnum.REBOT_SYSTEM_CONNECTION_ERROR.getType()) {
 				if (Boolean.TRUE.equals(redisOperationManager.redisOperationUnknownErrorKey(supplierId))) {
-					log.info("机器人未知错误发生了3次，下架供应商ID：" + supplierId);
+					log.info("机器人未知错误发生了3次，下架供应商ID：{}, 供应商名称： {}" ,supplierId, supplierName);
 					bizSupplierService.shutDownSupplier(supplierId);
 				}
 				//重新发起请求
 				mainCoreService.processOrder(bizBuyerOrder);
 			} else if (robotError.getCode() == RequestStatusEnum.REBOT_READ_TIMEOUT_ERROR.getType()) {
 				reDo(bizBuyerOrder);
-			} else {
+			} else if (robotError.getCode() == RequestStatusEnum.SERVER_QUERY_FULL_ERROR.getType()){
+				log.info("机器人查询以达到上线,下架供应商ID：{}, 供应商名称： {}" ,supplierId, supplierName);
+				bizSupplierService.shutDownSupplier(supplierId);
+				mainCoreService.processOrder(bizBuyerOrder);
+			}else {
 				reDo(bizBuyerOrder);
 			}
 		}
