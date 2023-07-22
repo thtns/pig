@@ -185,7 +185,6 @@ public class MainCoreServiceImpl implements MainCoreService {
 		if (!buyerFlag) {
 			log.error("采购商请求已达上限. 退出机器人查询！");
 			bizBuyerOrderService.updateById(bizBuyerOrder);
-			producerUtil.sendMsg(String.valueOf(bizBuyerOrder.getId()));
 			return;
 		}
 
@@ -198,8 +197,6 @@ public class MainCoreServiceImpl implements MainCoreService {
 		if (bizSuppliers.isEmpty()) {
 			log.error("品牌【{}】没有找到供应商,退出机器人查询！ ", brandName);
 			bizBuyerOrderService.updateById(bizBuyerOrder);
-			// 这里添加消息任务 通过消息队列来消费重试
-			producerUtil.sendMsg(String.valueOf(bizBuyerOrder.getId()));
 			return;
 		}
 
@@ -241,7 +238,6 @@ public class MainCoreServiceImpl implements MainCoreService {
 		if (supplierList.isEmpty()) {
 			log.error("supplierList is Empty ! 退出机器人查询！");
 			bizBuyerOrderService.updateById(bizBuyerOrder);
-			producerUtil.sendMsg(String.valueOf(bizBuyerOrder.getId()));
 			return;
 		}
 
@@ -253,8 +249,6 @@ public class MainCoreServiceImpl implements MainCoreService {
 		if (usableSupplierList.isEmpty()) {
 			log.error("品牌【{}】没有可用供应商, usableSupplierList is Empty. 退出机器人查询！ ", brandName);
 			bizBuyerOrder.setRequestStatus(RequestStatusEnum.API_TIME_NONSUPPORT.getType());
-			// 这里添加消息任务 通过消息队列来消费重试
-			producerUtil.sendMsg(String.valueOf(bizBuyerOrder.getId()));
 			return;
 		}
 
@@ -277,7 +271,6 @@ public class MainCoreServiceImpl implements MainCoreService {
 			log.error("品牌【{}】没有有效机器人, robotEffectiveList is Empty. 退出机器人查询！", brandName);
 			bizBuyerOrderService.updateById(bizBuyerOrder);
 			// 这里添加消息任务 通过消息队列来消费重试
-			producerUtil.sendMsg(String.valueOf(bizBuyerOrder.getId()));
 			return;
 		}
 
