@@ -42,11 +42,11 @@ public class ChaboshiControlle {
 					.orderNo(req.getOrderno())                // 查博士订单号
 					.buyerId(1001L)                           //用户id 查博士默认id
 					.buyerName("查博士")                       //用户名称
-					.requestIpAddress(RequestUtils.getIpAddress(request))                    //请求ip
+//					.requestIpAddress(RequestUtils.getIpAddress(request))                    //请求ip
 					.carBrandName(req.getBrand())             //请求品牌
 					.vin(req.getVin())                        //请求vin码
 					.requestParams(JSON.toJSONString(req))    //请求参数
-					.requestHeader(JSON.toJSONString(RequestUtils.getHeadersInfo(request)))    //请求头
+//					.requestHeader(JSON.toJSONString(RequestUtils.getHeadersInfo(request)))    //请求头
 					.requestTime(LocalDateTime.now())         //请求时间
 					.requestStatus(RequestStatusEnum.ORDER_PLACING.getType())                //订单状态
 					.orderType(BaseConstants.CHA_BO_SHI)	  //订单类型 查博士
