@@ -22,6 +22,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.pig4cloud.pig.capi.entity.BizBuyer;
 import com.pig4cloud.pig.capi.entity.BizBuyerOrder;
 import com.pig4cloud.pig.capi.mapper.BizBuyerOrderMapper;
+import com.pig4cloud.pig.capi.nacosConf.BaseConfig;
 import com.pig4cloud.pig.capi.service.BizBuyerOrderService;
 import com.pig4cloud.pig.capi.service.BizBuyerService;
 import com.pig4cloud.pig.common.core.constant.enums.capi.RequestStatusEnum;
@@ -44,6 +45,8 @@ import static cn.hutool.core.date.DateUtil.today;
 public class BizBuyerOrderServiceImpl extends ServiceImpl<BizBuyerOrderMapper, BizBuyerOrder> implements BizBuyerOrderService {
 
 	private final BizBuyerService bizBuyerService;
+
+	private final BaseConfig baseConfig;
 
 	@Override
 	public BizBuyerOrder getSuccessMerchantOrderByVin(String vin) {
@@ -112,7 +115,7 @@ public class BizBuyerOrderServiceImpl extends ServiceImpl<BizBuyerOrderMapper, B
 	 */
 	@Override
 	public List<BizBuyerOrder> getDalyOrder() {
-		LocalDateTime tenMinutesAgo = LocalDateTime.now().minusMinutes(10);
+		LocalDateTime tenMinutesAgo = LocalDateTime.now().minusMinutes(baseConfig.getTimeDaly());
 		QueryWrapper<BizBuyerOrder> queryWrapper = new QueryWrapper<>();
 		queryWrapper.le("request_time", tenMinutesAgo)
 				.in("request_status", RequestStatusEnum.ORDER_SUCCESS.getType(), RequestStatusEnum.QUERYING.getType());
