@@ -8,6 +8,7 @@ import com.pig4cloud.pig.capi.service.*;
 import com.pig4cloud.pig.capi.service.atripartite.CallBackManager;
 import com.pig4cloud.pig.capi.service.atripartite.CallBackQuanManager;
 import com.pig4cloud.pig.capi.service.atripartite.RedisOperationManager;
+import com.pig4cloud.pig.capi.utils.rocketmq.ProducerUtil;
 import com.pig4cloud.pig.common.core.constant.enums.capi.RequestStatusEnum;
 import com.pig4cloud.pig.common.core.util.R;
 import com.pig4cloud.pig.common.core.util.RequestUtils;
@@ -42,6 +43,8 @@ public class CallBackController {
 	private final CallBackService callBackService;
 
 	private final MainCoreService mainCoreService;
+
+	private final ProducerUtil producerUtil;
 
 
 	/**
@@ -141,12 +144,11 @@ public class CallBackController {
 		if (robotError.getCode() == RequestStatusEnum.SERVER_NO_RESULT.getType()) { // 无记录则回调
 			callBackService.noData(bizBuyerOrder);// 无记录回调
 		} else {
-
 			if (robotError.getCode() == RequestStatusEnum.SERVER_LOGIN_FAILURE.getType() ||
 					robotError.getCode() == RequestStatusEnum.REBOT_PROXY_CONNECTION_ERROR.getType()) {
 				log.info("机器人错误回调，机器人出问题。下架供应商ID：{}, 供应商名称： {}" ,supplierId, supplierName);
 				bizSupplierService.shutDownSupplier(supplierId);
-				mainCoreService.processOrder(bizBuyerOrder);
+				sendTimeOrderOnMinute(orderId);
 			} else if (robotError.getCode() == RequestStatusEnum.SERVER_UNKNOWN_ERROR.getType()
 					|| robotError.getCode() == RequestStatusEnum.REBOT_SSL_ERROR.getType()
 					|| robotError.getCode() == RequestStatusEnum.REBOT_SYSTEM_CONNECTION_ERROR.getType()) {
@@ -155,22 +157,26 @@ public class CallBackController {
 					bizSupplierService.shutDownSupplier(supplierId);
 				}
 				//重新发起请求
-				mainCoreService.processOrder(bizBuyerOrder);
+				sendTimeOrderOnMinute(orderId);
 			} else if (robotError.getCode() == RequestStatusEnum.REBOT_READ_TIMEOUT_ERROR.getType()) {
 				reDo(bizBuyerOrder);
 			} else if (robotError.getCode() == RequestStatusEnum.SERVER_QUERY_FULL_ERROR.getType()){
 				log.info("机器人查询以达到上线,下架供应商ID：{}, 供应商名称： {}" ,supplierId, supplierName);
 				bizSupplierService.shutDownSupplier(supplierId);
-				mainCoreService.processOrder(bizBuyerOrder);
+				sendTimeOrderOnMinute(orderId);
 			}else {
 				reDo(bizBuyerOrder);
 			}
 		}
 	}
 
+	public void sendTimeOrderOnMinute(Long orderId){
+		producerUtil.sendTimeMsg(String.valueOf(orderId), System.currentTimeMillis() + 60 * 1000);
+	}
+
 	public void reDo(BizBuyerOrder bizBuyerOrder){
 		callBackQuanManager.callBackQueueManage(bizBuyerOrder);
 		//重新发起请求
-		mainCoreService.processOrder(bizBuyerOrder);
+		sendTimeOrderOnMinute(bizBuyerOrder.getId());
 	}
 }
