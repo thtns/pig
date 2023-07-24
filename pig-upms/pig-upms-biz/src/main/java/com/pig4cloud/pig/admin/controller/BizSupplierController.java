@@ -17,20 +17,19 @@
 
 package com.pig4cloud.pig.admin.controller;
 
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.pig4cloud.pig.admin.api.entity.BizSupplier;
 import com.pig4cloud.pig.admin.api.request.AddSupplierRequest;
-import com.pig4cloud.pig.admin.api.request.AddSupplierRobotRequest;
 import com.pig4cloud.pig.admin.service.BizSupplierService;
 import com.pig4cloud.pig.common.core.util.R;
 import com.pig4cloud.pig.common.log.annotation.SysLog;
-import org.springframework.security.access.prepost.PreAuthorize;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 
@@ -60,7 +59,16 @@ public class BizSupplierController {
 	@GetMapping("/page")
 	@PreAuthorize("@pms.hasPermission('admin_bizsupplier_get')")
 	public R getBizSupplierPage(Page page, BizSupplier bizSupplier) {
-		return R.ok(bizSupplierService.page(page, Wrappers.query(bizSupplier)));
+		QueryWrapper<BizSupplier> queryWrapper = new QueryWrapper<>();
+		// 构建查询条件
+		if (bizSupplier.getSupplierName() != null) {
+			queryWrapper.like("supplier_name", bizSupplier.getSupplierName());
+		}
+		if (bizSupplier.getStatus() != null) {
+			queryWrapper.eq("status", bizSupplier.getStatus());
+		}
+		queryWrapper.orderByAsc("weight");
+		return R.ok(bizSupplierService.page(page, queryWrapper));
 	}
 
 

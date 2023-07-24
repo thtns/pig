@@ -23,6 +23,12 @@ public class AddRobotRequest {
 	private String robotUrl;
 
 	/**
+	 * 代理后访问的ip+port
+	 */
+	@Schema(description ="host机器人访问的ip+端口")
+	private String host;
+
+	/**
 	 * robotProxies
 	 */
 	@Schema(description ="robotProxies")
