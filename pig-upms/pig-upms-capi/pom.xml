@@ -44,22 +44,16 @@
 		</dependency>
 
 		<!--配置中心客户端-->
-		<dependency>
-			<groupId>com.alibaba.cloud</groupId>
-			<artifactId>spring-cloud-starter-alibaba-nacos-config</artifactId>
-		</dependency>
+<!--		<dependency>-->
+<!--			<groupId>com.alibaba.cloud</groupId>-->
+<!--			<artifactId>spring-cloud-starter-alibaba-nacos-config</artifactId>-->
+<!--		</dependency>-->
 
 		<!--undertow容器-->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-undertow</artifactId>
 		</dependency>
-
-		<!--web 模块-->
-<!--		<dependency>-->
-<!--			<groupId>org.springframework.boot</groupId>-->
-<!--			<artifactId>spring-boot-starter-web</artifactId>-->
-<!--		</dependency>-->
 
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -111,12 +105,6 @@
             <version>9.0.75</version>
         </dependency>
 
-		<!--阿里云ons，方便的接入到云服务-->
-		<dependency>
-			<groupId>com.aliyun.openservices</groupId>
-			<artifactId>ons-client</artifactId>
-			<version>1.8.7.3.Final</version>
-		</dependency>
     </dependencies>
 
 	<build>
