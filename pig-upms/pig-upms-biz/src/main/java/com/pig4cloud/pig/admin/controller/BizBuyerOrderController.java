@@ -23,8 +23,11 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.pig4cloud.pig.admin.api.entity.BizBuyerOrder;
 import com.pig4cloud.pig.admin.service.BizBuyerOrderService;
 import com.pig4cloud.pig.common.core.util.R;
+import com.pig4cloud.pig.common.core.util.mq.MqConfig;
+import com.pig4cloud.pig.common.core.util.mq.ProducerUtil;
 import com.pig4cloud.pig.common.log.annotation.SysLog;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -40,6 +43,7 @@ import org.springframework.web.bind.annotation.*;
  * @author pig code generator
  * @date 2023-06-16 20:59:27
  */
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/bizbuyerorder" )
@@ -48,6 +52,11 @@ import org.springframework.web.bind.annotation.*;
 public class BizBuyerOrderController {
 
     private final BizBuyerOrderService bizBuyerOrderService;
+
+	private final ProducerUtil producerUtil;
+
+	private final MqConfig mqConfig;
+
 
     /**
      * 分页查询
@@ -64,6 +73,11 @@ public class BizBuyerOrderController {
 		if (bizBuyerOrder.getCarBrandName() != null) {
 			queryWrapper.like("car_brand_name", bizBuyerOrder.getCarBrandName());
 		}
+
+		if (bizBuyerOrder.getSupplierName() != null) {
+			queryWrapper.like("supplier_name", bizBuyerOrder.getSupplierName());
+		}
+
 		if (bizBuyerOrder.getVin() != null) {
 			queryWrapper.like("vin", bizBuyerOrder.getVin());
 		}
@@ -138,4 +152,32 @@ public class BizBuyerOrderController {
         return R.ok(bizBuyerOrderService.removeById(id));
     }
 
+	@Operation(summary = "通过id驳回采购商订单表", description = "通过id驳回采购商订单表")
+	@SysLog("通过id驳回采购商订单表	" )
+	@RequestMapping("/reject/{id}" )
+	@PreAuthorize("@pms.hasPermission('admin_bizbuyerorder_edit')" )
+	public R rejectById(@PathVariable Long id) {
+		log.info("通过id驳回订单, 订单ID: {}", id);
+		producerUtil.sendEasyMsg(String.valueOf(id), mqConfig.getRejectTopic(), mqConfig.getRejectTag());
+		return R.ok();
+	}
+
+	@Operation(summary = "通过id重试采购商订单表", description = "通过id重试采购商订单表")
+	@SysLog("通过id重试采购商订单表	" )
+	@RequestMapping("/retry/{id}" )
+	@PreAuthorize("@pms.hasPermission('admin_bizbuyerorder_edit')" )
+	public R retryById(@PathVariable Long id) {
+		log.info("通过id重试订单, 订单ID: {}", id);
+		// 根据id查询订单
+		BizBuyerOrder bizBuyerOrder = bizBuyerOrderService.getById(id);
+		// 判断是否需要更新
+		if (bizBuyerOrder.getRetryCount() >1) {
+			// 重试次数设为0
+			bizBuyerOrder.setRetryCount(0);
+			// 更新订单
+			bizBuyerOrderService.updateById(bizBuyerOrder);
+		}
+		producerUtil.sendEasyMsg(String.valueOf(id), mqConfig.getTopic(), mqConfig.getTag());
+		return R.ok();
+	}
 }
