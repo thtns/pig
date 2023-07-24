@@ -16,6 +16,7 @@ spring:
         namespace: ${spring.cloud.nacos.discovery.namespace}
   config:
     import:
+      - nacos:application-@profiles.active@.yml
       - nacos:${spring.application.name}-@profiles.active@.yml
 
 
