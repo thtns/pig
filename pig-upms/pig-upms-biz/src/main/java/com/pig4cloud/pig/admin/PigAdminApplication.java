@@ -31,7 +31,7 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 @EnablePigResourceServer
 @EnablePigFeignClients
 @EnableDiscoveryClient
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages = {"com.pig4cloud.pig.admin", "com.pig4cloud.pig.common.core"})
 public class PigAdminApplication {
 
 	public static void main(String[] args) {
