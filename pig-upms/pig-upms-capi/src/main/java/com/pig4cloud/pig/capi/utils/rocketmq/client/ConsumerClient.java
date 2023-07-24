@@ -6,8 +6,9 @@ import com.aliyun.openservices.ons.api.bean.ConsumerBean;
 import com.aliyun.openservices.ons.api.bean.Subscription;
 import com.pig4cloud.pig.capi.utils.rocketmq.consumer.OderMessageListener;
 import com.pig4cloud.pig.capi.utils.rocketmq.consumer.DalyMessageListener;
-import com.pig4cloud.pig.capi.utils.rocketmq.MqConfig;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.pig4cloud.pig.capi.utils.rocketmq.consumer.TestMessageListener;
+import com.pig4cloud.pig.common.core.util.mq.MqConfig;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -17,16 +18,16 @@ import java.util.Properties;
 
 //项目中加上 @Configuration 注解，这样服务启动时consumer也启动了
 @Configuration
+@RequiredArgsConstructor
 public class ConsumerClient {
 
-    @Autowired
-    private MqConfig mqConfig;
+    private final MqConfig mqConfig;
 
-    @Autowired
-    private OderMessageListener messageListener;
+    private final OderMessageListener messageListener;
 
-	@Autowired
-    private DalyMessageListener dalyMessageListener;
+    private final DalyMessageListener dalyMessageListener;
+
+    private final TestMessageListener testMessageListener;
 
     @Bean(initMethod = "start", destroyMethod = "shutdown")
     public ConsumerBean buildConsumer() {
@@ -51,6 +52,13 @@ public class ConsumerClient {
 		dalySubscription.setTopic(mqConfig.getTimeTopic());
 		dalySubscription.setExpression(mqConfig.getTimeTag());
 		subscriptionTable.put(dalySubscription, dalyMessageListener);
+
+		// 测试序列
+		Subscription testSubscription = new Subscription();
+		testSubscription.setTopic(mqConfig.getTestTopic());
+		testSubscription.setExpression(mqConfig.getTestTag());
+		subscriptionTable.put(testSubscription, testMessageListener);
+
 
         consumerBean.setSubscriptionTable(subscriptionTable);
         return consumerBean;
