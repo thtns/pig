@@ -33,6 +33,11 @@ public class ProducerUtil {
         return send(msg, Boolean.FALSE);
     }
 
+	public SendResult sendEasyMsg(String message, String topic, String tag) {
+		Message msg = new Message(topic, tag, message.getBytes());
+		return send(msg, Boolean.FALSE);
+	}
+
 	public SendResult sendTestMsg(String message) {
 		Message msg = new Message(mqConfig.getTestTopic(), mqConfig.getTestTag(), message.getBytes());
 		return send(msg, Boolean.FALSE);
