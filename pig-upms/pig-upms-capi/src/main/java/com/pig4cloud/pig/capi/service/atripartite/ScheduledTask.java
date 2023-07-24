@@ -26,11 +26,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class ScheduledTask {
 	private final BizBuyerOrderService bizBuyerOrderService;
 
-	private final CallBackManager callBackManager;
-
 	private final CallBackService callBackService;
 
-	@Scheduled(cron = "0 0/5 * * * ?")
+	@Scheduled(cron = "0 0/2 * * * ?")
 	public void rejectOrder() {
 		log.info("ScheduledTask: 【rejectOrder】 开始执行");
 		List<BizBuyerOrder> bizBuyerOrders = bizBuyerOrderService.getDalyOrder();
