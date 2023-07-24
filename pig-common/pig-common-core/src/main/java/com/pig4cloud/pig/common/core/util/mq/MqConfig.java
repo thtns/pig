@@ -21,6 +21,8 @@ public class MqConfig {
 	private String topic;
 	private String groupId;
 	private String tag;
+	private String rejectTopic;//驳回通道
+	private String rejectTag; // 驳回标签
 	private String timeTopic;
 	private String timeGroupId;
 	private String timeTag;

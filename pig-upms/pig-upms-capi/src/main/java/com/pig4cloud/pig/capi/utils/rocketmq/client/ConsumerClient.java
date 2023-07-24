@@ -6,6 +6,7 @@ import com.aliyun.openservices.ons.api.bean.ConsumerBean;
 import com.aliyun.openservices.ons.api.bean.Subscription;
 import com.pig4cloud.pig.capi.utils.rocketmq.consumer.OderMessageListener;
 import com.pig4cloud.pig.capi.utils.rocketmq.consumer.DalyMessageListener;
+import com.pig4cloud.pig.capi.utils.rocketmq.consumer.RejectMessageListener;
 import com.pig4cloud.pig.capi.utils.rocketmq.consumer.TestMessageListener;
 import com.pig4cloud.pig.common.core.util.mq.MqConfig;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +28,8 @@ public class ConsumerClient {
 
     private final DalyMessageListener dalyMessageListener;
 
+    private final RejectMessageListener rejectMessageListener;
+
     private final TestMessageListener testMessageListener;
 
     @Bean(initMethod = "start", destroyMethod = "shutdown")
@@ -46,6 +49,12 @@ public class ConsumerClient {
         subscription.setExpression(mqConfig.getTag());
         subscriptionTable.put(subscription, messageListener);
         //订阅多个topic如上面设置
+
+		//驳回消息
+		Subscription rejectSubscription = new Subscription();
+		rejectSubscription.setTopic(mqConfig.getRejectTopic());
+		rejectSubscription.setExpression(mqConfig.getRejectTag());
+		subscriptionTable.put(rejectSubscription, rejectMessageListener);
 
 		// 延迟top
 		Subscription dalySubscription = new Subscription();
