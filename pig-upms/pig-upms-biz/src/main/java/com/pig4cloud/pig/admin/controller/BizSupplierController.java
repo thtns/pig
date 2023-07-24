@@ -128,4 +128,11 @@ public class BizSupplierController {
 		return R.ok(bizSupplierService.removeById(id));
 	}
 
+
+	@Operation(summary = "全量查询", description = "全量查询")
+	@GetMapping("/all" )
+	@PreAuthorize("@pms.hasPermission('admin_bizsupplier_get')" )
+	public R getBizSupplierAll() {
+		return R.ok(bizSupplierService.list());
+	}
 }

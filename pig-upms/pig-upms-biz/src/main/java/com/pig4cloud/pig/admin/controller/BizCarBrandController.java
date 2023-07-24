@@ -118,4 +118,11 @@ public class BizCarBrandController {
         return R.ok(bizCarBrandService.removeById(id));
     }
 
+
+	@Operation(summary = "全量查询", description = "全量查询")
+	@GetMapping("/all" )
+	@PreAuthorize("@pms.hasPermission('admin_bizcarbrand_get')" )
+	public R getBizCarBrandAll() {
+		return R.ok(bizCarBrandService.list());
+	}
 }

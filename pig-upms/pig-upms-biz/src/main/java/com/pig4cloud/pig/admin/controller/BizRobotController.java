@@ -70,7 +70,7 @@ public class BizRobotController {
      */
     @Operation(summary = "通过id查询", description = "通过id查询")
     @GetMapping("/{id}" )
-    @PreAuthorize("@pms.hasPermission('_bizrobot_get')" )
+    @PreAuthorize("@pms.hasPermission('admin_bizrobot_get')" )
     public R getById(@PathVariable("id" ) Long id) {
         return R.ok(bizRobotService.getById(id));
     }
@@ -115,4 +115,11 @@ public class BizRobotController {
         return R.ok(bizRobotService.removeById(id));
     }
 
+
+	@Operation(summary = "全量查询", description = "全量查询")
+	@GetMapping("/all" )
+	@PreAuthorize("@pms.hasPermission('admin_bizrobot_get')" )
+	public R getBizRobotAll() {
+		return R.ok(bizRobotService.list());
+	}
 }
