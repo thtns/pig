@@ -242,7 +242,7 @@ public class MainCoreServiceImpl implements MainCoreService {
 		}
 
 		// 执行: 供货商限量计算逻辑
-		List<BizSupplier> usableSupplierList = bizSuppliers.stream()
+		List<BizSupplier> usableSupplierList = supplierList.stream()
 				.filter(bizSupplier -> bizRobotQueryRecordService.getTodayCountBySupplier(bizSupplier.getId()) < bizSupplier.getDailyLimitCount())
 				.collect(Collectors.toList());
 
