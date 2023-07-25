@@ -40,4 +40,6 @@ public interface BizSupplierService extends IService<BizSupplier> {
 	public List<BizSupplier> getSupplierByCarBrandId(Long carBrandid);
 
 	public void shutDownSupplier(Long id);
+
+	public void addSupplierCount(Long id);
 }

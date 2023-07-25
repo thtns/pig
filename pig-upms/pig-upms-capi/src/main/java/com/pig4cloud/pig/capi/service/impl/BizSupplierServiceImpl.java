@@ -17,6 +17,7 @@
 package com.pig4cloud.pig.capi.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.pig4cloud.pig.capi.entity.BizCarBrandSupplier;
 import com.pig4cloud.pig.capi.entity.BizSupplier;
@@ -64,11 +65,31 @@ public class BizSupplierServiceImpl extends ServiceImpl<BizSupplierMapper, BizSu
 	}
 
 	public void shutDownSupplier(Long id){
+//		BizSupplier bizSupplier = this.getById(id);
+//		if (Objects.isNull(bizSupplier)){
+//			return;
+//		}
+//		bizSupplier.setStatus(0);
+//		this.updateById(bizSupplier);
+		// 构造UpdateWrapper
+		UpdateWrapper<BizSupplier> updateWrapper = new UpdateWrapper<>();
+		updateWrapper.eq("id", id) // 根据ID条件
+				.setSql("status = " + 0); // 设置累加的表达式
+		// 执行更新操作
+		this.update(null, updateWrapper);
+	}
+
+	/**
+	 * @param id
+	 */
+	@Override
+	public void addSupplierCount(Long id) {
 		BizSupplier bizSupplier = this.getById(id);
-		if (Objects.isNull(bizSupplier)){
-			return;
+		int newValue = bizSupplier.getDailyCount() + 1;
+		if (newValue >= bizSupplier.getDailyLimitCount()){
+			bizSupplier.setStatus(0);
 		}
-		bizSupplier.setStatus(0);
+		bizSupplier.setDailyCount(newValue);
 		this.updateById(bizSupplier);
 	}
 }

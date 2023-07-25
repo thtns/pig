@@ -29,6 +29,7 @@
     <result property="directorName" column="director_name"/>
     <result property="contactMobile" column="contact_mobile"/>
     <result property="dailyLimitCount" column="daily_limit_count"/>
+  	<result property="dailyCount" column="daily_count"/>
     <result property="weight" column="weight"/>
     <result property="status" column="status"/>
     <result property="logo" column="logo"/>

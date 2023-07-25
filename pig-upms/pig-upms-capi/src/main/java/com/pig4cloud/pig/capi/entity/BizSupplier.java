@@ -70,6 +70,12 @@ public class BizSupplier extends BaseEntity {
     private Integer dailyLimitCount;
 
 	/**
+	 * 每日单量
+	 */
+	@Schema(description ="每日单量")
+	private Integer dailyCount;
+
+	/**
 	 * 权重,排序倒序
 	 */
 	@Schema(description ="权重")
