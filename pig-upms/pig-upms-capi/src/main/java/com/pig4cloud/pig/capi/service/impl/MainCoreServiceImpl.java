@@ -6,6 +6,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.pig4cloud.pig.capi.entity.*;
 import com.pig4cloud.pig.capi.dto.request.RebotCallbackParames.RobotResponse;
+import com.pig4cloud.pig.capi.nacosConf.BaseConfig;
 import com.pig4cloud.pig.capi.service.*;
 import com.pig4cloud.pig.capi.service.apo.RebotInfo;
 import com.pig4cloud.pig.capi.service.apo.RedisKeyDefine;
@@ -74,6 +75,9 @@ public class MainCoreServiceImpl implements MainCoreService {
 
 	/*** 成功回调 **/
 	private final CallBackService callBackService;
+
+	private final BaseConfig baseConfig;
+
 
 	/**
 	 * @param bizBuyerOrder
@@ -175,7 +179,9 @@ public class MainCoreServiceImpl implements MainCoreService {
 			log.error("处理订单异常: {}", e.getMessage());
 			// 这里添加消息任务 通过消息队列来消费重试
 			bizBuyerOrderService.updateById(bizBuyerOrder);
-			producerUtil.sendMsg(String.valueOf(bizBuyerOrder.getId()));
+			// 发送延迟一分钟的消息队列
+			long delayTime = System.currentTimeMillis() + (60 * 1000);
+			producerUtil.sendTimeMsg(String.valueOf(bizBuyerOrder.getId()), delayTime);
 		}
 	}
 
@@ -374,6 +380,7 @@ public class MainCoreServiceImpl implements MainCoreService {
 			result = HttpRequest.post(bizRobotInfo.getRobotUrl())
 					.body(JSON.toJSONString(paramMap))
 					.contentType("application/json")
+					.timeout(baseConfig.getRequestTimeout() * 1000)
 					.execute().body();
 		} catch (Exception e) {
 			log.error("#### 【异步】{} 机器人请求异常, 异常信息:{}", bizBuyerOrder.getVin(), e.getMessage());

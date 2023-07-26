@@ -17,6 +17,7 @@ public class BaseConfig {
 	/*** 订单重试次数*/
 	private int orderTryTimes;
 
-
+	/*** 请求超时时间 s秒*/
+	private int requestTimeout;
 
 }
