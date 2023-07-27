@@ -39,7 +39,7 @@ public class AuthorizationFilter implements Filter {
 		HttpServletResponse response = (HttpServletResponse) servletResponse;
 		String requestURI = request.getRequestURI();
 		log.info("api getMethod ：{}", requestURI);
-		if (requestURI.contains("/maintenance")) {
+		if (requestURI.contains("/access")) {
 			String key = request.getHeader("app_key");
 			String secret = request.getHeader("secret_key");
 			log.info(" AccessKeyId {}, AccessKeySecret {}", key, secret);

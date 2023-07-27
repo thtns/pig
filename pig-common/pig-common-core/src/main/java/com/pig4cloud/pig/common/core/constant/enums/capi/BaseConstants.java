@@ -21,6 +21,11 @@ public interface BaseConstants {
 	 */
 	String CHA_BO_SHI = "chaboshi";
 
+	/**
+	 * access  默认接入类型
+	 */
+	String ACCESS = "access";
+
 	/*** 订单是否有记录*/
 	String ANY_DATA_TRUE = "true";
 

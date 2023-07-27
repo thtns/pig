@@ -142,12 +142,13 @@ public class CallBackServiceImpl implements CallBackService {
 						times.addAndGet(1);
 						log.info("rejectCallbackMerchant :  order_id: {}", bizBuyerOrder.getId());
 						Integer status = rejectMerchantCallBack(bizBuyerOrder);
-						if (status.equals(200)) {// 成功回调, 则更新订单状态
-							updateOrderStatus(bizBuyerOrder, RequestStatusEnum.CALLBACK_REJECT, null);
-						} else {// 三次失败状态
-							String failureReason = JSON.toJSONString(R.resultEnumType(null, RequestStatusEnum.API_CALLBACK_FAILURE.getType()));
-							updateOrderStatus(bizBuyerOrder, RequestStatusEnum.CALLBACK_FAILURE, failureReason);
-						}
+//						if (status.equals(200)) {// 成功回调, 则更新订单状态
+//							updateOrderStatus(bizBuyerOrder, RequestStatusEnum.CALLBACK_REJECT, null);
+//						} else {// 三次失败状态
+//							String failureReason = JSON.toJSONString(R.resultEnumType(null, RequestStatusEnum.API_CALLBACK_FAILURE.getType()));
+//							updateOrderStatus(bizBuyerOrder, RequestStatusEnum.CALLBACK_FAILURE, failureReason);
+//						}
+						updateOrderStatus(bizBuyerOrder, RequestStatusEnum.CALLBACK_REJECT, null);
 						log.info("rejectCallbackMerchant vin {{}} robotRequestCallBack 更新订单状态： {}", bizBuyerOrder.getVin(), RequestStatusEnum.getStatusEnumByCode(bizBuyerOrder.getRequestStatus()));
 //							return null;
 //						}, 3, 3000L, false);
@@ -177,12 +178,13 @@ public class CallBackServiceImpl implements CallBackService {
 						times.addAndGet(1);
 						log.info("noDataCallbackMerchant :  order_id: {}", bizBuyerOrder.getId());
 						Integer status = noDataMerchantCallBack(bizBuyerOrder);
-						if (status.equals(200)) {// 成功回调, 则更新订单状态
-							updateOrderStatus(bizBuyerOrder, RequestStatusEnum.CALLBACK_SUCCESS, null);
-						} else {// 三次失败状态
-							String failureReason = JSON.toJSONString(R.resultEnumType(null, RequestStatusEnum.API_CALLBACK_FAILURE.getType()));
-							updateOrderStatus(bizBuyerOrder, RequestStatusEnum.CALLBACK_FAILURE, failureReason);
-						}
+//						if (status.equals(200)) {// 成功回调, 则更新订单状态
+//							updateOrderStatus(bizBuyerOrder, RequestStatusEnum.CALLBACK_SUCCESS, null);
+//						} else {// 三次失败状态
+//							String failureReason = JSON.toJSONString(R.resultEnumType(null, RequestStatusEnum.API_CALLBACK_FAILURE.getType()));
+//							updateOrderStatus(bizBuyerOrder, RequestStatusEnum.CALLBACK_FAILURE, failureReason);
+//						}
+						updateOrderStatus(bizBuyerOrder, RequestStatusEnum.CALLBACK_SUCCESS, null);
 						log.info("noDataCallbackMerchant vin {{}} robotRequestCallBack 更新订单状态： {}", bizBuyerOrder.getVin(), RequestStatusEnum.getStatusEnumByCode(bizBuyerOrder.getRequestStatus()));
 //							return null;
 //						}, 3, 3000L, false);
