@@ -164,9 +164,10 @@ public class CallBackController {
 				log.info("机器人查询以达到上线,下架供应商ID：{}, 供应商名称： {}" ,supplierId, supplierName);
 				bizSupplierService.shutDownSupplier(supplierId);
 				sendTimeOrderOnMinute(orderId);
-			}else {
-				reDo(bizBuyerOrder);
 			}
+//			else {
+//				reDo(bizBuyerOrder);
+//			}
 		}
 	}
 
