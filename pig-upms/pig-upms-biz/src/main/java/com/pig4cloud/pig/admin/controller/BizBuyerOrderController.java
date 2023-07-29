@@ -175,6 +175,8 @@ public class BizBuyerOrderController {
 			// 重试次数设为0
 			bizBuyerOrder.setRetryCount(0);
 			// 更新订单
+			bizBuyerOrder.setSupplierId(null);
+			bizBuyerOrder.setSupplierName(null);
 			bizBuyerOrderService.updateById(bizBuyerOrder);
 		}
 		producerUtil.sendEasyMsg(String.valueOf(id), mqConfig.getTopic(), mqConfig.getTag());
