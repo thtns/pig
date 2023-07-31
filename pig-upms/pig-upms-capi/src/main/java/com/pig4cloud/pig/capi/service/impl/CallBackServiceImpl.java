@@ -83,7 +83,7 @@ public class CallBackServiceImpl implements CallBackService {
 		}
 		//保存机器人请求成功结果
 		bizRobotQueryRecordService.save(bizRobotQueryRecord);
-		log.info("callback success ：vin 【{}】 robotRequestCallBack 保存机器人查询记录： {}", bizBuyerOrder.getVin(), JSON.toJSONString(JSON.toJSONString(robotResponse)));
+		log.info("callback success ：vin 【{}】 robotRequestCallBack 保存机器人查询记录.", bizBuyerOrder.getVin());
 	}
 
 	/***
@@ -102,7 +102,7 @@ public class CallBackServiceImpl implements CallBackService {
 //						RetryUtil.executeWithRetry(() -> {
 						log.info("successCallbackMerchant : RetryUtil开始回调 第{}次", times);
 						times.addAndGet(1);
-						log.info("successCallbackMerchant :  order_id: {}，回调采购商维修数据 : {}", bizBuyerOrder.getId(), JSON.toJSONString(robotResponse));
+						log.info("successCallbackMerchant :  order_id: {}", bizBuyerOrder.getId());
 
 						Integer status = anyDataMerchantCallBack(bizBuyerOrder, robotResponse);// 有数据回调
 //						if (status.equals(200)) {// 成功回调, 则更新订单状态
@@ -266,7 +266,7 @@ public class CallBackServiceImpl implements CallBackService {
 	 * @throws Exception
 	 */
 	public Integer sendChaBoss(String orderNo, int status, Object object) throws Exception {
-		log.info("#### sendChaBoss 开始执行... orderNo： 【{}】, status： 【{}】 object： 【{}】 ", orderNo, status, JSON.toJSONString(object));
+		log.info("#### sendChaBoss 开始执行... orderNo： 【{}】, status： 【{}】", orderNo, status);
 		CBSBuilder cbsBuilder = CBSBuilder.newCBSBuilder(chaBoosConfig.getUserId(), chaBoosConfig.getKeySecret(), chaBoosConfig.isOnLine());
 		HashMap<String, Object> params = new HashMap<String, Object>();
 		params.put("orderno", orderNo);
@@ -313,7 +313,7 @@ public class CallBackServiceImpl implements CallBackService {
 		resultMap.put("code", CommonConstants.SUCCESS);
 		resultMap.put("data", paramMap);
 
-		log.info("#### merchantCallBack（成功回调商家）：给商家最终结果：{}", JSON.toJSONString(resultMap));
+		log.info("#### merchantCallBack（成功回调商家）：订单id 【{}】", bizBuyerOrder.getId());
 		HttpResponse result = HttpRequest.post(bizBuyerOrder.getCallbackUrl()).body(JSON.toJSONString(resultMap)).contentType("application/json").execute();
 		Integer status = result.getStatus();
 		String content = result.body();
