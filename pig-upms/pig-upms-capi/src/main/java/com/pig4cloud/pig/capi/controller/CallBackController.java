@@ -126,9 +126,10 @@ public class CallBackController {
 	@PostMapping("/success")
 	public void success(HttpServletRequest request, @RequestBody RobotCallbackRequest rebotCallbackRequest) {
 		String ipAddr = RequestUtils.getIpAddress(request);
-		log.info("callback success ：机器人成功回调开始，参数：" + JSON.toJSONString(rebotCallbackRequest));
+		Long order_id = rebotCallbackRequest.getOrderId();
+		log.info("callback success ：机器人成功回调开始，订单id ：{}" , order_id);
 		log.info("callback success ：机器人回调ip: {}", ipAddr);
-		BizBuyerOrder bizBuyerOrder = bizBuyerOrderService.getById(rebotCallbackRequest.getOrderId());
+		BizBuyerOrder bizBuyerOrder = bizBuyerOrderService.getById(order_id);
 		callBackQuanManager.callBackQueueManage(bizBuyerOrder);// 移除机器人key
 		// 成功记录保存,并回调请求商户,并清楚redis的机器人队列
 		callBackService.success(rebotCallbackRequest);
