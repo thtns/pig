@@ -86,6 +86,12 @@ public class BizBuyerOrder extends BaseEntity {
     @Schema(description ="品牌名称")
     private String carBrandName;
 
+	/**
+	 * 厂商名称
+	 */
+	@Schema(description ="厂商名称")
+	private String manufacturer;
+
     /**
      * 机器人ID
      */

@@ -87,10 +87,15 @@ public class MainCoreServiceImpl implements MainCoreService {
 	public BizBuyerOrder placeOrder(BizBuyerOrder bizBuyerOrder) {
 		String vin = bizBuyerOrder.getVin();
 		String brandName = bizBuyerOrder.getCarBrandName();
+		String manufacturer = bizBuyerOrder.getManufacturer();
+		BizCarBrand carBrand = null;
+		log.info("下单的品牌名称: 【{}】. 厂商名称:【{}】", brandName, manufacturer);
+		if ("大众".equals(brandName)){
+			carBrand = bizCarBrandService.getCarBrandByBrand(manufacturer); //匹配厂商名称
+		}else {
+			carBrand = bizCarBrandService.getCarBrandByBrand(brandName);
+		}
 
-		log.info("下单的品牌名称: 【{}】.", brandName);
-
-		BizCarBrand carBrand = bizCarBrandService.getCarBrandByBrand(brandName);
 		if (carBrand == null) {
 			BizVinParsing bizVinParsing = bizVinParsingService.getBizVinParsing(bizBuyerOrder.getVin());//解析结果
 			if (Optional.ofNullable(bizVinParsing).isPresent()) {

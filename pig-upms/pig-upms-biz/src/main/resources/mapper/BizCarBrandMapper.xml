@@ -26,6 +26,7 @@
   <resultMap id="bizCarBrandMap" type="com.pig4cloud.pig.admin.api.entity.BizCarBrand">
     <id property="id" column="id"/>
     <result property="brand" column="brand"/>
+    <result property="manufacturer" column="manufacturer"/>
     <result property="letter" column="letter"/>
     <result property="logoUrl" column="logo_url"/>
     <result property="wmi" column="wmi"/>

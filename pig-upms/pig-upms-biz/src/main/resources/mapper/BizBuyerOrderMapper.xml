@@ -32,6 +32,7 @@
     <result property="supplierName" column="supplier_name"/>
     <result property="carBrandId" column="car_brand_id"/>
     <result property="carBrandName" column="car_brand_name"/>
+    <result property="manufacturer" column="manufacturer"/>
     <result property="robotId" column="robot_id"/>
     <result property="requestIpAddress" column="request_ip_address"/>
     <result property="requestTime" column="request_time"/>

@@ -51,6 +51,12 @@ public class BizCarBrand extends BaseEntity {
     @Schema(description ="车辆品牌")
     private String brand;
 
+	/**
+	 * 厂商名称
+	 */
+	@Schema(description ="厂商名称")
+	private String manufacturer;
+
     /**
      * 车辆品牌首字母
      */

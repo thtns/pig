@@ -73,7 +73,9 @@ public class BizBuyerOrderController {
 		if (bizBuyerOrder.getCarBrandName() != null) {
 			queryWrapper.like("car_brand_name", bizBuyerOrder.getCarBrandName());
 		}
-
+		if (bizBuyerOrder.getManufacturer() != null) {
+			queryWrapper.like("manufacturer", bizBuyerOrder.getManufacturer());
+		}
 		if (bizBuyerOrder.getSupplierName() != null) {
 			queryWrapper.like("supplier_name", bizBuyerOrder.getSupplierName());
 		}
