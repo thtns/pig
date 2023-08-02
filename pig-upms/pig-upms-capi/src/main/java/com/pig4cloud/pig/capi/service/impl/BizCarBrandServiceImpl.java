@@ -103,6 +103,12 @@ public class BizCarBrandServiceImpl extends ServiceImpl<BizCarBrandMapper, BizCa
 		return this.getOne(queryWrapper);
 	}
 
+	public BizCarBrand getCarBrandByManufacturer(String manufacturer) {
+		LambdaQueryWrapper<BizCarBrand> queryWrapper = new LambdaQueryWrapper<>();
+		queryWrapper.eq(BizCarBrand::getManufacturer, manufacturer);
+		return this.getOne(queryWrapper);
+	}
+
 	/**
 	 * @param bizCarBrand
 	 * @param bizBuyerOrder

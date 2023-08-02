@@ -93,13 +93,20 @@ public class MainCoreServiceImpl implements MainCoreService {
 		String getName = brandName;
 		if ("大众".equals(getName)) {
 			getName = manufacturer;
+			carBrand = bizCarBrandService.getCarBrandByManufacturer(getName);
+		}else{
+			carBrand = bizCarBrandService.getCarBrandByBrand(getName);
 		}
-		carBrand = bizCarBrandService.getCarBrandByBrand(getName);
 
 		if (carBrand == null) {
 			BizVinParsing bizVinParsing = bizVinParsingService.getBizVinParsing(bizBuyerOrder.getVin());//解析结果
 			if (Optional.ofNullable(bizVinParsing).isPresent()) {
-				carBrand = bizCarBrandService.getCarBrandByBrand(brandName);//根据品牌名查询BizCarBrand对象
+				if ("大众".equals(getName)) {
+					getName = manufacturer;
+					carBrand = bizCarBrandService.getCarBrandByManufacturer(getName);
+				}else{
+					carBrand = bizCarBrandService.getCarBrandByBrand(brandName);//根据品牌名查询BizCarBrand对象
+				}
 			} else {
 				BizVinParsing vinParsing = easyepcDataManager.getSaleVinInfo(bizBuyerOrder.getVin());
 				if (vinParsing == null) {
@@ -109,8 +116,10 @@ public class MainCoreServiceImpl implements MainCoreService {
 				getName = vinParsing.getBrand();
 				if ("大众".equals(getName)){
 					getName = vinParsing.getSubBrand();
+					carBrand = bizCarBrandService.getCarBrandByManufacturer(getName);
+				}else{
+					carBrand = bizCarBrandService.getCarBrandByBrand(getName);//根据品牌名查询BizCarBrand对象
 				}
-				carBrand = bizCarBrandService.getCarBrandByBrand(getName);//根据品牌名查询BizCarBrand对象
 			}
 			if (Objects.isNull(carBrand)) {
 				log.error("不存在Vin：【{}】 本地品牌信息, 不支持该品牌,退出下单. ", vin);

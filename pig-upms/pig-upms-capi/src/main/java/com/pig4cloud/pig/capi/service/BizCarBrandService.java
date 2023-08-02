@@ -44,6 +44,14 @@ public interface BizCarBrandService extends IService<BizCarBrand> {
 	BizCarBrand getCarBrandByBrand(String vinCode);
 
 	/**
+	 *
+	 * 根据厂商名称获取品牌对象
+	 * @param manufacturer
+	 * @return
+	 */
+	BizCarBrand getCarBrandByManufacturer(String manufacturer);
+
+	/**
 	 * 获取有效机器人（主业务使用）
 	 * @param bizCarBrand
 	 * @param bizBuyerOrder
