@@ -119,7 +119,7 @@ public class EasyepcDataManager {
 		return result;
 	}
 
-	public String getSaleVinInfo(String vin) {
+	public BizVinParsing getSaleVinInfo(String vin) {
 		//请求头信息
 		Map<String, String> head = new HashMap<String, String>();
 		head.put("uacId", USERNAME);
@@ -228,7 +228,7 @@ public class EasyepcDataManager {
 					bizVinParsing.setCreateBy("api管理员");
 					bizVinParsing.setCreateBy("api管理员");
 					bizVinParsingService.save(bizVinParsing);
-					return amMainBrandName;
+					return bizVinParsing;
 				}
 			}
 		}

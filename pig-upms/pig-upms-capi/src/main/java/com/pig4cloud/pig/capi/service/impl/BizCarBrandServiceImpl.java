@@ -69,13 +69,13 @@ public class BizCarBrandServiceImpl extends ServiceImpl<BizCarBrandMapper, BizCa
 			carBrandByWmi = getCarBrandByBrand(bizVinParsing.getSubBrand());//根据品牌名查询BizCarBrand对象
 		} else {
 			log.info("~~~~ Step3.1.1: 不存在本地 Vin：{} 三方解析，开始查询... ", vin);
-			String brand = easyepcDataManager.getSaleVinInfo(bizBuyerOrder.getVin());
-			if (brand == null) {
+			BizVinParsing vinParsing = easyepcDataManager.getSaleVinInfo(bizBuyerOrder.getVin());
+			if (vinParsing == null) {
 				log.info("~~~~ Step3.1.2: 不存在三方解析 Vin：{} 品牌. 不支持该品牌. 退出下单. ", vin);
 				handleOrderFailure(bizBuyerOrder, RequestStatusEnum.API_VIN_UNIDENTIFIABLE, RequestStatusEnum.API_VIN_UNIDENTIFIABLE);
 			}
 			log.info("~~~~ Step3.1.2: 开始查询 Vin：{} 本地对应品牌信息.... ", vin);
-			carBrandByWmi = getCarBrandByBrand(brand);
+			carBrandByWmi = getCarBrandByBrand(vinParsing.getBrand());
 		}
 		if (Objects.isNull(carBrandByWmi)) {
 			log.info("~~~~ Step3.1.3: 不存在三方解析 Vin：{} 品牌. 不支持该品牌. 退出下单. ", vin);
