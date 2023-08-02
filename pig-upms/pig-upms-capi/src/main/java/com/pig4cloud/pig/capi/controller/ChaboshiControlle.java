@@ -44,6 +44,7 @@ public class ChaboshiControlle {
 					.buyerName("查博士")                       //用户名称
 //					.requestIpAddress(RequestUtils.getIpAddress(request))                    //请求ip
 					.carBrandName(req.getBrand())             //请求品牌
+					.manufacturer(req.getManufacturer())      //请求厂商
 					.vin(req.getVin())                        //请求vin码
 					.requestParams(JSON.toJSONString(req))    //请求参数
 //					.requestHeader(JSON.toJSONString(RequestUtils.getHeadersInfo(request)))    //请求头
