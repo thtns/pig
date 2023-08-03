@@ -70,6 +70,12 @@ public class BizBuyerOrderController {
     public R getBizBuyerOrderPage(Page page, BizBuyerOrder bizBuyerOrder) {
 		QueryWrapper<BizBuyerOrder> queryWrapper = new QueryWrapper<>();
 		// 构建查询条件
+		if (bizBuyerOrder.getBuyerId() != null) {// 采购人id
+			queryWrapper.eq("buyer_id", bizBuyerOrder.getBuyerId());
+		}
+		if (bizBuyerOrder.getCarBrandId() != null) {// 品牌id
+			queryWrapper.eq("car_brand_id", bizBuyerOrder.getCarBrandId());
+		}
 		if (bizBuyerOrder.getCarBrandName() != null) {
 			queryWrapper.like("car_brand_name", bizBuyerOrder.getCarBrandName());
 		}
@@ -79,22 +85,18 @@ public class BizBuyerOrderController {
 		if (bizBuyerOrder.getSupplierName() != null) {
 			queryWrapper.like("supplier_name", bizBuyerOrder.getSupplierName());
 		}
-
 		if (bizBuyerOrder.getVin() != null) {
 			queryWrapper.like("vin", bizBuyerOrder.getVin());
 		}
-
-		if (bizBuyerOrder.getRequestStatus() != null) {
-			queryWrapper.eq("request_status", bizBuyerOrder.getRequestStatus());
-		}
-
-		if (bizBuyerOrder.getAnyData() != null) {
-			queryWrapper.eq("any_data", bizBuyerOrder.getAnyData());
-		}
-
 		// 时间段查询
 		if (bizBuyerOrder.getRequestTime() != null && bizBuyerOrder.getCallbackTime() != null) {
 			queryWrapper.between("request_time", bizBuyerOrder.getRequestTime(), bizBuyerOrder.getCallbackTime());
+		}
+		if (bizBuyerOrder.getRequestStatus() != null) {
+			queryWrapper.eq("request_status", bizBuyerOrder.getRequestStatus());
+		}
+		if (bizBuyerOrder.getAnyData() != null) {
+			queryWrapper.eq("any_data", bizBuyerOrder.getAnyData());
 		}
 
 		queryWrapper.orderByDesc("request_time");
