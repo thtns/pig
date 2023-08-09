@@ -254,7 +254,7 @@ public class MainCoreServiceImpl implements MainCoreService {
 				.collect(Collectors.toList());
 
 		// 处理重试的逻辑【如果此请求是重试，要排除上一次请求的supplier】(注意：第一次请求retryCount = 1，每次重试+1)
-		if (bizBuyerOrder.getRetryCount() > 1) {
+		if (bizBuyerOrder.getRetryCount() > 1 && supplierList.size() > 1) { // 当只有一个的则不移除了
 			log.info("重试, 移除上次请求供应商... ");
 			supplierList.removeIf(supplierDO -> supplierDO.getId().equals(bizBuyerOrder.getSupplierId()));
 		}
