@@ -403,12 +403,10 @@ public class MainCoreServiceImpl implements MainCoreService {
 		} catch (Exception e) {
 			log.error("#### 【异步】{} 机器人请求异常, 异常信息:{}", bizBuyerOrder.getVin(), e.getMessage());
 			log.error("#### 【异步】{} 请求机器人结束", bizBuyerOrder.getVin());
-			addSupplierReqCount(bizBuyerOrder);
 			return Boolean.FALSE;
 		}
 		log.info("#### 【异步】{} 机器人查询数据：{}", bizBuyerOrder.getVin(), result);
 		log.info("#### 【异步】{} 请求机器人结束", bizBuyerOrder.getVin());
-		addSupplierReqCount(bizBuyerOrder);
 		JSONObject jsonObject = JSON.parseObject(result);
 		return Boolean.TRUE.equals(jsonObject.get("success"));
 	}

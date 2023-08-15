@@ -10,6 +10,7 @@ import com.pig4cloud.pig.capi.entity.BizBuyerOrder;
 import com.pig4cloud.pig.capi.entity.BizRobotQueryRecord;
 import com.pig4cloud.pig.capi.service.BizBuyerOrderService;
 import com.pig4cloud.pig.capi.service.BizRobotQueryRecordService;
+import com.pig4cloud.pig.capi.service.BizSupplierService;
 import com.pig4cloud.pig.capi.service.CallBackService;
 import com.pig4cloud.pig.capi.service.atripartite.chaboshi.CBSBuilder;
 import com.pig4cloud.pig.capi.service.atripartite.chaboshi.ChaBoosConfig;
@@ -41,12 +42,25 @@ public class CallBackServiceImpl implements CallBackService {
 
 	private final BizRobotQueryRecordService bizRobotQueryRecordService;
 
+	/*** 供应商 **/
+	private final BizSupplierService bizSupplierService;
+
+
+	/**
+	 * 累加供应商请求次数
+	 * @param bizBuyerOrder
+	 */
+	private void addSupplierReqCount(BizBuyerOrder bizBuyerOrder){
+		Long id = bizBuyerOrder.getSupplierId();
+		bizSupplierService.addSupplierCount(id);
+	}
 
 	public void success(RobotCallbackRequest rebotCallbackRequest) {
 		BizBuyerOrder bizBuyerOrder = bizBuyerOrderService.getById(rebotCallbackRequest.getOrderId());
 		RobotResponse robotResponse = rebotCallbackRequest.getRobotResponse();// 机器人数据
 		saveRecord(bizBuyerOrder, robotResponse); // 保存查询记录
 		successCallbackMerchant(bizBuyerOrder, robotResponse); // 异步回调商户 - 成功结果
+		addSupplierReqCount(bizBuyerOrder); //计算成功单量
 	}
 
 	public void reject(BizBuyerOrder bizBuyerOrder) {
@@ -56,6 +70,7 @@ public class CallBackServiceImpl implements CallBackService {
 	public void noData(BizBuyerOrder bizBuyerOrder) {
 		saveRecord(bizBuyerOrder, null); // 保存查询记录
 		noDataCallbackMerchant(bizBuyerOrder); // 异步回调商户 - 无记录
+		addSupplierReqCount(bizBuyerOrder); //计算成功单量
 	}
 
 
