@@ -91,7 +91,7 @@ public class MainCoreServiceImpl implements MainCoreService {
 		BizCarBrand carBrand = null;
 		log.info("下单的品牌名称: 【{}】. 厂商名称:【{}】", brandName, manufacturer);
 		String getName = brandName;
-		if ("大众".equals(getName)) {
+		if ("大众".equals(getName) || "丰田".equals(brandName)) {
 			getName = manufacturer;
 			carBrand = bizCarBrandService.getCarBrandByManufacturer(getName);
 		}else{
@@ -100,9 +100,10 @@ public class MainCoreServiceImpl implements MainCoreService {
 
 		if (carBrand == null) {
 			BizVinParsing bizVinParsing = bizVinParsingService.getBizVinParsing(bizBuyerOrder.getVin());//解析结果
+			getName = bizVinParsing.getBrand();
 			if (Optional.ofNullable(bizVinParsing).isPresent()) {
-				if ("大众".equals(getName)) {
-					getName = manufacturer;
+				if ("大众".equals(getName) || "丰田".equals(brandName)) {
+					getName = bizVinParsing.getSubBrand();
 					carBrand = bizCarBrandService.getCarBrandByManufacturer(getName);
 				}else{
 					carBrand = bizCarBrandService.getCarBrandByBrand(brandName);//根据品牌名查询BizCarBrand对象
@@ -114,7 +115,7 @@ public class MainCoreServiceImpl implements MainCoreService {
 					return bizBuyerOrder;
 				}
 				getName = vinParsing.getBrand();
-				if ("大众".equals(getName)){
+				if ("大众".equals(getName) || "丰田".equals(brandName)){
 					getName = vinParsing.getSubBrand();
 					carBrand = bizCarBrandService.getCarBrandByManufacturer(getName);
 				}else{
@@ -178,7 +179,13 @@ public class MainCoreServiceImpl implements MainCoreService {
 		return bizBuyerOrder;
 	}
 
-
+	public BizCarBrand getCarBrand(String brandName, String manufacturer){
+		if ("大众".equals(brandName) || "丰田".equals(brandName)) {
+			return bizCarBrandService.getCarBrandByManufacturer(manufacturer);
+		}else{
+			return bizCarBrandService.getCarBrandByBrand(brandName);
+		}
+	}
 	/***
 	 * 处理订单请求
 	 * @param bizBuyerOrder 买家订单对象
