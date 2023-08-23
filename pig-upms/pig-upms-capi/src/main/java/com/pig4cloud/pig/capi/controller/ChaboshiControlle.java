@@ -46,11 +46,49 @@ public class ChaboshiControlle {
 					.carBrandName(req.getBrand())             //请求品牌
 					.manufacturer(req.getManufacturer())      //请求厂商
 					.vin(req.getVin())                        //请求vin码
+					.engineCode(req.getEngineNo())		  //发动机号
 					.requestParams(JSON.toJSONString(req))    //请求参数
 //					.requestHeader(JSON.toJSONString(RequestUtils.getHeadersInfo(request)))    //请求头
 					.requestTime(LocalDateTime.now())         //请求时间
 					.requestStatus(RequestStatusEnum.ORDER_PLACING.getType())                //订单状态
 					.orderType(BaseConstants.CHA_BO_SHI)	  //订单类型 查博士
+					.retryCount(0)                            //重试次数
+					.build();
+
+			mainCoreService.placeOrder(bizBuyerOrder);
+
+			if (RequestStatusEnum.ORDER_SUCCESS.getType().equals(bizBuyerOrder.getRequestStatus())) {
+				return ResultVo.success(res);
+			} else {
+				return ResultVo.failed(res,"暂不支持");
+			}
+		} catch (Exception e) {
+			log.error("查博士订单推送异常处理", e);
+			return ResultVo.failed(res,"暂不支持");
+		}
+	}
+
+	@PostMapping(value = "/push_order2")
+	public ResultVo pushOrder2(HttpServletRequest request, @RequestBody PushOrderReq req) {
+		log.info("chiBoss push_order2, 参数为: {}", JSON.toJSONString(req));
+		PushOrderRes res = new PushOrderRes();
+		res.setOrderno(req.getOrderno());
+		res.setVin(req.getVin());
+		try {
+			BizBuyerOrder bizBuyerOrder = BizBuyerOrder.builder()
+					.orderNo(req.getOrderno())                // 查博士订单号
+					.buyerId(1001L)                           //用户id 查博士默认id
+					.buyerName("查博士")                       //用户名称
+//					.requestIpAddress(RequestUtils.getIpAddress(request))                    //请求ip
+					.carBrandName(req.getBrand())             //请求品牌
+					.manufacturer(req.getManufacturer())      //请求厂商
+					.vin(req.getVin())                        //请求vin码
+					.engineCode(req.getEngineNo())		  	  //发动机号
+					.requestParams(JSON.toJSONString(req))    //请求参数
+//					.requestHeader(JSON.toJSONString(RequestUtils.getHeadersInfo(request)))    //请求头
+					.requestTime(LocalDateTime.now())         //请求时间
+					.requestStatus(RequestStatusEnum.ORDER_PLACING.getType())                //订单状态
+					.orderType(BaseConstants.CHA_BO_SHI2)	  //订单类型 查博士
 					.retryCount(0)                            //重试次数
 					.build();
 

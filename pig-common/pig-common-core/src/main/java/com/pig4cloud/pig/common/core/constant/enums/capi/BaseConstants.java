@@ -20,6 +20,7 @@ public interface BaseConstants {
 	 * order_type 查博士
 	 */
 	String CHA_BO_SHI = "chaboshi";
+	String CHA_BO_SHI2 = "chaboshi2";
 
 	/**
 	 * access  默认接入类型

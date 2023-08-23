@@ -28,5 +28,8 @@ public class PushOrderReq {
 	@NotNull(message = "pushtime不能为空")
 	private String pushtime;
 
+	// 发动机号
+	private String engineNo;
+
 
 }

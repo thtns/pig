@@ -233,8 +233,8 @@ public class CallBackServiceImpl implements CallBackService {
 		log.info("#### 上传记录 anyDataMerchantCallBack 开始执行...");
 		// 这里只有成功有记录的
 		int status = RequestStatusEnum.ORDER_REPORT_STATUS_ZONE.getType();
-		if (bizBuyerOrder.getOrderType().equals(BaseConstants.CHA_BO_SHI)) {// 查博士
-			return sendChaBoss(bizBuyerOrder.getOrderNo(), status, robotResponse);
+		if (bizBuyerOrder.getOrderType() != null) {// 查博士
+			return sendChaBoss(bizBuyerOrder.getOrderType(), bizBuyerOrder.getOrderNo(), status, robotResponse);
 		} else {
 			return sendMerchant(bizBuyerOrder, status, robotResponse);
 		}
@@ -248,8 +248,8 @@ public class CallBackServiceImpl implements CallBackService {
 		log.info("#### 驳回 rejectMerchantCallBack 开始执行...");
 		// 这里只有驳回的
 		int status = RequestStatusEnum.ORDER_REPORT_STATUS_ONE.getType();
-		if (bizBuyerOrder.getOrderType().equals(BaseConstants.CHA_BO_SHI)) {// 查博士
-			return sendChaBoss(bizBuyerOrder.getOrderNo(), status, null);
+		if (bizBuyerOrder.getOrderType() != null) {// 查博士
+			return sendChaBoss(bizBuyerOrder.getOrderType(), bizBuyerOrder.getOrderNo(), status, null);
 		} else {
 			return sendMerchant(bizBuyerOrder, status, null);
 		}
@@ -263,8 +263,8 @@ public class CallBackServiceImpl implements CallBackService {
 		log.info("#### 无记录 noDataMerchantCallBack 开始执行...");
 		// 这里只有无记录的
 		int status = RequestStatusEnum.ORDER_REPORT_STATUS_TWO.getType();
-		if (bizBuyerOrder.getOrderType().equals(BaseConstants.CHA_BO_SHI)) {// 查博士
-			return sendChaBoss(bizBuyerOrder.getOrderNo(), status, null);
+		if (bizBuyerOrder.getOrderType() != null) {// 查博士
+			return sendChaBoss(bizBuyerOrder.getOrderType(), bizBuyerOrder.getOrderNo(), status, null);
 		} else {
 			return sendMerchant(bizBuyerOrder, status, null);
 		}
@@ -280,9 +280,18 @@ public class CallBackServiceImpl implements CallBackService {
 	 * @return
 	 * @throws Exception
 	 */
-	public Integer sendChaBoss(String orderNo, int status, Object object) throws Exception {
+	public Integer sendChaBoss(String type, String orderNo, int status, Object object) throws Exception {
 		log.info("#### sendChaBoss 开始执行... orderNo： 【{}】, status： 【{}】", orderNo, status);
-		CBSBuilder cbsBuilder = CBSBuilder.newCBSBuilder(chaBoosConfig.getUserId(), chaBoosConfig.getKeySecret(), chaBoosConfig.isOnLine());
+		String userId;
+		String secret;
+		if (type.equals(BaseConstants.CHA_BO_SHI)) {
+			userId = chaBoosConfig.getUserId();
+			secret = chaBoosConfig.getKeySecret();
+		} else {
+			userId = chaBoosConfig.getUserId2();
+			secret = chaBoosConfig.getKeySecret2();
+		}
+		CBSBuilder cbsBuilder = CBSBuilder.newCBSBuilder(userId, secret, chaBoosConfig.isOnLine());
 		HashMap<String, Object> params = new HashMap<String, Object>();
 		params.put("orderno", orderNo);
 		if (object != null) {

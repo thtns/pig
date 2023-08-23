@@ -18,4 +18,8 @@ public class ChaBoosConfig {
 	private String keySecret;
 
 	private boolean onLine;
+
+	private String userId2;
+
+	private String keySecret2;
 }
