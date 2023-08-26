@@ -17,9 +17,11 @@
 
 package com.pig4cloud.pig.admin.controller;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.pig4cloud.pig.admin.api.entity.BizRobot;
+import com.pig4cloud.pig.admin.api.entity.BizSupplier;
 import com.pig4cloud.pig.admin.api.request.AddRobotRequest;
 import com.pig4cloud.pig.admin.service.BizRobotService;
 import com.pig4cloud.pig.common.core.util.R;
@@ -59,7 +61,16 @@ public class BizRobotController {
     @GetMapping("/page" )
     @PreAuthorize("@pms.hasPermission('admin_bizrobot_get')" )
     public R getBizRobotPage(Page page, BizRobot bizRobot) {
-        return R.ok(bizRobotService.page(page, Wrappers.query(bizRobot)));
+		QueryWrapper<BizRobot> queryWrapper = new QueryWrapper<>();
+		// 构建查询条件
+		if (bizRobot.getRobotProxiesName() != null) {
+			queryWrapper.like("robot_proxies_name", bizRobot.getRobotProxiesName() );
+		}
+		if (bizRobot.getStatus() != null) {
+			queryWrapper.eq("status", bizRobot.getStatus());
+		}
+
+        return R.ok(bizRobotService.page(page, queryWrapper));
     }
 
 

@@ -16,6 +16,7 @@
  */
 package com.pig4cloud.pig.admin.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 
 
@@ -43,5 +44,16 @@ public class BizSupplierServiceImpl extends ServiceImpl<BizSupplierMapper, BizSu
 		BizSupplier bizSupplier = new BizSupplier();
 		BeanUtils.copyProperties(request, bizSupplier);
 		save(bizSupplier);
+	}
+
+	/**
+	 *
+	 */
+	@Override
+	public void closeAll(String type) {
+		UpdateWrapper<BizSupplier> updateWrapper = new UpdateWrapper<>();
+		updateWrapper.setSql("status = " + type); // 设置累加的表达式
+		// 执行更新操作
+		this.update(updateWrapper);
 	}
 }

@@ -32,6 +32,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Arrays;
+
 
 /**
  * 供应商表
@@ -67,7 +69,7 @@ public class BizSupplierController {
 		if (bizSupplier.getStatus() != null) {
 			queryWrapper.eq("status", bizSupplier.getStatus());
 		}
-		queryWrapper.orderByAsc("weight");
+		queryWrapper.orderByAsc(Arrays.asList("supplier_name", "weight"));
 		return R.ok(bizSupplierService.page(page, queryWrapper));
 	}
 
@@ -134,5 +136,13 @@ public class BizSupplierController {
 	@PreAuthorize("@pms.hasPermission('admin_bizsupplier_get')" )
 	public R getBizSupplierAll() {
 		return R.ok(bizSupplierService.list());
+	}
+
+	@Operation(summary = "一键关闭", description = "一键关闭")
+	@RequestMapping("/closeAll/{type}" )
+	@PreAuthorize("@pms.hasPermission('admin_bizsupplier_edit')" )
+	public R closeAll(@PathVariable String type) {
+		bizSupplierService.closeAll(type);
+		return R.ok();
 	}
 }

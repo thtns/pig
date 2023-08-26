@@ -33,4 +33,6 @@ public interface BizSupplierService extends IService<BizSupplier> {
 
 	void add(AddSupplierRequest request);
 
+	void closeAll(String type);
+
 }
