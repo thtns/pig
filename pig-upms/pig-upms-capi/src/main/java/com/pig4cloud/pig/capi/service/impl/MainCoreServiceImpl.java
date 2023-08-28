@@ -142,8 +142,12 @@ public class MainCoreServiceImpl implements MainCoreService {
 		}
 
 		// 执行: 供货商限量计算逻辑
+//		List<BizSupplier> usableSupplierList = bizSuppliers.stream()
+//				.filter(bizSupplier -> bizRobotQueryRecordService.getTodayCountBySupplier(bizSupplier.getId()) < bizSupplier.getDailyLimitCount())
+//				.collect(Collectors.toList());
+
 		List<BizSupplier> usableSupplierList = bizSuppliers.stream()
-				.filter(bizSupplier -> bizRobotQueryRecordService.getTodayCountBySupplier(bizSupplier.getId()) < bizSupplier.getDailyLimitCount())
+				.filter(bizSupplier -> bizSupplier.getDailyCount() <= bizSupplier.getDailyLimitCount())
 				.collect(Collectors.toList());
 
 		if (usableSupplierList.isEmpty()) {
@@ -273,8 +277,12 @@ public class MainCoreServiceImpl implements MainCoreService {
 		}
 
 		// 执行: 供货商限量计算逻辑
+//		List<BizSupplier> usableSupplierList = supplierList.stream()
+//				.filter(bizSupplier -> bizRobotQueryRecordService.getTodayCountBySupplier(bizSupplier.getId()) < bizSupplier.getDailyLimitCount())
+//				.collect(Collectors.toList());
+
 		List<BizSupplier> usableSupplierList = supplierList.stream()
-				.filter(bizSupplier -> bizRobotQueryRecordService.getTodayCountBySupplier(bizSupplier.getId()) < bizSupplier.getDailyLimitCount())
+				.filter(bizSupplier -> bizSupplier.getDailyCount() <= bizSupplier.getDailyLimitCount())
 				.collect(Collectors.toList());
 
 		if (usableSupplierList.isEmpty()) {
