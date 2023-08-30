@@ -61,4 +61,11 @@ public interface BizBuyerOrderService extends IService<BizBuyerOrder> {
 	 */
 	public List<BizBuyerOrder> getDalyOrder();
 
+	/***
+	 * 获取今日供应商成功单量
+	 * @param supplierId
+	 * @return
+	 */
+	public Integer getDayOrderCount(Long supplierId);
+
 }

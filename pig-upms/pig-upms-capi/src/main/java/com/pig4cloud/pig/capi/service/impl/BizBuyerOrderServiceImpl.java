@@ -121,4 +121,14 @@ public class BizBuyerOrderServiceImpl extends ServiceImpl<BizBuyerOrderMapper, B
 				.in("request_status", RequestStatusEnum.ORDER_SUCCESS.getType(), RequestStatusEnum.QUERYING.getType());
 		return this.list(queryWrapper);
 	}
+
+	public Integer getDayOrderCount(Long supplierId){
+		LambdaQueryWrapper<BizBuyerOrder> queryWrapper = new LambdaQueryWrapper<>();
+		queryWrapper.likeRight(BizBuyerOrder::getRequestTime , today())
+				.eq(BizBuyerOrder::getSupplierId, supplierId)
+				.eq(BizBuyerOrder::getRequestStatus, RequestStatusEnum.CALLBACK_SUCCESS);
+
+		return Math.toIntExact(this.count(queryWrapper));
+	}
+
 }

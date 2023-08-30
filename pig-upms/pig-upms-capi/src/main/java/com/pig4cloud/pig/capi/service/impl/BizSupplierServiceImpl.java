@@ -23,6 +23,7 @@ import com.pig4cloud.pig.capi.entity.BizCarBrandSupplier;
 import com.pig4cloud.pig.capi.entity.BizSupplier;
 import com.pig4cloud.pig.capi.mapper.BizCarBrandSupplierMapper;
 import com.pig4cloud.pig.capi.mapper.BizSupplierMapper;
+import com.pig4cloud.pig.capi.service.BizBuyerOrderService;
 import com.pig4cloud.pig.capi.service.BizSupplierService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -48,6 +49,8 @@ public class BizSupplierServiceImpl extends ServiceImpl<BizSupplierMapper, BizSu
 
 	private final BizSupplierMapper bizSupplierMapper;
 
+	private final BizBuyerOrderService bizBuyerOrderService;
+
 
 	@Override
 	public List<BizSupplier> getSupplierByCarBrandId(Long carBrandId) {
@@ -64,7 +67,7 @@ public class BizSupplierServiceImpl extends ServiceImpl<BizSupplierMapper, BizSu
 
 	}
 
-	public void shutDownSupplier(Long id){
+	public void shutDownSupplier(Long id) {
 //		BizSupplier bizSupplier = this.getById(id);
 //		if (Objects.isNull(bizSupplier)){
 //			return;
@@ -84,9 +87,10 @@ public class BizSupplierServiceImpl extends ServiceImpl<BizSupplierMapper, BizSu
 	 */
 	@Override
 	public void addSupplierCount(Long id) {
+		Integer day_nums = bizBuyerOrderService.getDayOrderCount(id);
 		BizSupplier bizSupplier = this.getById(id);
-		int newValue = bizSupplier.getDailyCount() + 1;
-		if (newValue >= bizSupplier.getDailyLimitCount()){
+		int newValue = day_nums + 1;
+		if (newValue >= bizSupplier.getDailyLimitCount()) {
 			bizSupplier.setStatus(0);
 		}
 		bizSupplier.setDailyCount(newValue);
