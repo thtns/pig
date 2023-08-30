@@ -126,7 +126,7 @@ public class BizBuyerOrderServiceImpl extends ServiceImpl<BizBuyerOrderMapper, B
 		LambdaQueryWrapper<BizBuyerOrder> queryWrapper = new LambdaQueryWrapper<>();
 		queryWrapper.likeRight(BizBuyerOrder::getRequestTime , today())
 				.eq(BizBuyerOrder::getSupplierId, supplierId)
-				.eq(BizBuyerOrder::getRequestStatus, RequestStatusEnum.CALLBACK_SUCCESS);
+				.eq(BizBuyerOrder::getRequestStatus, RequestStatusEnum.CALLBACK_SUCCESS.getType());
 
 		return Math.toIntExact(this.count(queryWrapper));
 	}

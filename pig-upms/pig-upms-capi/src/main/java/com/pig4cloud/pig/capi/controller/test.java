@@ -1,7 +1,9 @@
 package com.pig4cloud.pig.capi.controller;
 
 import com.alibaba.fastjson.JSON;
+import com.pig4cloud.pig.capi.service.BizSupplierService;
 import com.pig4cloud.pig.common.core.util.R;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -12,7 +14,10 @@ import javax.servlet.http.HttpServletRequest;
 
 @Slf4j
 @RestController
+@RequiredArgsConstructor
 public class test {
+
+	private final BizSupplierService bizSupplierService;
 
 	@GetMapping(value = {"/test"})
 	public String test(HttpServletRequest request) {
@@ -30,5 +35,9 @@ public class test {
 		return R.ok();
 	}
 
-
+	@GetMapping(value = {"/test4"})
+	public R test4(HttpServletRequest request) {
+		bizSupplierService.addSupplierCount(1695281566665580545l);
+		return R.ok();
+	}
 }
