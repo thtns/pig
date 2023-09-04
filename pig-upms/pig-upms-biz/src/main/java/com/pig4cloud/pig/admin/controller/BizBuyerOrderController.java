@@ -21,12 +21,14 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.pig4cloud.pig.admin.api.entity.BizBuyerOrder;
+import com.pig4cloud.pig.admin.controller.bean.BuyerOrderExcelVo;
 import com.pig4cloud.pig.admin.service.BizBuyerOrderService;
 import com.pig4cloud.pig.common.core.util.R;
 import com.pig4cloud.pig.common.core.util.mq.MqConfig;
 import com.pig4cloud.pig.common.core.util.mq.ProducerUtil;
 import com.pig4cloud.pig.common.log.annotation.SysLog;
 
+import com.pig4cloud.plugin.excel.annotation.ResponseExcel;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
 import io.swagger.v3.oas.annotations.Operation;
@@ -35,6 +37,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 
 /**
@@ -185,5 +189,11 @@ public class BizBuyerOrderController {
 		}
 		producerUtil.sendEasyMsg(String.valueOf(id), mqConfig.getTopic(), mqConfig.getTag());
 		return R.ok();
+	}
+
+	@ResponseExcel
+	@GetMapping("/export")
+	public List<BuyerOrderExcelVo> export(BizBuyerOrder bizBuyerOrder) {
+		return bizBuyerOrderService.export(bizBuyerOrder);
 	}
 }

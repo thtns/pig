@@ -19,6 +19,8 @@ package com.pig4cloud.pig.admin.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.pig4cloud.pig.admin.api.entity.BizBuyerOrder;
+import com.pig4cloud.pig.admin.controller.bean.BuyerOrderExcelVo;
+import java.util.List;
 
 /**
  * 采购商订单表
@@ -27,5 +29,7 @@ import com.pig4cloud.pig.admin.api.entity.BizBuyerOrder;
  * @date 2023-06-16 20:59:27
  */
 public interface BizBuyerOrderService extends IService<BizBuyerOrder> {
+
+	List<BuyerOrderExcelVo> export(BizBuyerOrder bizBuyerOrder);
 
 }
