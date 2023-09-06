@@ -20,4 +20,7 @@ public class BaseConfig {
 	/*** 请求超时时间 s秒*/
 	private int requestTimeout;
 
+	/*** 更大的超时时间 s秒*/
+	private int moreTimeout;
+
 }

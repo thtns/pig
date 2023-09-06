@@ -410,10 +410,14 @@ public class MainCoreServiceImpl implements MainCoreService {
 		log.info("#### 【异步】{} 机器人请求数据：{}", bizBuyerOrder.getVin(), JSON.toJSONString(paramMap));
 		String result = "";
 		try {
+			int time_out = baseConfig.getRequestTimeout() * 1000;
+			if (Objects.equals(bizBuyerOrder.getManufacturer(), "一汽大众")){
+				time_out = baseConfig.getMoreTimeout() * 1000;
+			}
 			result = HttpRequest.post(bizRobotInfo.getRobotUrl())
 					.body(JSON.toJSONString(paramMap))
 					.contentType("application/json")
-					.timeout(baseConfig.getRequestTimeout() * 1000)
+					.timeout(time_out)
 					.execute().body();
 		} catch (Exception e) {
 			log.error("#### 【异步】{} 机器人请求异常, 异常信息:{}", bizBuyerOrder.getVin(), e.getMessage());
