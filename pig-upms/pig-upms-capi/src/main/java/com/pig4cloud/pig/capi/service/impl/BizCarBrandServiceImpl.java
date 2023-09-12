@@ -3,6 +3,7 @@ package com.pig4cloud.pig.capi.service.impl;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.google.protobuf.ServiceException;
 import com.pig4cloud.pig.capi.entity.*;
 import com.pig4cloud.pig.capi.mapper.BizCarBrandMapper;
 import com.pig4cloud.pig.capi.service.*;
@@ -201,5 +202,99 @@ public class BizCarBrandServiceImpl extends ServiceImpl<BizCarBrandMapper, BizCa
 
 	private void handleEmptySupplierList(BizBuyerOrder bizBuyerOrder) {
 		handleOrderFailure(bizBuyerOrder, RequestStatusEnum.API_TIME_NONSUPPORT, RequestStatusEnum.API_TIME_NONSUPPORT);
+	}
+
+
+	public BizCarBrand matchVinBrand(BizBuyerOrder bizBuyerOrder) throws ServiceException {
+		String vin = bizBuyerOrder.getVin();
+		String brandName = bizBuyerOrder.getCarBrandName();
+		String manufacturer = bizBuyerOrder.getManufacturer();
+		log.info("VIN【{}】的品牌名称: 【{}】. 厂商名称:【{}】 开始匹配品牌", vin, brandName, manufacturer);
+		// 先根据 名称来匹配
+		// 再根据 vin前8位来匹配
+		// 再根据精友来匹配
+		BizCarBrand carBrand = matchBrandByName(bizBuyerOrder);
+
+		if (carBrand == null) {
+			carBrand = matchBrandByVinPrefix(bizBuyerOrder);
+		}
+
+		if (carBrand == null) {
+			carBrand = matchBrandByEasyEPC(bizBuyerOrder);
+		}
+
+		if (carBrand == null) {
+			return null;
+		}
+
+		bizBuyerOrder.setCarBrandId(carBrand.getId());
+		bizBuyerOrder.setCarBrandName(carBrand.getBrand());
+		bizBuyerOrder.setManufacturer(carBrand.getManufacturer());
+
+		return carBrand;
+	}
+
+	private BizCarBrand matchBrandByName(BizBuyerOrder bizBuyerOrder) {
+		String brandName = bizBuyerOrder.getCarBrandName();
+		String manufacturer = bizBuyerOrder.getManufacturer();
+		String getName = brandName;
+		if (getName != null) {
+			if (isSpecialBrand(getName)) {
+				return this.getCarBrandByManufacturer(manufacturer);
+			}
+			return this.getCarBrandByBrand(getName);
+		}
+
+		return null;
+	}
+
+	private BizCarBrand matchBrandByVinPrefix(BizBuyerOrder bizBuyerOrder) throws ServiceException {
+		String vinPrefix = bizBuyerOrder.getVin().substring(0, 8);
+		BizVinParsing bizVinParsing = bizVinParsingService.getBizVinParsing(vinPrefix);
+		if (bizVinParsing == null) {
+			return null;
+		}
+
+		String getName = bizVinParsing.getBrand();
+		BizCarBrand bizCarBrand = null;
+		if (isSpecialBrand(getName)) {
+			// 这里用解析过的vin来匹配厂商的时候,需要先把厂商名称和自配厂商名称对应
+			getName = bizVinParsing.getSubBrand();
+			bizCarBrand = this.getCarBrandByManufacturer(getName);
+		}else{
+			bizCarBrand = this.getCarBrandByBrand(getName);
+		}
+
+		if (bizCarBrand == null) {
+			String msg = String.format("当前VIN【%s】存在解析品牌信息,系统未配置与支持品牌【%s】, 系统不支持！！", bizBuyerOrder.getVin(), bizVinParsing.getBrand());
+			throw new ServiceException(msg);
+		}
+		return bizCarBrand;
+	}
+
+	private BizCarBrand matchBrandByEasyEPC(BizBuyerOrder bizBuyerOrder) {
+		BizVinParsing vinParsing = easyepcDataManager.getSaleVinInfo(bizBuyerOrder.getVin());
+		if (vinParsing == null) {
+			bizBuyerOrder.setRequestStatus(RequestStatusEnum.API_VIN_UNIDENTIFIABLE.getType());
+			return null;
+		}
+
+		String getName = vinParsing.getBrand();
+		if (isSpecialBrand(getName)) {
+			getName = vinParsing.getSubBrand();
+			return this.getCarBrandByManufacturer(getName);
+		}
+		return this.getCarBrandByBrand(getName);
+	}
+
+	private boolean isSpecialBrand(String brandName) {
+		return "大众".equals(brandName) || "丰田".equals(brandName);
+	}
+
+	private BizCarBrand getCarBrandByNameOrManufacturer(String name) {
+		if (isSpecialBrand(name)) {
+			return this.getCarBrandByManufacturer(name);
+		}
+		return this.getCarBrandByBrand(name);
 	}
 }

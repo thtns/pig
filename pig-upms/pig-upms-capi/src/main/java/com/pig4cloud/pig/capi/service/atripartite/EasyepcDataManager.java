@@ -33,9 +33,9 @@ public class EasyepcDataManager {
 
 	private static final String REQUEST_URL = "http://www.easyepc.com/vf/api/500020";
 
-	private static final String USERNAME = "2fb699z38wy0";
+	private static final String USERNAME = "2fb699O8oXgg";
 
-	private static final String PASSWORD = "11fa02da21be56a43b91f25034d378d5";
+	private static final String PASSWORD = "49a7d2f8ab075561eaad427c5edb5a61";
 
 	private final BizVinParsingService bizVinParsingService;
 
@@ -214,21 +214,7 @@ public class EasyepcDataManager {
 				 */
 				if (CollectionUtils.isNotEmpty(result)) {
 					JSONObject o = result.getJSONObject(0);
-					String amBrandId = o.getString("amBrandId");
-					String amMainBrandName = o.getString("amMainBrandName");
-					String amBrandName = o.getString("amBrandName");
-					log.info("精友数据解析数据：" + amBrandId + "+" + amBrandName);
-					BizVinParsing bizVinParsing = BizVinParsing.builder()
-							.id(UUidUtils.uuLongId())
-							.vinCode(vin)
-							.brand(amMainBrandName)
-							.subBrand(amBrandName)
-							.content(JSON.toJSONString(o))
-							.build();
-					bizVinParsing.setCreateBy("api管理员");
-					bizVinParsing.setCreateBy("api管理员");
-					bizVinParsingService.save(bizVinParsing);
-					return bizVinParsing;
+					return saveEpc(o, vin);
 				}
 			}
 		}
@@ -237,5 +223,39 @@ public class EasyepcDataManager {
 		return null;
 	}
 
+	public BizVinParsing saveEpc(JSONObject o, String vin){
+		String amBrandId = o.getString("amBrandId");
+		String amMainBrandName = o.getString("amMainBrandName");
+		String amBrandName = o.getString("amBrandName");
+		log.info("精友数据解析数据：【" + amBrandId + "," + amMainBrandName + "," + amBrandName + '】');
 
+		// 映射特殊的品牌名称
+		amBrandName = mapSpecialBrandName(amMainBrandName, amBrandName);
+
+		// 构建 BizVinParsing 对象
+		BizVinParsing bizVinParsing = BizVinParsing.builder()
+				.id(UUidUtils.uuLongId())
+				.vinCode(vin.substring(0, 8))
+				.brand(amMainBrandName)
+				.subBrand(amBrandName)
+				.content(JSON.toJSONString(o))
+				.build();
+		bizVinParsing.setCreateBy("api管理员");	// 设置创建人
+		bizVinParsing.setCreateBy("api管理员");	// 设置更新人
+
+		// 保存到数据库
+		bizVinParsingService.saveOrUpdate(bizVinParsing);
+		return bizVinParsing;
+	}
+
+	// 映射特殊的品牌名称
+	private String mapSpecialBrandName(String amMainBrandName, String amBrandName) {
+		if ("大众".equals(amMainBrandName) && "一汽-大众".equals(amBrandName)) {
+			return "一汽大众";
+		}
+		// 添加其他特殊品牌名称的映射逻辑，如果有的话
+
+		// 默认返回原始名称
+		return amBrandName;
+	}
 }

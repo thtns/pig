@@ -85,53 +85,63 @@ public class MainCoreServiceImpl implements MainCoreService {
 	 */
 	@Override
 	public BizBuyerOrder placeOrder(BizBuyerOrder bizBuyerOrder) {
-		String vin = bizBuyerOrder.getVin();
-		String brandName = bizBuyerOrder.getCarBrandName();
-		String manufacturer = bizBuyerOrder.getManufacturer();
 		BizCarBrand carBrand = null;
-		log.info("下单的品牌名称: 【{}】. 厂商名称:【{}】", brandName, manufacturer);
-		String getName = brandName;
-		if ("大众".equals(getName) || "丰田".equals(brandName)) {
-			getName = manufacturer;
-			carBrand = bizCarBrandService.getCarBrandByManufacturer(getName);
-		}else{
-			carBrand = bizCarBrandService.getCarBrandByBrand(getName);
+//		String getName = brandName;
+//		if ("大众".equals(getName) || "丰田".equals(brandName)) {
+//			getName = manufacturer;
+//			carBrand = bizCarBrandService.getCarBrandByManufacturer(getName);
+//		}else{
+//			carBrand = bizCarBrandService.getCarBrandByBrand(getName);
+//		}
+//
+//		if (carBrand == null) {
+//			BizVinParsing bizVinParsing = bizVinParsingService.getBizVinParsing(bizBuyerOrder.getVin());//解析结果
+//			getName = bizVinParsing.getBrand();
+//			if (Optional.ofNullable(bizVinParsing).isPresent()) {
+//				if ("大众".equals(getName) || "丰田".equals(brandName)) {
+//					getName = bizVinParsing.getSubBrand();
+//					carBrand = bizCarBrandService.getCarBrandByManufacturer(getName);
+//				}else{
+//					carBrand = bizCarBrandService.getCarBrandByBrand(brandName);//根据品牌名查询BizCarBrand对象
+//				}
+//			} else {
+//				BizVinParsing vinParsing = easyepcDataManager.getSaleVinInfo(bizBuyerOrder.getVin());
+//				if (vinParsing == null) {
+//					bizBuyerOrder.setRequestStatus(RequestStatusEnum.API_VIN_UNIDENTIFIABLE.getType());
+//					return bizBuyerOrder;
+//				}
+//				getName = vinParsing.getBrand();
+//				if ("大众".equals(getName) || "丰田".equals(brandName)){
+//					getName = vinParsing.getSubBrand();
+//					carBrand = bizCarBrandService.getCarBrandByManufacturer(getName);
+//				}else{
+//					carBrand = bizCarBrandService.getCarBrandByBrand(getName);//根据品牌名查询BizCarBrand对象
+//				}
+//			}
+//			if (Objects.isNull(carBrand)) {
+//				log.error("不存在Vin：【{}】 本地品牌信息, 不支持该品牌,退出下单. ", vin);
+//				bizBuyerOrder.setRequestStatus(RequestStatusEnum.API_BRAND_NONSUPPORT.getType());
+//				return bizBuyerOrder;
+//			}
+//		}
+		try {
+			carBrand = bizCarBrandService.matchVinBrand(bizBuyerOrder);
+		}catch (Exception e){
+			log.error(e.getMessage());
+			return null;
 		}
 
 		if (carBrand == null) {
-			BizVinParsing bizVinParsing = bizVinParsingService.getBizVinParsing(bizBuyerOrder.getVin());//解析结果
-			getName = bizVinParsing.getBrand();
-			if (Optional.ofNullable(bizVinParsing).isPresent()) {
-				if ("大众".equals(getName) || "丰田".equals(brandName)) {
-					getName = bizVinParsing.getSubBrand();
-					carBrand = bizCarBrandService.getCarBrandByManufacturer(getName);
-				}else{
-					carBrand = bizCarBrandService.getCarBrandByBrand(brandName);//根据品牌名查询BizCarBrand对象
-				}
-			} else {
-				BizVinParsing vinParsing = easyepcDataManager.getSaleVinInfo(bizBuyerOrder.getVin());
-				if (vinParsing == null) {
-					bizBuyerOrder.setRequestStatus(RequestStatusEnum.API_VIN_UNIDENTIFIABLE.getType());
-					return bizBuyerOrder;
-				}
-				getName = vinParsing.getBrand();
-				if ("大众".equals(getName) || "丰田".equals(brandName)){
-					getName = vinParsing.getSubBrand();
-					carBrand = bizCarBrandService.getCarBrandByManufacturer(getName);
-				}else{
-					carBrand = bizCarBrandService.getCarBrandByBrand(getName);//根据品牌名查询BizCarBrand对象
-				}
-			}
-			if (Objects.isNull(carBrand)) {
-				log.error("不存在Vin：【{}】 本地品牌信息, 不支持该品牌,退出下单. ", vin);
-				bizBuyerOrder.setRequestStatus(RequestStatusEnum.API_BRAND_NONSUPPORT.getType());
-				return bizBuyerOrder;
-			}
+			log.error("不存在Vin：【{}】 本地品牌信息, 不支持该品牌,退出下单. ", bizBuyerOrder.getVin());
+			bizBuyerOrder.setRequestStatus(RequestStatusEnum.API_BRAND_NONSUPPORT.getType());
+			return null;
 		}
+
+		String brandName = carBrand.getBrand();
 		// 根据品牌获取供应商
 		Long bizCarBrandId = carBrand.getId();
 		bizBuyerOrder.setCarBrandId(carBrand.getId());
-		bizBuyerOrder.setCarBrandName(carBrand.getBrand());
+		bizBuyerOrder.setCarBrandName(brandName);
 
 		// 根据品牌获取供应商
 		List<BizSupplier> bizSuppliers = bizSupplierService.getSupplierByCarBrandId(bizCarBrandId);

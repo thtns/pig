@@ -18,6 +18,7 @@
 package com.pig4cloud.pig.capi.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.google.protobuf.ServiceException;
 import com.pig4cloud.pig.capi.entity.BizBuyerOrder;
 import com.pig4cloud.pig.capi.entity.BizCarBrand;
 import com.pig4cloud.pig.capi.service.apo.RebotInfo;
@@ -59,5 +60,5 @@ public interface BizCarBrandService extends IService<BizCarBrand> {
 	 */
 	List<RebotInfo> getEffectiveRobot(BizCarBrand bizCarBrand, BizBuyerOrder bizBuyerOrder);
 
-
+	public BizCarBrand matchVinBrand(BizBuyerOrder bizBuyerOrder) throws ServiceException;
 }
