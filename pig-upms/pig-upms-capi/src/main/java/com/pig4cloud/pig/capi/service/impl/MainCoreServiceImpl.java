@@ -453,7 +453,7 @@ public class MainCoreServiceImpl implements MainCoreService {
 		BizBuyerOrder successOrder = bizBuyerOrderService.getSuccessMerchantOrderByVin(vin);
 		if (Objects.nonNull(successOrder)) {
 			log.info("~~~~ Step3.1: 存在本地 Vin：{} 订单记录, 更新订单品牌信息....", vin);
-			bizBuyerOrder.setBuyerId(successOrder.getBuyerId());
+//			bizBuyerOrder.setBuyerId(successOrder.getBuyerId());  // 当存在多购买商时,buyerId 不再复制
 			bizBuyerOrder.setBuyerName(successOrder.getCarBrandName());
 			bizBuyerOrder.setSupplierId(successOrder.getSupplierId());
 			bizBuyerOrder.setSupplierName(successOrder.getSupplierName());
