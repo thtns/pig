@@ -228,8 +228,12 @@ public class BizCarBrandServiceImpl extends ServiceImpl<BizCarBrandMapper, BizCa
 		}
 
 		bizBuyerOrder.setCarBrandId(carBrand.getId());
-		bizBuyerOrder.setCarBrandName(carBrand.getBrand());
-		bizBuyerOrder.setManufacturer(carBrand.getManufacturer());
+		if (bizBuyerOrder.getCarBrandName() == null ){
+			bizBuyerOrder.setCarBrandName(carBrand.getBrand());
+		}
+		if (bizBuyerOrder.getManufacturer() == null ){
+			bizBuyerOrder.setManufacturer(carBrand.getManufacturer());
+		}
 
 		return carBrand;
 	}
