@@ -253,6 +253,11 @@ public class EasyepcDataManager {
 		if ("大众".equals(amMainBrandName) && "一汽-大众".equals(amBrandName)) {
 			return "一汽大众";
 		}
+
+		if ("丰田".equals(amMainBrandName) && "丰田(进口)".equals(amBrandName)) {
+			return "进口丰田";
+		}
+
 		// 添加其他特殊品牌名称的映射逻辑，如果有的话
 
 		// 默认返回原始名称
