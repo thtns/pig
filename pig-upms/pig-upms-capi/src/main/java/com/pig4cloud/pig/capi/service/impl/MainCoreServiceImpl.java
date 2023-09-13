@@ -458,6 +458,7 @@ public class MainCoreServiceImpl implements MainCoreService {
 			bizBuyerOrder.setSupplierId(successOrder.getSupplierId());
 			bizBuyerOrder.setSupplierName(successOrder.getSupplierName());
 			bizBuyerOrder.setRobotId(successOrder.getRobotId());
+			bizBuyerOrder.setAnyData(successOrder.getAnyData());
 		}
 		//机器人记录赋值采购商订单成功结果
 		if (Objects.nonNull(bizRobotQueryRecord.getResult())) {
