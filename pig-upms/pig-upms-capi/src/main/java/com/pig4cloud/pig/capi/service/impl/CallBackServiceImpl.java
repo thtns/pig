@@ -233,7 +233,7 @@ public class CallBackServiceImpl implements CallBackService {
 		log.info("#### 上传记录 anyDataMerchantCallBack 开始执行...");
 		// 这里只有成功有记录的
 		int status = RequestStatusEnum.ORDER_REPORT_STATUS_ZONE.getType();
-		if (bizBuyerOrder.getOrderType() != null) {// 查博士
+		if (bizBuyerOrder.getOrderType().contains("chaboshi")) {// 查博士
 			return sendChaBoss(bizBuyerOrder.getOrderType(), bizBuyerOrder.getOrderNo(), status, robotResponse);
 		} else {
 			return sendMerchant(bizBuyerOrder, status, robotResponse);
@@ -248,7 +248,7 @@ public class CallBackServiceImpl implements CallBackService {
 		log.info("#### 驳回 rejectMerchantCallBack 开始执行...");
 		// 这里只有驳回的
 		int status = RequestStatusEnum.ORDER_REPORT_STATUS_ONE.getType();
-		if (bizBuyerOrder.getOrderType() != null) {// 查博士
+		if (bizBuyerOrder.getOrderType().contains("chaboshi")) {// 查博士
 			return sendChaBoss(bizBuyerOrder.getOrderType(), bizBuyerOrder.getOrderNo(), status, null);
 		} else {
 			return sendMerchant(bizBuyerOrder, status, null);
@@ -263,7 +263,7 @@ public class CallBackServiceImpl implements CallBackService {
 		log.info("#### 无记录 noDataMerchantCallBack 开始执行...");
 		// 这里只有无记录的
 		int status = RequestStatusEnum.ORDER_REPORT_STATUS_TWO.getType();
-		if (bizBuyerOrder.getOrderType() != null) {// 查博士
+		if (bizBuyerOrder.getOrderType().contains("chaboshi")) {// 查博士
 			return sendChaBoss(bizBuyerOrder.getOrderType(), bizBuyerOrder.getOrderNo(), status, null);
 		} else {
 			return sendMerchant(bizBuyerOrder, status, null);
