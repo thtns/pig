@@ -489,7 +489,7 @@ public class MainCoreServiceImpl implements MainCoreService {
 //					}, 3, 3000L, false);
 				} catch (Exception e) {
 					// 更新失败原因和失败状态： 回调失败
-					log.info("#### Step3.4.3: RetryUtil回调失败....");
+					log.info("#### Step3.4.3: RetryUtil回调失败....{}", e.getMessage());
 					String failureReason = JSON.toJSONString(R.resultEnumType(null, RequestStatusEnum.API_CALLBACK_FAILURE.getType()));
 					updateOrderStatus(bizBuyerOrder, RequestStatusEnum.CALLBACK_FAILURE, failureReason);
 				}
