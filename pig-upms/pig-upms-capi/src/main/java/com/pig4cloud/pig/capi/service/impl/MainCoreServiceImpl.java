@@ -425,6 +425,7 @@ public class MainCoreServiceImpl implements MainCoreService {
 //			bizBuyerOrder.setBuyerName(successOrder.getBuyerName());// 当存在多购买商时,buyerName 不再复制
 			bizBuyerOrder.setCarBrandId(successOrder.getCarBrandId());// 获取品牌id
 			bizBuyerOrder.setCarBrandName(successOrder.getCarBrandName());// 获取品牌名称
+			bizBuyerOrder.setManufacturer(successOrder.getManufacturer());// 获取厂商名称
 			bizBuyerOrder.setSupplierId(successOrder.getSupplierId());
 			bizBuyerOrder.setSupplierName(successOrder.getSupplierName());
 			bizBuyerOrder.setRobotId(successOrder.getRobotId());
