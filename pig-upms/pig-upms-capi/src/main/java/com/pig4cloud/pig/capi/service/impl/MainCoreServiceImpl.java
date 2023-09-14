@@ -86,47 +86,21 @@ public class MainCoreServiceImpl implements MainCoreService {
 	@Override
 	public BizBuyerOrder placeOrder(BizBuyerOrder bizBuyerOrder) {
 		BizCarBrand carBrand = null;
-//		String getName = brandName;
-//		if ("大众".equals(getName) || "丰田".equals(brandName)) {
-//			getName = manufacturer;
-//			carBrand = bizCarBrandService.getCarBrandByManufacturer(getName);
-//		}else{
-//			carBrand = bizCarBrandService.getCarBrandByBrand(getName);
-//		}
-//
-//		if (carBrand == null) {
-//			BizVinParsing bizVinParsing = bizVinParsingService.getBizVinParsing(bizBuyerOrder.getVin());//解析结果
-//			getName = bizVinParsing.getBrand();
-//			if (Optional.ofNullable(bizVinParsing).isPresent()) {
-//				if ("大众".equals(getName) || "丰田".equals(brandName)) {
-//					getName = bizVinParsing.getSubBrand();
-//					carBrand = bizCarBrandService.getCarBrandByManufacturer(getName);
-//				}else{
-//					carBrand = bizCarBrandService.getCarBrandByBrand(brandName);//根据品牌名查询BizCarBrand对象
-//				}
-//			} else {
-//				BizVinParsing vinParsing = easyepcDataManager.getSaleVinInfo(bizBuyerOrder.getVin());
-//				if (vinParsing == null) {
-//					bizBuyerOrder.setRequestStatus(RequestStatusEnum.API_VIN_UNIDENTIFIABLE.getType());
-//					return bizBuyerOrder;
-//				}
-//				getName = vinParsing.getBrand();
-//				if ("大众".equals(getName) || "丰田".equals(brandName)){
-//					getName = vinParsing.getSubBrand();
-//					carBrand = bizCarBrandService.getCarBrandByManufacturer(getName);
-//				}else{
-//					carBrand = bizCarBrandService.getCarBrandByBrand(getName);//根据品牌名查询BizCarBrand对象
-//				}
-//			}
-//			if (Objects.isNull(carBrand)) {
-//				log.error("不存在Vin：【{}】 本地品牌信息, 不支持该品牌,退出下单. ", vin);
-//				bizBuyerOrder.setRequestStatus(RequestStatusEnum.API_BRAND_NONSUPPORT.getType());
-//				return bizBuyerOrder;
-//			}
-//		}
+		String vin = bizBuyerOrder.getVin();
+
+		// 新增历史记录查询,有结果则不新建
+		BizRobotQueryRecord bizRobotQueryRecord = bizRobotQueryRecordService.getQueryRecordByVin(vin);
+		if (bizRobotQueryRecord != null) {// 有3天内记录则不再匹配直接下单
+			bizBuyerOrder.setRequestStatus(RequestStatusEnum.ORDER_SUCCESS.getType()); // 成功下单
+			bizBuyerOrderService.save(bizBuyerOrder);
+			// 这里添加消息任务 通过消息队列来消费
+			producerUtil.sendMsg(String.valueOf(bizBuyerOrder.getId()));
+			return bizBuyerOrder;
+		}
+
 		try {
 			carBrand = bizCarBrandService.matchVinBrand(bizBuyerOrder);
-		}catch (Exception e){
+		} catch (Exception e){
 			log.error(e.getMessage());
 			return null;
 		}
@@ -193,13 +167,7 @@ public class MainCoreServiceImpl implements MainCoreService {
 		return bizBuyerOrder;
 	}
 
-	public BizCarBrand getCarBrand(String brandName, String manufacturer){
-		if ("大众".equals(brandName) || "丰田".equals(brandName)) {
-			return bizCarBrandService.getCarBrandByManufacturer(manufacturer);
-		}else{
-			return bizCarBrandService.getCarBrandByBrand(brandName);
-		}
-	}
+
 	/***
 	 * 处理订单请求
 	 * @param bizBuyerOrder 买家订单对象
@@ -421,7 +389,7 @@ public class MainCoreServiceImpl implements MainCoreService {
 		String result = "";
 		try {
 			int time_out = baseConfig.getRequestTimeout() * 1000;
-			if (Objects.equals(bizBuyerOrder.getManufacturer(), "一汽大众")){
+			if (Objects.equals(bizBuyerOrder.getManufacturer(), "一汽大众")) {
 				time_out = baseConfig.getMoreTimeout() * 1000;
 			}
 			result = HttpRequest.post(bizRobotInfo.getRobotUrl())
@@ -454,7 +422,9 @@ public class MainCoreServiceImpl implements MainCoreService {
 		if (Objects.nonNull(successOrder)) {
 			log.info("~~~~ Step3.1: 存在本地 Vin：{} 订单记录, 更新订单品牌信息....", vin);
 //			bizBuyerOrder.setBuyerId(successOrder.getBuyerId());  // 当存在多购买商时,buyerId 不再复制
-			bizBuyerOrder.setBuyerName(successOrder.getCarBrandName());
+//			bizBuyerOrder.setBuyerName(successOrder.getBuyerName());// 当存在多购买商时,buyerName 不再复制
+			bizBuyerOrder.setCarBrandId(successOrder.getCarBrandId());// 获取品牌id
+			bizBuyerOrder.setCarBrandName(successOrder.getCarBrandName());// 获取品牌名称
 			bizBuyerOrder.setSupplierId(successOrder.getSupplierId());
 			bizBuyerOrder.setSupplierName(successOrder.getSupplierName());
 			bizBuyerOrder.setRobotId(successOrder.getRobotId());
@@ -501,7 +471,7 @@ public class MainCoreServiceImpl implements MainCoreService {
 	 * 累加供应商请求次数
 	 * @param bizBuyerOrder
 	 */
-	private void addSupplierReqCount(BizBuyerOrder bizBuyerOrder){
+	private void addSupplierReqCount(BizBuyerOrder bizBuyerOrder) {
 		Long id = bizBuyerOrder.getSupplierId();
 		bizSupplierService.addSupplierCount(id);
 	}
