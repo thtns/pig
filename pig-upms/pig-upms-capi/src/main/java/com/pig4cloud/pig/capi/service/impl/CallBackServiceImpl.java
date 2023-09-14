@@ -329,12 +329,12 @@ public class CallBackServiceImpl implements CallBackService {
 	public Integer sendMerchant(BizBuyerOrder bizBuyerOrder, int orderStatus, RobotResponse robotResponse) {
 		log.info("#### merchantCallBack（回调商家）：开始");
 		Map<String, Object> paramMap = new HashMap<>();
-		paramMap.put("order_id", bizBuyerOrder.getId());
-		paramMap.put("order_status", orderStatus);
-		paramMap.put("maintain_data", robotResponse);
+		paramMap.put("orderno", bizBuyerOrder.getId());
+		paramMap.put("reportstatus", orderStatus);
+		paramMap.put("content", robotResponse);
 
 		Map<String, Object> resultMap = new HashMap<>();
-		resultMap.put("code", CommonConstants.SUCCESS);
+		resultMap.put("code", CommonConstants.API_SUCCESS);
 		resultMap.put("data", paramMap);
 
 		log.info("#### merchantCallBack（成功回调商家）：订单id 【{}】", bizBuyerOrder.getId());
