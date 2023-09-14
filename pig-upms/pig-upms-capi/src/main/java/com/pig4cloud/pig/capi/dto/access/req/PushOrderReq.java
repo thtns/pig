@@ -24,9 +24,9 @@ public class PushOrderReq {
 	@NotNull(message = "manufacturer不能为空")
 	private String manufacturer;
 
-	@NotBlank(message = "call_back_url不能为空")
-	@NotNull(message = "call_back_url不能为空")
-	private String call_back_url;
+	@NotBlank(message = "callbackurl不能为空")
+	@NotNull(message = "callbackurl不能为空")
+	private String callbackurl;
 
 
 }

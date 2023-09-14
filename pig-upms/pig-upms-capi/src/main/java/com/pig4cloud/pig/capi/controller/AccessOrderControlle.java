@@ -39,7 +39,7 @@ public class AccessOrderControlle {
 
 	@PostMapping(value = "/push_order")
 	public ResultVo pushOrder(HttpServletRequest request, @RequestBody PushOrderReq req) {
-		log.info("Access push_order, 参数为: {}", JSON.toJSONString(req));
+			log.info("Access push_order, 参数为: {}", JSON.toJSONString(req));
 		PushOrderRes res = new PushOrderRes();
 		res.setOrderno(req.getOrderno());
 		res.setVin(req.getVin());
@@ -55,7 +55,7 @@ public class AccessOrderControlle {
 					.buyerId(bizBuyer.getId())                //用户id
 					.buyerName(bizBuyer.getName())            //用户名称
 					.vin(req.getVin())                        //请求vin码
-					.callbackUrl(req.getCall_back_url())      //回调地址
+					.callbackUrl(req.getCallbackurl())        //回调地址
 					.requestParams(JSON.toJSONString(req))    //请求参数
 					.requestTime(LocalDateTime.now())         //请求时间
 					.requestStatus(RequestStatusEnum.ORDER_PLACING.getType())                //订单状态
