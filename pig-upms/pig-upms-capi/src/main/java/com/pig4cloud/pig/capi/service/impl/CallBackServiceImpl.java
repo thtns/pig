@@ -218,8 +218,9 @@ public class CallBackServiceImpl implements CallBackService {
 		bizBuyerOrder.setRequestStatus(status.getType());
 		bizBuyerOrder.setFailureReason(failureReason);
 		LocalDateTime nowDateTime = LocalDateTime.now();
+		long l = DateTimeUitils.localDateTimeBetweenSeconds(bizBuyerOrder.getRequestTime(), nowDateTime) > 0 ? DateTimeUitils.localDateTimeBetweenSeconds(bizBuyerOrder.getRequestTime(), nowDateTime) : 0;
 		bizBuyerOrder.setCallbackTime(nowDateTime);
-		bizBuyerOrder.setSpendTime(DateTimeUitils.localDateTimeBetweenSeconds(bizBuyerOrder.getRequestTime(), nowDateTime));
+		bizBuyerOrder.setSpendTime(l);
 		bizBuyerOrderService.updateById(bizBuyerOrder);
 	}
 
