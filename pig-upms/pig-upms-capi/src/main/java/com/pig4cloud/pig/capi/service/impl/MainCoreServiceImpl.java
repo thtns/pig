@@ -90,7 +90,7 @@ public class MainCoreServiceImpl implements MainCoreService {
 
 		// 新增历史记录查询,有结果则不新建
 		BizRobotQueryRecord bizRobotQueryRecord = bizRobotQueryRecordService.getQueryRecordByVin(vin);
-		if (bizRobotQueryRecord != null) {// 有3天内记录则不再匹配直接下单
+		if (bizRobotQueryRecord != null && !bizRobotQueryRecord.getResult().equals("null") && !bizRobotQueryRecord.getResult().equals("")) {// 有3天内记录则不再匹配直接下单
 			bizBuyerOrder.setRequestStatus(RequestStatusEnum.ORDER_SUCCESS.getType()); // 成功下单
 			bizBuyerOrderService.save(bizBuyerOrder);
 			// 这里添加消息任务 通过消息队列来消费
