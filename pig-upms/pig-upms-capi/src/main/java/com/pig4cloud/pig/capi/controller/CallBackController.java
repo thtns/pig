@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.pig4cloud.pig.capi.entity.BizBuyerOrder;
 import com.pig4cloud.pig.capi.dto.request.RobotCallbackRequest;
 import com.pig4cloud.pig.capi.dto.request.RobotCallbcakErroRequest;
+import com.pig4cloud.pig.capi.nacosConf.BaseConfig;
 import com.pig4cloud.pig.capi.service.*;
 import com.pig4cloud.pig.capi.service.atripartite.CallBackManager;
 import com.pig4cloud.pig.capi.service.atripartite.CallBackQuanManager;
@@ -45,6 +46,8 @@ public class CallBackController {
 	private final MainCoreService mainCoreService;
 
 	private final ProducerUtil producerUtil;
+
+	private final BaseConfig baseConfig;
 
 
 	/**
@@ -143,7 +146,12 @@ public class CallBackController {
 		Long supplierId = bizBuyerOrder.getSupplierId();
 		String supplierName = bizBuyerOrder.getSupplierName();
 		if (robotError.getCode() == RequestStatusEnum.SERVER_NO_RESULT.getType()) { // 无记录则回调
-			callBackService.noData(bizBuyerOrder);// 无记录回调
+			if (bizBuyerOrder.getManufacturer().equals("进口丰田") && bizBuyerOrder.getRetryCount() < baseConfig.getOrderTryTimes()){
+				//重新发起请求 切换到另外一个去 一般进口丰田先去一丰再去广丰，若为空记录则计算再广丰上
+				sendTimeOrderOnMinute(orderId);
+			}else{
+				callBackService.noData(bizBuyerOrder);// 无记录回调
+			}
 		} else {
 			if (robotError.getCode() == RequestStatusEnum.SERVER_LOGIN_FAILURE.getType() ||
 					robotError.getCode() == RequestStatusEnum.REBOT_PROXY_CONNECTION_ERROR.getType()) {
