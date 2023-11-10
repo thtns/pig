@@ -6,7 +6,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
 @Data
-public class PushOrderReq {
+public class PushOrderVinReq {
 
 	@NotBlank(message = "orderno不能为空")
 	@NotNull(message = "orderno不能为空")
@@ -16,12 +16,8 @@ public class PushOrderReq {
 	@NotNull(message = "vin不能为空")
 	private String vin;
 
-	@NotBlank(message = "brand不能为空")
-	@NotNull(message = "brand不能为空")
 	private String brand;
 
-	@NotBlank(message = "manufacturer不能为空")
-	@NotNull(message = "manufacturer不能为空")
 	private String manufacturer;
 
 	@NotBlank(message = "callbackurl不能为空")
