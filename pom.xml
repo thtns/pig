@@ -253,9 +253,18 @@
 		<profile>
 			<id>pro</id>
 			<properties>
-				<!-- 环境标识，需要与配置文件的名称相对应 -->
-
+				<!-- 生产环境 -->
 				<profiles.active>pro</profiles.active>
+				<nacos.host>47.98.142.48</nacos.host>
+				<nacos.username>nacos</nacos.username>
+				<nacos.password>excar888</nacos.password>
+			</properties>
+		</profile>
+		<profile>
+			<id>pre</id>
+			<properties>
+				<!-- 公网测试 -->
+				<profiles.active>pre</profiles.active>
 				<nacos.host>47.98.142.48</nacos.host>
 				<nacos.username>nacos</nacos.username>
 				<nacos.password>excar888</nacos.password>
