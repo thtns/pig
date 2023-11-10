@@ -21,6 +21,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.pig4cloud.pig.capi.entity.BizRobotQueryRecord;
 import com.pig4cloud.pig.capi.mapper.BizRobotQueryRecordMapper;
+import com.pig4cloud.pig.capi.nacosConf.BaseConfig;
 import com.pig4cloud.pig.capi.service.BizRobotQueryRecordService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -38,11 +39,14 @@ import static cn.hutool.core.date.DateUtil.today;
 @RequiredArgsConstructor
 public class BizRobotQueryRecordServiceImpl extends ServiceImpl<BizRobotQueryRecordMapper, BizRobotQueryRecord> implements BizRobotQueryRecordService {
 
+	// 发动机号
+	private final BaseConfig baseConfig;
+
 	@Override
 	public BizRobotQueryRecord getQueryRecordByVin(String vin) {
 		return this.lambdaQuery()
 				.eq(BizRobotQueryRecord::getVin, vin)
-				.gt(BizRobotQueryRecord::getQuerytime, DateUtil.offsetDay(DateUtil.date(), -3))
+				.gt(BizRobotQueryRecord::getQuerytime, DateUtil.offsetDay(DateUtil.date(), baseConfig.getHistoryDays()))
 				.orderByDesc(BizRobotQueryRecord::getQuerytime)
 				.last("LIMIT 1")
 				.one();

@@ -23,4 +23,6 @@ public class BaseConfig {
 	/*** 更大的超时时间 s秒*/
 	private int moreTimeout;
 
+	/*** 历史天数 -3天*/
+	private int historyDays;
 }
