@@ -38,7 +38,7 @@ public class AccessOrderControlle {
 
 	@PostMapping(value = "/push_order")
 	public ResultVo pushOrder(HttpServletRequest request, @RequestBody PushOrderReq req) {
-			log.info("Access push_order, 参数为: {}", JSON.toJSONString(req));
+		log.info("Access push_order, 参数为: {}", JSON.toJSONString(req));
 		PushOrderRes res = new PushOrderRes();
 		res.setOrderno(req.getOrderno());
 		res.setVin(req.getVin());
@@ -49,6 +49,10 @@ public class AccessOrderControlle {
 			return ResultVo.failed(res, "非法秘钥,请检查秘钥。");
 		}
 		try {
+			if ("雪佛兰".equals(req.getBrand()) || "别克".equals(req.getBrand()) || "凯迪拉克".equals(req.getBrand()) || "日产".equals(req.getBrand())
+					|| "丰田".equals(req.getBrand())) {
+				return ResultVo.failed(res, "暂不支持");
+			}
 			BizBuyerOrder bizBuyerOrder = BizBuyerOrder.builder()
 					.orderNo(req.getOrderno())                //订单号
 					.buyerId(bizBuyer.getId())                //用户id
@@ -56,7 +60,7 @@ public class AccessOrderControlle {
 					.carBrandName(req.getBrand())             //请求品牌
 					.manufacturer(req.getManufacturer())      //请求厂商
 					.vin(req.getVin())                        //请求vin码
-					.engineCode(req.getEngineNo())		  	  //发动机号
+					.engineCode(req.getEngineNo())              //发动机号
 					.callbackUrl(req.getCallbackurl())        //回调地址
 					.requestParams(JSON.toJSONString(req))    //请求参数
 					.requestTime(LocalDateTime.now())         //请求时间
@@ -96,7 +100,7 @@ public class AccessOrderControlle {
 					.buyerId(bizBuyer.getId())                //用户id
 					.buyerName(bizBuyer.getName())            //用户名称
 					.vin(req.getVin())                        //请求vin码
-					.engineCode(req.getEngineNo())		  	  //发动机号 因为精友数据里不包含发动机号，所以需要发动机号的单独发送
+					.engineCode(req.getEngineNo())              //发动机号 因为精友数据里不包含发动机号，所以需要发动机号的单独发送
 					.callbackUrl(req.getCallbackurl())        //回调地址
 					.requestParams(JSON.toJSONString(req))    //请求参数
 					.requestTime(LocalDateTime.now())         //请求时间
