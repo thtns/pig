@@ -71,7 +71,7 @@ public class BizRobotController {
 		if (bizRobot.getStatus() != null) {
 			queryWrapper.eq("status", bizRobot.getStatus());
 		}
-		queryWrapper.orderByAsc(Arrays.asList("robotProxiesName"));
+		queryWrapper.orderByAsc(Arrays.asList("robot_proxies_name"));
         return R.ok(bizRobotService.page(page, queryWrapper));
     }
 
