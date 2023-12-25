@@ -35,6 +35,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Arrays;
+
 
 /**
  * 机器人
@@ -69,7 +71,7 @@ public class BizRobotController {
 		if (bizRobot.getStatus() != null) {
 			queryWrapper.eq("status", bizRobot.getStatus());
 		}
-
+		queryWrapper.orderByAsc(Arrays.asList("robotProxiesName"));
         return R.ok(bizRobotService.page(page, queryWrapper));
     }
 
