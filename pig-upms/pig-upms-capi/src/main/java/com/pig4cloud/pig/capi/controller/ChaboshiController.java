@@ -8,7 +8,6 @@ import com.pig4cloud.pig.capi.entity.BizBuyerOrder;
 import com.pig4cloud.pig.capi.service.MainCoreService;
 import com.pig4cloud.pig.common.core.constant.enums.capi.BaseConstants;
 import com.pig4cloud.pig.common.core.constant.enums.capi.RequestStatusEnum;
-import com.pig4cloud.pig.common.core.util.RequestUtils;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,7 +26,7 @@ import java.time.LocalDateTime;
 @RequiredArgsConstructor
 @RequestMapping("/chiBoss")
 @Tag(name = "查博士订单推送")
-public class ChaboshiControlle {
+public class ChaboshiController {
 
 	private final MainCoreService mainCoreService;
 

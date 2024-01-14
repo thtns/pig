@@ -29,7 +29,7 @@ import java.time.LocalDateTime;
 @RequiredArgsConstructor
 @RequestMapping("/access")
 @Tag(name = "接入订单推送")
-public class AccessOrderControlle {
+public class AccessOrderController {
 
 	private final BizBuyerService bizBuyerService;
 
