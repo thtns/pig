@@ -124,6 +124,27 @@ public class MainCoreServiceImpl implements MainCoreService {
 			bizBuyerOrder.setRequestStatus(RequestStatusEnum.API_TIME_NONSUPPORT.getType());
 			return bizBuyerOrder;
 		}
+		// 进口丰田时,一汽丰田和广汽丰田不是同时在线
+		if (bizBuyerOrder.getManufacturer().equals("进口丰田") && bizBuyerOrder.getRetryCount() < baseConfig.getOrderTryTimes()){
+			//判断进口丰田中一丰丰田和广丰都在线；status都为1
+			boolean isYifengToyotaOnline = false;
+			boolean isGuangfengToyotaOnline = false;
+			for (BizSupplier supplier : bizSuppliers) {
+				if (supplier.getSupplierName().contains("一汽丰田") && supplier.getStatus() == 1) {
+					isYifengToyotaOnline = true;
+				} else if (supplier.getSupplierName().contains("广汽丰田") && supplier.getStatus() == 1) {
+					isGuangfengToyotaOnline = true;
+				}
+			}
+
+			if (!isYifengToyotaOnline || !isGuangfengToyotaOnline) {
+				// Either one or both suppliers are not online, handle accordingly
+				log.error("进口丰田的供应商 一汽丰田 或 广汽丰田 不在线, 退出下单.");
+				bizBuyerOrder.setRequestStatus(RequestStatusEnum.API_TIME_NONSUPPORT.getType());
+				return bizBuyerOrder;
+			}
+		}
+
 
 		// 执行: 供货商限量计算逻辑
 //		List<BizSupplier> usableSupplierList = bizSuppliers.stream()
