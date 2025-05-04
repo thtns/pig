@@ -18,6 +18,7 @@ public class MqConfig {
 	private String accessKey;
 	private String secretKey;
 	private String nameSrvAddr;
+	private String instanceId;
 	private String topic;
 	private String groupId;
 	private String tag;
@@ -37,6 +38,7 @@ public class MqConfig {
 		properties.setProperty(PropertyKeyConst.AccessKey, this.accessKey);
 		properties.setProperty(PropertyKeyConst.SecretKey, this.secretKey);
 		properties.setProperty(PropertyKeyConst.NAMESRV_ADDR, this.nameSrvAddr);
+		properties.setProperty(PropertyKeyConst.Namespace, this.instanceId);
 		return properties;
 	}
 

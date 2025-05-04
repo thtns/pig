@@ -241,7 +241,7 @@
                 <!-- 环境标识，需要与配置文件的名称相对应 -->
                 <profiles.active>dev</profiles.active>
 <!--				<nacos.host>pig-register</nacos.host>-->
-				<nacos.host>47.98.142.48</nacos.host>
+				<nacos.host>8.136.120.202</nacos.host>
                 <nacos.username>nacos</nacos.username>
                 <nacos.password>excar888</nacos.password>
             </properties>
@@ -255,7 +255,7 @@
 			<properties>
 				<!-- 生产环境 -->
 				<profiles.active>pro</profiles.active>
-				<nacos.host>47.98.142.48</nacos.host>
+				<nacos.host>8.136.120.202</nacos.host>
 				<nacos.username>nacos</nacos.username>
 				<nacos.password>excar888</nacos.password>
 			</properties>
