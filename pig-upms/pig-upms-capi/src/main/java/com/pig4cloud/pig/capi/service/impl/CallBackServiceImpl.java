@@ -73,6 +73,11 @@ public class CallBackServiceImpl implements CallBackService {
 		addSupplierReqCount(bizBuyerOrder); //计算成功单量
 	}
 
+	@Override
+	public void reTryNoData(BizBuyerOrder bizBuyerOrder) {
+		noDataCallbackMerchant(bizBuyerOrder); // 异步回调商户 - 无记录
+	}
+
 
 	/**
 	 * 保存查询记录
@@ -300,7 +305,9 @@ public class CallBackServiceImpl implements CallBackService {
 			params.put("content", JSON.toJSONString(object));
 		}
 		params.put("reportstatus", status);
+		log.info("#### sendChaBoss 执行参数... url： 【{}】,userId： 【{}】,secret： 【{}】", chaBoosConfig.getUrl(), userId, secret);
 		String data = cbsBuilder.sendPost(chaBoosConfig.getUrl(), params);
+		log.info("#### sendChaBoss 执行内容... data： 【{}】", data);
 		JSONObject obj = JSON.parseObject(data);
 		Integer messageCode = obj.getInteger("messageCode");
 		log.info("#### sendChaBoss 执行结束... messageCode： 【{}】", messageCode);

@@ -457,7 +457,6 @@ public class MainCoreServiceImpl implements MainCoreService {
 		if (Objects.nonNull(bizRobotQueryRecord.getResult())) {
 			log.info("~~~~ Step3.2: 本地数据成功解析....同步到订单数据并回调给商户。");
 			String result = bizRobotQueryRecord.getResult();
-			bizBuyerOrder.setResult(result);
 			CompletableFuture.runAsync(() -> {
 				log.info("#### Step3.3: 异步解析开始");
 				try {
@@ -465,18 +464,24 @@ public class MainCoreServiceImpl implements MainCoreService {
 //					RetryUtil.executeWithRetry(() -> {
 						log.info("#### Step3.4.1: Vin：{} RetryUtil开始回调 第{}次", vin, times);
 						times.addAndGet(1);
-						RobotResponse robotResponse = JSON.parseObject(result, RobotResponse.class);
-						log.info("#### Step3.4.2:  order_id: {}，回调采购商维修数据 : {}", order_id
-								, JSON.toJSONString(JSON.parseObject(result, RobotResponse.class)));
-						Integer status = callBackService.anyDataMerchantCallBack(bizBuyerOrder, robotResponse);
-						log.info("#### Step3.4.3:  order_id: {}，回调采购商返回状态 :status is  【{}】", order_id, status);
-						if (status.equals(200)) {// 成功回调, 则更新订单状态
-							updateOrderStatus(bizBuyerOrder, RequestStatusEnum.CALLBACK_SUCCESS, null);
-						} else if (status.equals(200) && times.get() >= 3) {// 三次失败状态
-							String failureReason = JSON.toJSONString(R.resultEnumType(null, RequestStatusEnum.API_CALLBACK_FAILURE.getType()));
-							updateOrderStatus(bizBuyerOrder, RequestStatusEnum.CALLBACK_FAILURE, failureReason);
-						} else if (!status.equals(200)) {
-							throw new RuntimeException("返回状态码不正确，重试！");
+						if (result == null || "null".equals(result.trim()) || result.trim().isEmpty()) {
+							log.info("#### Step3.4.2: order_id: {}，查询结果为空，执行 noData 回调", order_id);
+							callBackService.reTryNoData(bizBuyerOrder);
+						}else{
+							bizBuyerOrder.setResult(result);
+							RobotResponse robotResponse = JSON.parseObject(result, RobotResponse.class);
+							log.info("#### Step3.4.2:  order_id: {}，回调采购商维修数据 : {}", order_id
+									, JSON.toJSONString(JSON.parseObject(result, RobotResponse.class)));
+							Integer status = callBackService.anyDataMerchantCallBack(bizBuyerOrder, robotResponse);
+							log.info("#### Step3.4.3:  order_id: {}，回调采购商返回状态 :status is  【{}】", order_id, status);
+							if (status.equals(200)) {// 成功回调, 则更新订单状态
+								updateOrderStatus(bizBuyerOrder, RequestStatusEnum.CALLBACK_SUCCESS, null);
+							} else if (!status.equals(200) && times.get() >= 3) {// 三次失败状态
+								String failureReason = JSON.toJSONString(R.resultEnumType(null, RequestStatusEnum.API_CALLBACK_FAILURE.getType()));
+								updateOrderStatus(bizBuyerOrder, RequestStatusEnum.CALLBACK_FAILURE, failureReason);
+							} else if (!status.equals(200)) {
+								throw new RuntimeException("返回状态码不正确，重试！");
+							}
 						}
 //						return null;
 //					}, 3, 3000L, false);

@@ -24,6 +24,8 @@ public interface CallBackService {
 	 */
 	public void noData(BizBuyerOrder bizBuyerOrder);
 
+	public void reTryNoData(BizBuyerOrder bizBuyerOrder);
+
 
 	public Integer sendChaBoss(String type, String orderNo, int status, Object object) throws Exception;
 
